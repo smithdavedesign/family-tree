@@ -6,15 +6,19 @@ import { signInWithGoogle, signOut, getCurrentUser } from './auth';
 function Home() {
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    const { error } = await signInWithGoogle();
-    if (!error) {
-      // In a real app, Supabase redirects away. 
-      // In Mock Mode, we stay here, so we must manually navigate.
-      // We'll assume if we're still here, we should go to the demo tree.
-      navigate('/tree/tree-123');
-    }
-  };
+  // Check for session on mount to handle redirect back from Google
+  React.useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) {
+        // In a real app, we'd fetch the user's tree ID. 
+        // For now, we'll assume they have one or redirect to a dashboard.
+        // Let's redirect to the "Skywalker" tree we seeded if we can, 
+        // or just a default route.
+        // For this demo, we'll just log it.
+        console.log("User is logged in:", user);
+      }
+    });
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -23,7 +27,7 @@ function Home() {
 
       <div className="space-y-4">
         <button
-          onClick={handleLogin}
+          onClick={signInWithGoogle}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
         >
           Sign in with Google
