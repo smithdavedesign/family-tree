@@ -20,7 +20,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`http://localhost:3000/api/person/${person.id}/media`, {
+            const response = await fetch(`/api/person/${person.id}/media`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -45,7 +45,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
             const token = session?.access_token;
 
             // Save to database
-            const response = await fetch('http://localhost:3000/api/media', {
+            const response = await fetch('/api/media', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

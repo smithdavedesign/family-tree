@@ -71,7 +71,7 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:3000/api/tree/${treeId}`, {
+            const response = await fetch(`/api/tree/${treeId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
