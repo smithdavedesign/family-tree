@@ -5,20 +5,46 @@ import { signInWithGoogle, signOut, getCurrentUser } from './auth';
 
 function Home() {
   const navigate = useNavigate();
+  const [loading, setLoading] = React.useState(true);
+  const [user, setUser] = React.useState(null);
 
-  // Check for session on mount to handle redirect back from Google
+  // Check for session on mount
   React.useEffect(() => {
-    getCurrentUser().then(user => {
-      if (user) {
-        // In a real app, we'd fetch the user's tree ID. 
-        // For now, we'll assume they have one or redirect to a dashboard.
-        // Let's redirect to the "Skywalker" tree we seeded if we can, 
-        // or just a default route.
-        // For this demo, we'll just log it.
-        console.log("User is logged in:", user);
-      }
-    });
+    checkSession();
   }, []);
+
+  const checkSession = async () => {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+
+    if (currentUser) {
+      // Fetch user's trees
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        const response = await fetch('/api/trees', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const trees = await response.json();
+          if (trees.length > 0) {
+            console.log("Found tree, redirecting...", trees[0].id);
+            navigate(`/tree/${trees[0].id}`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching trees:", err);
+      }
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -26,20 +52,20 @@ function Home() {
       <p className="mb-8 text-gray-600">Your family history, visualized.</p>
 
       <div className="space-y-4">
-        <button
-          onClick={signInWithGoogle}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          Sign in with Google
-        </button>
-
-        {/* Temporary link for testing since we don't have a tree list page yet */}
-        <div className="mt-8 p-4 border rounded bg-white">
-          <p className="text-sm text-gray-500 mb-2">Dev Links:</p>
-          <Link to="/tree/tree-123" className="text-teal-600 hover:underline">
-            View Demo Tree (ID: tree-123)
-          </Link>
-        </div>
+        {!user ? (
+          <button
+            onClick={signInWithGoogle}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+          >
+            Sign in with Google
+          </button>
+        ) : (
+          <div className="text-center">
+            <p className="mb-4 text-lg">Welcome back, {user.email}!</p>
+            <p className="text-gray-500">You don't have any trees yet.</p>
+            {/* Future: Add "Create Tree" button here */}
+          </div>
+        )}
       </div>
     </div>
   );

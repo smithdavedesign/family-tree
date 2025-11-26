@@ -7,6 +7,7 @@ const relationshipController = require('../controllers/relationshipController');
 const mediaController = require('../controllers/mediaController');
 
 // Tree routes
+router.get('/trees', requireAuth, treeController.getUserTrees);
 router.get('/tree/:id', requireAuth, treeController.getTree);
 
 // Person routes

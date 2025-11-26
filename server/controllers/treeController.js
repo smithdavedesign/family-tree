@@ -52,3 +52,28 @@ exports.getTree = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getUserTrees = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // MOCK MODE
+        if (process.env.USE_MOCK === 'true') {
+            const { MOCK_TREES } = require('../mockData');
+            const trees = MOCK_TREES.filter(t => t.owner_id === userId);
+            return res.json(trees);
+        }
+
+        const { data: trees, error } = await supabase
+            .from('trees')
+            .select('*')
+            .eq('owner_id', userId);
+
+        if (error) throw error;
+
+        res.json(trees);
+    } catch (error) {
+        console.error('Error fetching user trees:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
