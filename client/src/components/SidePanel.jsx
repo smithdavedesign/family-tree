@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import PhotoPicker from './PhotoPicker';
 import MergeModal from './MergeModal';
+import AddRelationshipModal from './AddRelationshipModal';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate }) => {
@@ -13,6 +14,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
     const [relationships, setRelationships] = useState([]);
     const [loadingRelationships, setLoadingRelationships] = useState(false);
     const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
+    const [isAddRelationshipOpen, setIsAddRelationshipOpen] = useState(false);
 
     useEffect(() => {
         console.log("SidePanel received person:", person);
@@ -369,7 +371,15 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                     </div>
 
                     <div className="mb-8">
-                        <h4 className="font-semibold text-gray-700 mb-4">Relationships</h4>
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="font-semibold text-gray-700">Relationships</h4>
+                            <button
+                                onClick={() => setIsAddRelationshipOpen(true)}
+                                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                                <Plus className="w-4 h-4" /> Add
+                            </button>
+                        </div>
                         {loadingRelationships ? (
                             <div className="text-center py-4 text-gray-500">Loading...</div>
                         ) : relationships.length === 0 ? (
@@ -446,6 +456,17 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                 onMergeSuccess={() => {
                     setIsMergeModalOpen(false);
                     onClose(); // Close side panel as this person might be the one kept, but let's just close to refresh
+                    if (onUpdate) onUpdate();
+                }}
+            />
+
+            <AddRelationshipModal
+                isOpen={isAddRelationshipOpen}
+                onClose={() => setIsAddRelationshipOpen(false)}
+                currentPerson={person}
+                onSuccess={() => {
+                    setIsAddRelationshipOpen(false);
+                    fetchRelationships();
                     if (onUpdate) onUpdate();
                 }}
             />
