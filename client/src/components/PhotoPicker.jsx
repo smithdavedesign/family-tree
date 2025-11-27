@@ -21,11 +21,19 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
         setLoading(true);
         setError(null);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const providerToken = session?.provider_token;
+            // Try to refresh the session first to get a fresh token
+            const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+
+            let providerToken = session?.provider_token;
+
+            // If refresh didn't work, try getting current session
+            if (!providerToken) {
+                const { data: { session: currentSession } } = await supabase.auth.getSession();
+                providerToken = currentSession?.provider_token;
+            }
 
             if (!providerToken) {
-                throw new Error('No Google Photos access token found. Please sign out and sign in again with Google Photos access.');
+                throw new Error('REAUTH_NEEDED');
             }
 
             let url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20';
@@ -40,6 +48,9 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('REAUTH_NEEDED');
+                }
                 const errData = await response.json();
                 throw new Error(errData.error?.message || 'Failed to fetch photos');
             }
@@ -55,7 +66,11 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             setNextPageToken(data.nextPageToken || null);
         } catch (err) {
             console.error("Error fetching photos:", err);
-            setError(err.message);
+            if (err.message === 'REAUTH_NEEDED') {
+                setError('REAUTH_NEEDED');
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -86,6 +101,25 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                     {loading ? (
                         <div className="flex justify-center items-center h-64">
                             <Loader className="w-8 h-8 animate-spin text-blue-600" />
+                        </div>
+                    ) : error === 'REAUTH_NEEDED' ? (
+                        <div className="text-center p-8">
+                            <div className="mb-4">
+                                <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Google Photos Access Needed</h3>
+                                <p className="text-gray-600 mb-6">
+                                    Your Google Photos access has expired. Please sign in again to continue adding photos.
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const { signInWithGoogle } = await import('../auth');
+                                    await signInWithGoogle();
+                                }}
+                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+                            >
+                                Re-authenticate with Google Photos
+                            </button>
                         </div>
                     ) : error ? (
                         <div className="text-center text-red-500 p-8">
