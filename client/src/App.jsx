@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import TreePage from './pages/TreePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import { signInWithGoogle, signOut, getCurrentUser, supabase } from './auth';
+import AuthError from './pages/AuthError';
+import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 
 function Home() {
@@ -17,14 +18,15 @@ function Home() {
   }, []);
 
   const checkSession = async () => {
-    const currentUser = await getCurrentUser();
-    setUser(currentUser);
+    // Try to restore existing session
+    const session = await restoreSession();
 
-    if (currentUser) {
+    if (session && session.user) {
+      setUser(session.user);
+
       // Fetch user's trees
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
+        const token = session.access_token;
 
         const response = await fetch('/api/trees', {
           headers: { Authorization: `Bearer ${token} ` }
@@ -41,7 +43,12 @@ function Home() {
       } catch (err) {
         console.error("Error fetching trees:", err);
       }
+    } else {
+      // No session, check if user just logged in
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
     }
+
     setLoading(false);
   };
 
@@ -121,6 +128,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/tree/:id" element={<TreePage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/auth-error" element={<AuthError />} />
       </Routes>
     </Router>
   );
