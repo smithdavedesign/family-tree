@@ -12,7 +12,7 @@ import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import { supabase } from '../auth';
-import { Undo, Redo } from 'lucide-react';
+import { Undo, Redo, TreePine, Plus } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 
@@ -353,10 +353,10 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
             // 1. Create Person
             const newPersonPayload = {
                 tree_id: treeId,
-                first_name: 'New',
-                last_name: 'Person',
+                first_name: action === 'add_root' ? 'Me' : 'New',
+                last_name: action === 'add_root' ? '' : 'Person',
                 gender: 'Unknown',
-                bio: ''
+                bio: action === 'add_root' ? 'This is the start of your tree!' : ''
             };
 
             const newPersonResponse = await fetch('/api/person', {
@@ -367,6 +367,21 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
 
             if (!newPersonResponse.ok) throw new Error("Failed to create person");
             const newPerson = await newPersonResponse.json();
+
+            if (action === 'add_root') {
+                // No relationship needed for root node
+                addToHistory({
+                    type: 'ADD_PERSON',
+                    data: {
+                        personId: newPerson.id,
+                        person: newPerson,
+                        relationship: null
+                    }
+                });
+
+                await fetchTreeData();
+                return;
+            }
 
             // 2. Create Relationship
             let relationshipPayload = {
@@ -554,6 +569,27 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                         details={error}
                         onRetry={fetchTreeData}
                     />
+                </div>
+            )}
+
+            {!loading && !error && nodes.length === 0 && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none">
+                    <div className="bg-white p-8 rounded-xl shadow-xl text-center pointer-events-auto max-w-md border border-gray-100">
+                        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <TreePine className="w-8 h-8 text-teal-600" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Start Your Family Tree</h3>
+                        <p className="text-gray-600 mb-6">
+                            This tree is currently empty. Add the first person to get started!
+                        </p>
+                        <button
+                            onClick={() => handleMenuAction('add_root', null)}
+                            className="px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold flex items-center justify-center gap-2 w-full"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add First Person
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
