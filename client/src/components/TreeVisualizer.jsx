@@ -136,8 +136,38 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
         [setEdges]
     );
 
+    const [menu, setMenu] = useState(null);
+
+    const onNodeContextMenu = useCallback(
+        (event, node) => {
+            // Prevent native context menu from showing
+            event.preventDefault();
+
+            // Calculate position
+            const pane = document.querySelector('.react-flow__pane');
+            const paneRect = pane.getBoundingClientRect();
+
+            setMenu({
+                id: node.id,
+                top: event.clientY - paneRect.top,
+                left: event.clientX - paneRect.left,
+                data: node.data
+            });
+        },
+        [setMenu]
+    );
+
+    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+
+    const handleMenuAction = async (action, sourceNodeId) => {
+        setMenu(null);
+        // TODO: Implement the actual logic for adding relatives
+        console.log(`Action: ${action} for node ${sourceNodeId}`);
+        alert(`Coming soon: ${action}`);
+    };
+
     return (
-        <div className="h-screen w-full">
+        <div className="h-screen w-full relative">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -145,6 +175,8 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
+                onNodeContextMenu={onNodeContextMenu}
+                onPaneClick={onPaneClick}
                 nodeTypes={nodeTypes}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
@@ -156,6 +188,34 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                         Refresh Layout
                     </button>
                 </Panel>
+                {menu && (
+                    <div
+                        style={{ top: menu.top, left: menu.left }}
+                        className="absolute z-50 bg-white border rounded shadow-lg p-2 w-48 flex flex-col gap-1"
+                    >
+                        <div className="text-xs font-bold text-gray-500 px-2 py-1 uppercase border-b mb-1">
+                            Add Relative
+                        </div>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_parent', menu.id)}
+                        >
+                            Add Parent
+                        </button>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_spouse', menu.id)}
+                        >
+                            Add Spouse
+                        </button>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_child', menu.id)}
+                        >
+                            Add Child
+                        </button>
+                    </div>
+                )}
             </ReactFlow>
         </div>
     );
