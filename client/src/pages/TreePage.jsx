@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 import TreeVisualizer from '../components/TreeVisualizer';
 import SidePanel from '../components/SidePanel';
 import SearchBar from '../components/SearchBar';
-import { supabase } from '../auth';
+import AccountSettings from '../components/AccountSettings';
+import { supabase, getCurrentUser } from '../auth';
+import { Settings } from 'lucide-react';
 
 const TreePage = () => {
     const { id } = useParams();
@@ -12,6 +14,8 @@ const TreePage = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [highlightedNodes, setHighlightedNodes] = useState([]);
     const [persons, setPersons] = useState([]);
+    const [showSettings, setShowSettings] = useState(false);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const getTree = async () => {
@@ -33,7 +37,14 @@ const TreePage = () => {
                 setLoading(false);
             }
         };
+
+        const loadUser = async () => {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+        };
+
         getTree();
+        loadUser();
     }, [id]);
 
     const handleNodeClick = (event, node) => {
@@ -55,7 +66,13 @@ const TreePage = () => {
         <div className="flex flex-col h-screen relative overflow-hidden">
             <header className="bg-white shadow p-4 z-10 flex justify-between items-center">
                 <h1 className="text-xl font-bold text-teal-800">Roots & Branches</h1>
-                <div className="text-sm text-gray-500">Tree ID: {id}</div>
+                <button
+                    onClick={() => setShowSettings(true)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                    title="Account Settings"
+                >
+                    <Settings className="w-5 h-5 text-gray-600" />
+                </button>
             </header>
             <SearchBar
                 persons={persons}
@@ -76,6 +93,13 @@ const TreePage = () => {
                     person={selectedPerson}
                     onClose={handleClosePanel}
                     onUpdate={handleUpdate}
+                />
+            )}
+
+            {showSettings && user && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
                 />
             )}
         </div>

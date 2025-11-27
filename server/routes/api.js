@@ -5,6 +5,7 @@ const treeController = require('../controllers/treeController');
 const personController = require('../controllers/personController');
 const relationshipController = require('../controllers/relationshipController');
 const mediaController = require('../controllers/mediaController');
+const accountController = require('../controllers/accountController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -24,5 +25,8 @@ router.delete('/relationship/:id', requireAuth, relationshipController.deleteRel
 
 // Media routes
 router.post('/media', requireAuth, mediaController.addMedia);
+
+// Account routes
+router.delete('/account', requireAuth, accountController.deleteAccount);
 
 module.exports = router;
