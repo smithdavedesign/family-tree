@@ -31,3 +31,32 @@ exports.createRelationship = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deleteRelationship = async (req, res) => {
+    const { id } = req.params;
+
+    // MOCK MODE
+    if (process.env.USE_MOCK === 'true') {
+        const { MOCK_RELATIONSHIPS } = require('../mockData');
+        const index = MOCK_RELATIONSHIPS.findIndex(r => r.id === id);
+        if (index !== -1) {
+            MOCK_RELATIONSHIPS.splice(index, 1);
+            return res.status(204).send();
+        }
+        return res.status(404).json({ error: 'Relationship not found' });
+    }
+
+    try {
+        const { error } = await supabase
+            .from('relationships')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error deleting relationship:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

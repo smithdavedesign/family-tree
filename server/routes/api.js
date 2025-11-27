@@ -13,10 +13,12 @@ router.get('/tree/:id', requireAuth, treeController.getTree);
 // Person routes
 router.post('/person', requireAuth, personController.createPerson);
 router.put('/person/:id', requireAuth, personController.updatePerson);
+router.delete('/person/:id', requireAuth, personController.deletePerson);
 router.get('/person/:id/media', requireAuth, mediaController.getMediaForPerson);
 
 // Relationship routes
 router.post('/relationship', requireAuth, relationshipController.createRelationship);
+router.delete('/relationship/:id', requireAuth, relationshipController.deleteRelationship);
 
 // Media routes
 router.post('/media', requireAuth, mediaController.addMedia);

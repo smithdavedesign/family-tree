@@ -63,3 +63,32 @@ exports.updatePerson = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deletePerson = async (req, res) => {
+    const { id } = req.params;
+
+    // MOCK MODE
+    if (process.env.USE_MOCK === 'true') {
+        const { MOCK_PERSONS } = require('../mockData');
+        const index = MOCK_PERSONS.findIndex(p => p.id === id);
+        if (index !== -1) {
+            MOCK_PERSONS.splice(index, 1);
+            return res.status(204).send();
+        }
+        return res.status(404).json({ error: 'Person not found' });
+    }
+
+    try {
+        const { error } = await supabase
+            .from('persons')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error deleting person:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

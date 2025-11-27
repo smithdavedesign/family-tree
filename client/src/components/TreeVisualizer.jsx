@@ -162,6 +162,39 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
     const handleMenuAction = async (action, sourceNodeId) => {
         setMenu(null);
 
+        if (action === 'delete') {
+            if (!confirm('Are you sure you want to delete this person? This will also remove all their relationships.')) {
+                return;
+            }
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                if (!token) {
+                    alert("You must be logged in to edit the tree.");
+                    return;
+                }
+
+                const response = await fetch(`/api/person/${sourceNodeId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error("Failed to delete person");
+
+                // Refresh the tree
+                fetchTreeData();
+
+            } catch (error) {
+                console.error("Error deleting person:", error);
+                alert("Failed to delete person");
+            }
+            return;
+        }
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
@@ -222,7 +255,16 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
             if (!relResponse.ok) throw new Error("Failed to create relationship");
 
             // 3. Refresh the tree
-            fetchTreeData();
+            await fetchTreeData();
+
+            // 4. Auto-open the SidePanel for the new person
+            // We need to wait a bit for the tree to refresh, then find and click the new node
+            setTimeout(() => {
+                const newNode = nodes.find(n => n.id === newPerson.id);
+                if (newNode && onNodeClick) {
+                    onNodeClick(null, newNode);
+                }
+            }, 500);
 
         } catch (error) {
             console.error("Error adding relative:", error);
@@ -277,6 +319,13 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                             onClick={() => handleMenuAction('add_child', menu.id)}
                         >
                             Add Child
+                        </button>
+                        <div className="border-t my-1"></div>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-red-50 text-red-600 rounded text-sm"
+                            onClick={() => handleMenuAction('delete', menu.id)}
+                        >
+                            Delete Person
                         </button>
                     </div>
                 )}
