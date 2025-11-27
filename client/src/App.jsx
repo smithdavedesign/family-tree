@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import TreePage from './pages/TreePage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { signInWithGoogle, signOut, getCurrentUser, supabase } from './auth';
 
 function Home() {
@@ -117,6 +118,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/tree/:id" element={<TreePage />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
       </Routes>
     </Router>
   );
