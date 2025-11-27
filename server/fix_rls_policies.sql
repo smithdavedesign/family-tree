@@ -110,6 +110,10 @@ CREATE POLICY "Users can manage media in their trees"
   );
 
 -- 7. Users table policies (optional - only if you need public.users)
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+
 CREATE POLICY "Users can view own profile" 
   ON public.users
   FOR SELECT 

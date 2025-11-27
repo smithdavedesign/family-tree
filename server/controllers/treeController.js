@@ -1,4 +1,4 @@
-const { supabase } = require('../middleware/auth');
+const { supabase, supabaseAdmin } = require('../middleware/auth');
 
 exports.getTree = async (req, res) => {
     try {
@@ -101,8 +101,8 @@ exports.createTree = async (req, res) => {
             return res.status(201).json(newTree);
         }
 
-        // Create the tree
-        const { data: tree, error: treeError } = await supabase
+        // Create the tree (use admin client to bypass RLS)
+        const { data: tree, error: treeError } = await supabaseAdmin
             .from('trees')
             .insert([{
                 name,
@@ -115,7 +115,7 @@ exports.createTree = async (req, res) => {
         if (treeError) throw treeError;
 
         // Create a root person (the user themselves)
-        const { data: rootPerson, error: personError } = await supabase
+        const { data: rootPerson, error: personError } = await supabaseAdmin
             .from('persons')
             .insert([{
                 tree_id: tree.id,

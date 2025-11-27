@@ -1,8 +1,14 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Client for auth verification (uses anon key)
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Admin client for backend operations (bypasses RLS)
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 const requireAuth = async (req, res, next) => {
     // MOCK MODE BYPASS
@@ -35,4 +41,4 @@ const requireAuth = async (req, res, next) => {
     }
 };
 
-module.exports = { requireAuth, supabase };
+module.exports = { requireAuth, supabase, supabaseAdmin };
