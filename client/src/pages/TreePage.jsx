@@ -4,6 +4,7 @@ import TreeVisualizer from '../components/TreeVisualizer';
 import SidePanel from '../components/SidePanel';
 import SearchBar from '../components/SearchBar';
 import AccountSettings from '../components/AccountSettings';
+import TreeSwitcher from '../components/TreeSwitcher';
 import { supabase, getCurrentUser } from '../auth';
 import { Settings } from 'lucide-react';
 
@@ -65,7 +66,10 @@ const TreePage = () => {
     return (
         <div className="flex flex-col h-screen relative overflow-hidden">
             <header className="bg-white shadow p-4 z-10 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-teal-800">Roots & Branches</h1>
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl font-bold text-teal-800 hidden md:block">Roots & Branches</h1>
+                    <TreeSwitcher currentTreeId={id} />
+                </div>
                 <button
                     onClick={() => setShowSettings(true)}
                     className="p-2 hover:bg-gray-100 rounded-full transition"

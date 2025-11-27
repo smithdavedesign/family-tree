@@ -137,3 +137,70 @@ exports.createTree = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deleteTree = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+
+        // MOCK MODE
+        if (process.env.USE_MOCK === 'true') {
+            const { MOCK_TREES } = require('../mockData');
+            const index = MOCK_TREES.findIndex(t => t.id === id && t.owner_id === userId);
+            if (index !== -1) {
+                MOCK_TREES.splice(index, 1);
+                return res.json({ message: 'Tree deleted successfully' });
+            }
+            return res.status(404).json({ error: 'Tree not found' });
+        }
+
+        // Verify ownership
+        const { data: tree, error: fetchError } = await supabase
+            .from('trees')
+            .select('owner_id')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !tree) {
+            return res.status(404).json({ error: 'Tree not found' });
+        }
+
+        if (tree.owner_id !== userId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        // Cascade delete using admin client
+        // 1. Delete Media
+        await supabaseAdmin
+            .from('media')
+            .delete()
+            .in('person_id',
+                supabaseAdmin.from('persons').select('id').eq('tree_id', id)
+            );
+
+        // 2. Delete Relationships
+        await supabaseAdmin
+            .from('relationships')
+            .delete()
+            .eq('tree_id', id);
+
+        // 3. Delete Persons
+        await supabaseAdmin
+            .from('persons')
+            .delete()
+            .eq('tree_id', id);
+
+        // 4. Delete Tree
+        const { error: deleteError } = await supabaseAdmin
+            .from('trees')
+            .delete()
+            .eq('id', id);
+
+        if (deleteError) throw deleteError;
+
+        res.json({ message: 'Tree deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting tree:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

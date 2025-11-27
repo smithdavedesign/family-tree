@@ -11,6 +11,7 @@ const accountController = require('../controllers/accountController');
 router.get('/trees', requireAuth, treeController.getUserTrees);
 router.post('/trees', requireAuth, treeController.createTree);
 router.get('/tree/:id', requireAuth, treeController.getTree);
+router.delete('/tree/:id', requireAuth, treeController.deleteTree);
 
 // Person routes
 router.post('/person', requireAuth, personController.createPerson);
