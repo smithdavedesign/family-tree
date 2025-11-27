@@ -54,9 +54,14 @@ exports.updatePerson = async (req, res) => {
     }
 
     try {
+        // Sanitize date fields - convert empty strings to null
+        const sanitizedUpdates = { ...updates };
+        if (sanitizedUpdates.dob === '') sanitizedUpdates.dob = null;
+        if (sanitizedUpdates.dod === '') sanitizedUpdates.dod = null;
+
         const { data, error } = await supabase
             .from('persons')
-            .update(updates)
+            .update(sanitizedUpdates)
             .eq('id', id)
             .select()
             .single();
