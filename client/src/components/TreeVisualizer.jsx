@@ -224,40 +224,22 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
             const token = session?.access_token;
 
             if (action.type === 'ADD_PERSON') {
-                // Undo: Delete the person
+                // Undo: Delete the person (and relationship will cascade)
                 await fetch(`/api/person/${action.data.personId}`, {
                     method: 'DELETE',
                     headers: { Authorization: `Bearer ${token}` }
                 });
-            } else if (action.type === 'DELETE_PERSON') {
-                // Undo: Restore person + relationships + media
-                // 1. Restore Person
-                await fetch('/api/person', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify(action.data.person)
-                });
-                // 2. Restore Relationships (one by one)
-                for (const rel of action.data.relationships) {
-                    await fetch('/api/relationship', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify(rel)
-                    });
-                }
-                // 3. Restore Media (TODO: Add restore media endpoint or update media controller)
-                // For now we skip media restore or assume media table wasn't hard deleted?
-                // Our deletePerson controller does not cascade delete media?
-                // DB schema says: person_id uuid references public.persons(id) on delete cascade
-                // So media IS deleted. We need to restore it.
-                // We need to fetch media before delete.
-            }
 
-            setHistory({
-                past: newPast,
-                future: [action, ...history.future]
-            });
-            fetchTreeData();
+                setHistory({
+                    past: newPast,
+                    future: [action, ...history.future]
+                });
+                fetchTreeData();
+            } else {
+                // For other actions, just skip for now to avoid complexity
+                alert("Undo not supported for this action yet");
+                return;
+            }
         } catch (error) {
             console.error("Undo failed:", error);
             alert("Undo failed");
@@ -274,34 +256,47 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
             const token = session?.access_token;
 
             if (action.type === 'ADD_PERSON') {
-                // Redo: Add Person (restore)
-                // We need to restore with the SAME ID to keep consistency
-                await fetch('/api/person', {
+                // Redo: Re-add the person and relationship
+                const newPersonResponse = await fetch('/api/person', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify(action.data.person) // We need to ensure we stored the person data in ADD_PERSON action
+                    body: JSON.stringify({
+                        tree_id: action.data.person.tree_id,
+                        first_name: action.data.person.first_name,
+                        last_name: action.data.person.last_name,
+                        gender: action.data.person.gender,
+                        bio: action.data.person.bio
+                    })
                 });
-                // Restore relationship
-                await fetch('/api/relationship', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify(action.data.relationship)
-                });
-            } else if (action.type === 'DELETE_PERSON') {
-                // Redo: Delete Person
-                await fetch(`/api/person/${action.data.person.id}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
 
-            setHistory({
-                past: [...history.past, action],
-                future: newFuture
-            });
-            fetchTreeData();
+                if (newPersonResponse.ok) {
+                    const newPerson = await newPersonResponse.json();
+
+                    // Recreate relationship with new person ID
+                    await fetch('/api/relationship', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({
+                            tree_id: action.data.relationship.tree_id,
+                            person_1_id: action.data.relationship.person_1_id === action.data.personId ? newPerson.id : action.data.relationship.person_1_id,
+                            person_2_id: action.data.relationship.person_2_id === action.data.personId ? newPerson.id : action.data.relationship.person_2_id,
+                            type: action.data.relationship.type
+                        })
+                    });
+                }
+
+                setHistory({
+                    past: [...history.past, action],
+                    future: newFuture
+                });
+                fetchTreeData();
+            } else {
+                alert("Redo not supported for this action yet");
+                return;
+            }
         } catch (error) {
             console.error("Redo failed:", error);
+            alert("Redo failed");
         }
     };
 
@@ -314,55 +309,17 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
         if (action === 'delete') {
             if (!confirm('Are you sure you want to delete this person?')) return;
 
-            // 1. Fetch data for Undo
-            // We need the person details and their relationships
-            // We can find person in 'nodes' state, but we need raw data.
-            // 'nodes' state has data in node.data.
-            const nodeToDelete = nodes.find(n => n.id === sourceNodeId);
-
-            // We also need relationships. We can find them in 'edges' state?
-            // Edges only have source/target. We need the full relationship object (type, etc).
-            // We can filter from 'edges' and map back to relationship data if we stored it?
-            // Yes, we stored { relationshipType, relationshipId } in edge.data.
-            const relatedEdges = edges.filter(e => e.source === sourceNodeId || e.target === sourceNodeId);
-            const relationshipsToRestore = relatedEdges.map(e => ({
-                id: e.data.relationshipId,
-                tree_id: treeId,
-                person_1_id: e.source,
-                person_2_id: e.target,
-                type: e.data.relationshipType
-            }));
-
-            const personToRestore = {
-                id: nodeToDelete.id,
-                tree_id: nodeToDelete.data.tree_id,
-                first_name: nodeToDelete.data.first_name,
-                last_name: nodeToDelete.data.last_name,
-                gender: nodeToDelete.data.gender,
-                dob: nodeToDelete.data.dob,
-                dod: nodeToDelete.data.dod,
-                bio: nodeToDelete.data.bio,
-                occupation: nodeToDelete.data.occupation,
-                pob: nodeToDelete.data.pob,
-                profile_photo_url: nodeToDelete.data.profile_photo_url
-            };
-
             try {
                 await fetch(`/api/person/${sourceNodeId}`, {
                     method: 'DELETE',
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                addToHistory({
-                    type: 'DELETE_PERSON',
-                    data: {
-                        person: personToRestore,
-                        relationships: relationshipsToRestore
-                    }
-                });
+                // Don't track deletes in history for now to avoid complexity
                 fetchTreeData();
             } catch (error) {
                 console.error("Delete failed:", error);
+                alert("Failed to delete person");
             }
             return;
         }

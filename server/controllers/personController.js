@@ -16,7 +16,12 @@ exports.createPerson = async (req, res) => {
 
     try {
         const payload = { tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes };
-        if (id) payload.id = id;
+        if (id) {
+            console.log("createPerson called WITH ID:", id);
+            payload.id = id;
+        } else {
+            console.log("createPerson called WITHOUT ID");
+        }
 
         const { data, error } = await supabase
             .from('persons')

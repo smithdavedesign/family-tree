@@ -15,6 +15,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
     const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
 
     useEffect(() => {
+        console.log("SidePanel received person:", person);
         if (person) {
             fetchMedia();
             fetchRelationships();
