@@ -9,10 +9,13 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
     const [loadingMedia, setLoadingMedia] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
+    const [relationships, setRelationships] = useState([]);
+    const [loadingRelationships, setLoadingRelationships] = useState(false);
 
     useEffect(() => {
         if (person) {
             fetchMedia();
+            fetchRelationships();
             // Initialize form data from person data
             // Note: person.data contains the visual label/subline, but we need the raw fields.
             // Ideally, the parent component should pass the full person object, or we fetch it here.
@@ -125,6 +128,71 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const fetchRelationships = async () => {
+        setLoadingRelationships(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch(`/api/tree/${person.data.tree_id || 'tree-123'}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const { relationships: allRels, persons } = await response.json();
+                // Filter relationships where this person is involved
+                const personRels = allRels.filter(r =>
+                    r.person_1_id === person.id || r.person_2_id === person.id
+                ).map(r => {
+                    // Find the other person
+                    const otherPersonId = r.person_1_id === person.id ? r.person_2_id : r.person_1_id;
+                    const otherPerson = persons.find(p => p.id === otherPersonId);
+
+                    return {
+                        ...r,
+                        otherPerson: otherPerson ? `${otherPerson.first_name} ${otherPerson.last_name || ''}` : 'Unknown',
+                        direction: r.person_1_id === person.id ? 'from' : 'to'
+                    };
+                });
+                setRelationships(personRels);
+            }
+        } catch (error) {
+            console.error("Error fetching relationships:", error);
+        } finally {
+            setLoadingRelationships(false);
+        }
+    };
+
+    const handleDeleteRelationship = async (relationshipId) => {
+        if (!confirm('Are you sure you want to remove this relationship?')) {
+            return;
+        }
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch(`/api/relationship/${relationshipId}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                fetchRelationships();
+                if (onUpdate) onUpdate();
+            } else {
+                alert("Failed to delete relationship");
+            }
+        } catch (error) {
+            console.error("Error deleting relationship:", error);
+            alert("Error deleting relationship");
+        }
     };
 
     if (!person) return null;
@@ -273,6 +341,41 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                                         <img src={item.url} alt="Attached" className="w-full h-full object-cover" />
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-8">
+                        <h4 className="font-semibold text-gray-700 mb-4">Relationships</h4>
+                        {loadingRelationships ? (
+                            <div className="text-center py-4 text-gray-500">Loading...</div>
+                        ) : relationships.length === 0 ? (
+                            <div className="bg-gray-50 rounded-lg p-4 text-center border border-dashed border-gray-300">
+                                <p className="text-sm text-gray-500">No relationships found</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {relationships.map((rel) => {
+                                    const typeLabel = rel.type === 'spouse' ? 'Spouse' :
+                                        rel.type === 'adoptive_parent_child' ? 'Adoptive' :
+                                            rel.type === 'step_parent_child' ? 'Step' :
+                                                rel.direction === 'from' ? 'Parent of' : 'Child of';
+
+                                    return (
+                                        <div key={rel.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
+                                            <div className="flex-1">
+                                                <div className="text-sm font-medium">{rel.otherPerson}</div>
+                                                <div className="text-xs text-gray-500">{typeLabel}</div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteRelationship(rel.id)}
+                                                className="text-xs text-red-600 hover:text-red-800 px-2 py-1 hover:bg-red-50 rounded"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

@@ -87,6 +87,7 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                 type: 'custom',
                 data: {
                     id: p.id, // Pass ID in data for easier access
+                    tree_id: p.tree_id, // Pass tree_id for relationship fetching
                     label: `${p.first_name} ${p.last_name || ''}`,
                     subline: `${p.dob ? new Date(p.dob).getFullYear() : '?'} - ${p.dod ? new Date(p.dod).getFullYear() : 'Present'}`,
                     profile_photo_url: p.profile_photo_url,
@@ -102,14 +103,31 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
             }));
 
             // Transform to React Flow edges
-            const initialEdges = relationships.map(r => ({
-                id: r.id,
-                source: r.person_1_id,
-                target: r.person_2_id,
-                type: 'smoothstep',
-                animated: true,
-                label: r.type === 'spouse' ? '❤️' : ''
-            }));
+            const initialEdges = relationships.map(r => {
+                let edgeStyle = {};
+                let label = '';
+
+                if (r.type === 'spouse') {
+                    label = '❤️';
+                } else if (r.type === 'adoptive_parent_child') {
+                    edgeStyle = { strokeDasharray: '5,5', stroke: '#10b981' };
+                    label = 'Adoptive';
+                } else if (r.type === 'step_parent_child') {
+                    edgeStyle = { strokeDasharray: '5,5', stroke: '#f59e0b' };
+                    label = 'Step';
+                }
+
+                return {
+                    id: r.id,
+                    source: r.person_1_id,
+                    target: r.person_2_id,
+                    type: 'smoothstep',
+                    animated: r.type === 'spouse',
+                    label,
+                    style: edgeStyle,
+                    data: { relationshipType: r.type, relationshipId: r.id }
+                };
+            });
 
             const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
                 initialNodes,
@@ -229,14 +247,26 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                 type: 'parent_child'
             };
 
-            if (action === 'add_parent') {
+            if (action === 'add_parent' || action === 'add_adoptive_parent' || action === 'add_step_parent') {
                 // New Person is Parent, Source is Child
                 relationshipPayload.person_1_id = newPerson.id;
                 relationshipPayload.person_2_id = sourceNodeId;
-            } else if (action === 'add_child') {
+
+                if (action === 'add_adoptive_parent') {
+                    relationshipPayload.type = 'adoptive_parent_child';
+                } else if (action === 'add_step_parent') {
+                    relationshipPayload.type = 'step_parent_child';
+                }
+            } else if (action === 'add_child' || action === 'add_adoptive_child' || action === 'add_step_child') {
                 // Source is Parent, New Person is Child
                 relationshipPayload.person_1_id = sourceNodeId;
                 relationshipPayload.person_2_id = newPerson.id;
+
+                if (action === 'add_adoptive_child') {
+                    relationshipPayload.type = 'adoptive_parent_child';
+                } else if (action === 'add_step_child') {
+                    relationshipPayload.type = 'step_parent_child';
+                }
             } else if (action === 'add_spouse') {
                 relationshipPayload.type = 'spouse';
                 relationshipPayload.person_1_id = sourceNodeId;
@@ -297,7 +327,7 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                 {menu && (
                     <div
                         style={{ top: menu.top, left: menu.left }}
-                        className="absolute z-50 bg-white border rounded shadow-lg p-2 w-48 flex flex-col gap-1"
+                        className="absolute z-50 bg-white border rounded shadow-lg p-2 w-56 flex flex-col gap-1"
                     >
                         <div className="text-xs font-bold text-gray-500 px-2 py-1 uppercase border-b mb-1">
                             Add Relative
@@ -306,19 +336,45 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                             className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
                             onClick={() => handleMenuAction('add_parent', menu.id)}
                         >
-                            Add Parent
+                            Add Biological Parent
                         </button>
                         <button
                             className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
-                            onClick={() => handleMenuAction('add_spouse', menu.id)}
+                            onClick={() => handleMenuAction('add_adoptive_parent', menu.id)}
                         >
-                            Add Spouse
+                            Add Adoptive Parent
                         </button>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_step_parent', menu.id)}
+                        >
+                            Add Step Parent
+                        </button>
+                        <div className="border-t my-1"></div>
                         <button
                             className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
                             onClick={() => handleMenuAction('add_child', menu.id)}
                         >
-                            Add Child
+                            Add Biological Child
+                        </button>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_adoptive_child', menu.id)}
+                        >
+                            Add Adoptive Child
+                        </button>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_step_child', menu.id)}
+                        >
+                            Add Step Child
+                        </button>
+                        <div className="border-t my-1"></div>
+                        <button
+                            className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                            onClick={() => handleMenuAction('add_spouse', menu.id)}
+                        >
+                            Add Spouse/Partner
                         </button>
                         <div className="border-t my-1"></div>
                         <button
