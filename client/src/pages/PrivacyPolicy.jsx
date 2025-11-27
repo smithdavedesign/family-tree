@@ -1,7 +1,7 @@
 export default function PrivacyPolicy() {
     return (
         <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
-            <h1>Privacy Policy</h1>
+            <h1>Privacy Policy for Family Tree</h1>
             <p><strong>Effective Date:</strong> January 1, 2025</p>
 
             <p>
