@@ -161,9 +161,73 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
 
     const handleMenuAction = async (action, sourceNodeId) => {
         setMenu(null);
-        // TODO: Implement the actual logic for adding relatives
-        console.log(`Action: ${action} for node ${sourceNodeId}`);
-        alert(`Coming soon: ${action}`);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            if (!token) {
+                alert("You must be logged in to edit the tree.");
+                return;
+            }
+
+            // 1. Create the new person
+            const newPersonResponse = await fetch('/api/person', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    tree_id: treeId,
+                    first_name: 'New',
+                    last_name: 'Person',
+                    gender: 'Unknown',
+                    bio: ''
+                })
+            });
+
+            if (!newPersonResponse.ok) throw new Error("Failed to create person");
+            const newPerson = await newPersonResponse.json();
+
+            // 2. Create the relationship
+            let relationshipPayload = {
+                tree_id: treeId,
+                type: 'parent_child'
+            };
+
+            if (action === 'add_parent') {
+                // New Person is Parent, Source is Child
+                relationshipPayload.person_1_id = newPerson.id;
+                relationshipPayload.person_2_id = sourceNodeId;
+            } else if (action === 'add_child') {
+                // Source is Parent, New Person is Child
+                relationshipPayload.person_1_id = sourceNodeId;
+                relationshipPayload.person_2_id = newPerson.id;
+            } else if (action === 'add_spouse') {
+                relationshipPayload.type = 'spouse';
+                relationshipPayload.person_1_id = sourceNodeId;
+                relationshipPayload.person_2_id = newPerson.id;
+            }
+
+            const relResponse = await fetch('/api/relationship', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(relationshipPayload)
+            });
+
+            if (!relResponse.ok) throw new Error("Failed to create relationship");
+
+            // 3. Refresh the tree
+            fetchTreeData();
+
+        } catch (error) {
+            console.error("Error adding relative:", error);
+            alert("Failed to add relative");
+        }
     };
 
     return (
