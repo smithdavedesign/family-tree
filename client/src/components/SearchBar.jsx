@@ -67,7 +67,7 @@ const SearchBar = ({ persons, onHighlight, onClear }) => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm md:text-base"
                     />
                 </div>
                 <button
@@ -79,9 +79,10 @@ const SearchBar = ({ persons, onHighlight, onClear }) => {
                 </button>
                 <button
                     onClick={handleSearch}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                    className="px-3 md:px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition text-sm md:text-base"
                 >
-                    Search
+                    <span className="hidden md:inline">Search</span>
+                    <Search className="w-5 h-5 md:hidden" />
                 </button>
                 {(searchQuery || yearFrom || yearTo) && (
                     <button
