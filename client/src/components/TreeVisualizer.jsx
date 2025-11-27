@@ -159,6 +159,19 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
         fetchTreeData();
     }, [fetchTreeData]);
 
+    // Update node highlighting when highlightedNodes changes
+    useEffect(() => {
+        setNodes((nds) =>
+            nds.map((node) => ({
+                ...node,
+                data: {
+                    ...node.data,
+                    highlighted: highlightedNodes.includes(node.id)
+                }
+            }))
+        );
+    }, [highlightedNodes, setNodes]);
+
     const onConnect = useCallback(
         (params) =>
             setEdges((eds) =>
