@@ -90,7 +90,13 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                     label: `${p.first_name} ${p.last_name || ''}`,
                     subline: `${p.dob ? new Date(p.dob).getFullYear() : '?'} - ${p.dod ? new Date(p.dod).getFullYear() : 'Present'}`,
                     profile_photo_url: p.profile_photo_url,
-                    bio: p.bio // Pass bio for side panel
+                    bio: p.bio, // Pass bio for side panel
+                    // Pass raw fields for editing
+                    first_name: p.first_name,
+                    last_name: p.last_name,
+                    gender: p.gender,
+                    dob: p.dob,
+                    dod: p.dod
                 },
                 position: { x: 0, y: 0 } // Layout will handle this
             }));
