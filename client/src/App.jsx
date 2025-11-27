@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react
 import TreePage from './pages/TreePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { signInWithGoogle, signOut, getCurrentUser, supabase } from './auth';
+import { ToastContainer } from './components/Toast';
 
 function Home() {
   const navigate = useNavigate();
@@ -26,14 +27,14 @@ function Home() {
         const token = session?.access_token;
 
         const response = await fetch('/api/trees', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token} ` }
         });
 
         if (response.ok) {
           const trees = await response.json();
           if (trees.length > 0) {
             console.log("Found tree, redirecting...", trees[0].id);
-            navigate(`/tree/${trees[0].id}`);
+            navigate(`/ tree / ${trees[0].id} `);
             return;
           }
         }
@@ -54,10 +55,10 @@ function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token} `
         },
         body: JSON.stringify({
-          name: `${user.email?.split('@')[0]}'s Family Tree`
+          name: `${user.email?.split('@')[0]} 's Family Tree`
         })
       });
 
@@ -115,6 +116,7 @@ function Home() {
 function App() {
   return (
     <Router>
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/tree/:id" element={<TreePage />} />

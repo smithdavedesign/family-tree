@@ -13,6 +13,8 @@ import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import { supabase } from '../auth';
 import { Undo, Redo } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorMessage from './ErrorMessage';
 
 const nodeTypes = {
     custom: CustomNode,
@@ -541,26 +543,17 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
 
             {loading && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading family tree...</p>
-                    </div>
+                    <LoadingSpinner size="lg" message="Loading family tree..." />
                 </div>
             )}
 
             {error && (
                 <div className="absolute inset-0 bg-white flex items-center justify-center z-50">
-                    <div className="text-center p-8">
-                        <div className="text-red-500 text-5xl mb-4">⚠️</div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-2">Failed to Load Tree</h3>
-                        <p className="text-gray-600 mb-4">{error}</p>
-                        <button
-                            onClick={fetchTreeData}
-                            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
-                        >
-                            Try Again
-                        </button>
-                    </div>
+                    <ErrorMessage
+                        message="Failed to Load Tree"
+                        details={error}
+                        onRetry={fetchTreeData}
+                    />
                 </div>
             )}
         </div>
