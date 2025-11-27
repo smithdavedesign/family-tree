@@ -5,6 +5,7 @@ import { supabase } from '../auth';
 const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => {
     const [step, setStep] = useState(1); // 1: Choose type, 2: Choose person
     const [relationshipType, setRelationshipType] = useState('');
+    const [isParentRelationship, setIsParentRelationship] = useState(false);
     const [availablePersons, setAvailablePersons] = useState([]);
     const [filteredPersons, setFilteredPersons] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +53,9 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
         }
     };
 
-    const handleTypeSelect = (type) => {
+    const handleTypeSelect = (type, isParent = false) => {
         setRelationshipType(type);
+        setIsParentRelationship(isParent);
         setStep(2);
     };
 
@@ -70,12 +72,12 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                 // For spouse, order doesn't matter
                 person_1_id = currentPerson.id;
                 person_2_id = selectedPerson.id;
-            } else if (relationshipType.includes('parent')) {
-                // Current person is the parent
+            } else if (isParentRelationship) {
+                // Selected person is the child, current person is the parent
                 person_1_id = currentPerson.id;
                 person_2_id = selectedPerson.id;
-            } else if (relationshipType.includes('child')) {
-                // Current person is the child
+            } else {
+                // Selected person is the parent, current person is the child
                 person_1_id = selectedPerson.id;
                 person_2_id = currentPerson.id;
             }
@@ -111,6 +113,7 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
     const handleClose = () => {
         setStep(1);
         setRelationshipType('');
+        setIsParentRelationship(false);
         setSearchQuery('');
         onClose();
     };
@@ -148,7 +151,7 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                             {relationshipTypes.map((type, idx) => (
                                 <button
                                     key={idx}
-                                    onClick={() => handleTypeSelect(type.isParent ? type.value + '_parent' : type.value)}
+                                    onClick={() => handleTypeSelect(type.value, type.isParent)}
                                     className="w-full text-left p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition"
                                 >
                                     <div className="font-medium">{type.label}</div>
