@@ -42,15 +42,15 @@ const TreePage = () => {
             </header>
             <div className="flex-grow relative">
                 <TreeVisualizer treeId={id} onNodeClick={handleNodeClick} key={refreshTrigger} />
-
-                {selectedPerson && (
-                    <SidePanel
-                        person={selectedPerson}
-                        onClose={handleClosePanel}
-                        onUpdate={handleUpdate}
-                    />
-                )}
             </div>
+
+            {selectedPerson && (
+                <SidePanel
+                    person={selectedPerson}
+                    onClose={handleClosePanel}
+                    onUpdate={handleUpdate}
+                />
+            )}
         </div>
     );
 };
