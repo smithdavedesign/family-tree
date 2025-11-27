@@ -82,18 +82,22 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                 person_2_id = currentPerson.id;
             }
 
+            const payload = {
+                tree_id: currentPerson.data.tree_id,
+                person_1_id,
+                person_2_id,
+                type: relationshipType
+            };
+
+            console.log("Creating relationship with payload:", payload);
+
             const response = await fetch('/api/relationship', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    tree_id: currentPerson.data.tree_id,
-                    person_1_id,
-                    person_2_id,
-                    type: relationshipType
-                })
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {
