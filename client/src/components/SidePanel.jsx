@@ -204,7 +204,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
 
     return (
         <>
-            <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-40 overflow-y-auto border-l">
+            <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto border-l border-4 border-red-500">
                 <div className="p-6">
                     <div className="flex justify-between items-start mb-6">
                         <h2 className="text-2xl font-bold text-gray-800">Person Details</h2>
