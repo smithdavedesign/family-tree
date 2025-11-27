@@ -15,6 +15,7 @@ router.get('/tree/:id', requireAuth, treeController.getTree);
 router.post('/person', requireAuth, personController.createPerson);
 router.put('/person/:id', requireAuth, personController.updatePerson);
 router.delete('/person/:id', requireAuth, personController.deletePerson);
+router.post('/person/merge', requireAuth, personController.mergePersons);
 router.get('/person/:id/media', requireAuth, mediaController.getMediaForPerson);
 
 // Relationship routes

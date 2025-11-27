@@ -1,13 +1,13 @@
 const { supabase } = require('../middleware/auth');
 
 exports.createRelationship = async (req, res) => {
-    const { tree_id, person_1_id, person_2_id, type } = req.body;
+    const { id, tree_id, person_1_id, person_2_id, type } = req.body;
 
     // MOCK MODE
     if (process.env.USE_MOCK === 'true') {
         const { MOCK_RELATIONSHIPS } = require('../mockData');
         const newRel = {
-            id: `mock-r-${Date.now()}`,
+            id: id || `mock-r-${Date.now()}`,
             tree_id, person_1_id, person_2_id, type
         };
         MOCK_RELATIONSHIPS.push(newRel);
@@ -15,11 +15,12 @@ exports.createRelationship = async (req, res) => {
     }
 
     try {
+        const payload = { tree_id, person_1_id, person_2_id, type };
+        if (id) payload.id = id;
+
         const { data, error } = await supabase
             .from('relationships')
-            .insert([
-                { tree_id, person_1_id, person_2_id, type }
-            ])
+            .insert([payload])
             .select()
             .single();
 

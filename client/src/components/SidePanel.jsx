@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import PhotoPicker from './PhotoPicker';
+import MergeModal from './MergeModal';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate }) => {
@@ -11,6 +12,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
     const [formData, setFormData] = useState({});
     const [relationships, setRelationships] = useState([]);
     const [loadingRelationships, setLoadingRelationships] = useState(false);
+    const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
 
     useEffect(() => {
         if (person) {
@@ -28,6 +30,8 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                 bio: person.data.bio || '',
                 dob: person.data.dob || '',
                 dod: person.data.dod || '',
+                occupation: person.data.occupation || '',
+                pob: person.data.pob || '',
             });
             setIsEditing(false);
         }
@@ -312,6 +316,24 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Occupation</label>
+                                    <input
+                                        name="occupation"
+                                        value={formData.occupation}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded text-sm"
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Place of Birth</label>
+                                    <input
+                                        name="pob"
+                                        value={formData.pob}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded text-sm"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -398,13 +420,33 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
+                    <div className="mt-8 pt-4 border-t">
+                        <h4 className="font-semibold text-red-700 mb-2">Danger Zone</h4>
+                        <button
+                            onClick={() => setIsMergeModalOpen(true)}
+                            className="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 text-sm font-medium"
+                        >
+                            Merge Duplicate...
+                        </button>
+                    </div>
+                </div >
+            </div >
 
             <PhotoPicker
                 isOpen={isPhotoPickerOpen}
                 onClose={() => setIsPhotoPickerOpen(false)}
                 onSelect={handlePhotoSelect}
+            />
+
+            <MergeModal
+                isOpen={isMergeModalOpen}
+                onClose={() => setIsMergeModalOpen(false)}
+                currentPerson={person}
+                onMergeSuccess={() => {
+                    setIsMergeModalOpen(false);
+                    onClose(); // Close side panel as this person might be the one kept, but let's just close to refresh
+                    if (onUpdate) onUpdate();
+                }}
             />
         </>
     );

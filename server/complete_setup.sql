@@ -54,7 +54,7 @@ create table if not exists public.relationships (
   tree_id uuid references public.trees(id) on delete cascade not null,
   person_1_id uuid references public.persons(id) on delete cascade not null,
   person_2_id uuid references public.persons(id) on delete cascade not null,
-  type text check (type in ('parent_child', 'spouse')) not null,
+  type text check (type in ('parent_child', 'spouse', 'adoptive_parent_child', 'step_parent_child')) not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
