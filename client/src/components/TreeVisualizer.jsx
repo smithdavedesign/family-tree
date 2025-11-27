@@ -56,13 +56,18 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes, edges };
 };
 
-const TreeVisualizer = ({ treeId, onNodeClick }) => {
+const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [history, setHistory] = useState({ past: [], future: [] });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const fetchTreeData = useCallback(async () => {
         if (!treeId) return;
+
+        setLoading(true);
+        setError(null);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -101,7 +106,8 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                     dob: p.dob,
                     dod: p.dod,
                     occupation: p.occupation,
-                    pob: p.pob
+                    pob: p.pob,
+                    highlighted: highlightedNodes.includes(p.id)
                 },
                 position: { x: 0, y: 0 } // Layout will handle this
             }));
@@ -140,9 +146,12 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
 
             setNodes(layoutedNodes);
             setEdges(layoutedEdges);
+            setLoading(false);
 
         } catch (error) {
             console.error("Error loading tree:", error);
+            setError(error.message || "Failed to load tree");
+            setLoading(false);
         }
     }, [treeId, setNodes, setEdges]);
 
@@ -516,6 +525,31 @@ const TreeVisualizer = ({ treeId, onNodeClick }) => {
                     </div>
                 )}
             </ReactFlow>
+
+            {loading && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading family tree...</p>
+                    </div>
+                </div>
+            )}
+
+            {error && (
+                <div className="absolute inset-0 bg-white flex items-center justify-center z-50">
+                    <div className="text-center p-8">
+                        <div className="text-red-500 text-5xl mb-4">⚠️</div>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">Failed to Load Tree</h3>
+                        <p className="text-gray-600 mb-4">{error}</p>
+                        <button
+                            onClick={fetchTreeData}
+                            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
