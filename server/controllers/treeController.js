@@ -101,30 +101,7 @@ exports.createTree = async (req, res) => {
             return res.status(201).json(newTree);
         }
 
-        // 1. Ensure user profile exists in public.users
-        const { data: existingUser } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', userId)
-            .single();
-
-        if (!existingUser) {
-            // Create user profile
-            const { error: userError } = await supabase
-                .from('users')
-                .insert([{
-                    id: userId,
-                    email: req.user.email,
-                    avatar_url: req.user.user_metadata?.avatar_url
-                }]);
-
-            if (userError) {
-                console.error('Error creating user profile:', userError);
-                // Continue anyway - the tree creation is more important
-            }
-        }
-
-        // 2. Create the tree
+        // Create the tree
         const { data: tree, error: treeError } = await supabase
             .from('trees')
             .insert([{
@@ -137,7 +114,7 @@ exports.createTree = async (req, res) => {
 
         if (treeError) throw treeError;
 
-        // 3. Create a root person (the user themselves)
+        // Create a root person (the user themselves)
         const { data: rootPerson, error: personError } = await supabase
             .from('persons')
             .insert([{
