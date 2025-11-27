@@ -7,13 +7,17 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const [nextPageToken, setNextPageToken] = useState(null);
+
     useEffect(() => {
         if (isOpen) {
+            setPhotos([]); // Reset photos when opening
+            setNextPageToken(null);
             fetchPhotos();
         }
     }, [isOpen]);
 
-    const fetchPhotos = async () => {
+    const fetchPhotos = async (pageToken = null) => {
         setLoading(true);
         setError(null);
         try {
@@ -24,7 +28,12 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                 throw new Error('No Google Photos access token found. Please sign out and sign in again with Google Photos access.');
             }
 
-            const response = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20', {
+            let url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20';
+            if (pageToken) {
+                url += `&pageToken=${pageToken}`;
+            }
+
+            const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${providerToken}`
                 }
@@ -36,12 +45,25 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             }
 
             const data = await response.json();
-            setPhotos(data.mediaItems || []);
+
+            if (pageToken) {
+                setPhotos(prev => [...prev, ...(data.mediaItems || [])]);
+            } else {
+                setPhotos(data.mediaItems || []);
+            }
+
+            setNextPageToken(data.nextPageToken || null);
         } catch (err) {
             console.error("Error fetching photos:", err);
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadMore = () => {
+        if (nextPageToken) {
+            fetchPhotos(nextPageToken);
         }
     };
 
@@ -90,6 +112,17 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                                     />
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {nextPageToken && !loading && (
+                        <div className="mt-4 flex justify-center">
+                            <button
+                                onClick={loadMore}
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition"
+                            >
+                                Load More Photos
+                            </button>
                         </div>
                     )}
                 </div>
