@@ -77,3 +77,86 @@ exports.getUserTrees = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.createTree = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Tree name is required' });
+        }
+
+        // MOCK MODE
+        if (process.env.USE_MOCK === 'true') {
+            const { MOCK_TREES } = require('../mockData');
+            const newTree = {
+                id: `mock-tree-${Date.now()}`,
+                name,
+                owner_id: userId,
+                is_public: false,
+                created_at: new Date().toISOString()
+            };
+            MOCK_TREES.push(newTree);
+            return res.status(201).json(newTree);
+        }
+
+        // 1. Ensure user profile exists in public.users
+        const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', userId)
+            .single();
+
+        if (!existingUser) {
+            // Create user profile
+            const { error: userError } = await supabase
+                .from('users')
+                .insert([{
+                    id: userId,
+                    email: req.user.email,
+                    avatar_url: req.user.user_metadata?.avatar_url
+                }]);
+
+            if (userError) {
+                console.error('Error creating user profile:', userError);
+                // Continue anyway - the tree creation is more important
+            }
+        }
+
+        // 2. Create the tree
+        const { data: tree, error: treeError } = await supabase
+            .from('trees')
+            .insert([{
+                name,
+                owner_id: userId,
+                is_public: false
+            }])
+            .select()
+            .single();
+
+        if (treeError) throw treeError;
+
+        // 3. Create a root person (the user themselves)
+        const { data: rootPerson, error: personError } = await supabase
+            .from('persons')
+            .insert([{
+                tree_id: tree.id,
+                first_name: 'Me',
+                last_name: '',
+                bio: 'This is you! Click to edit your details.'
+            }])
+            .select()
+            .single();
+
+        if (personError) {
+            console.error('Error creating root person:', personError);
+            // Tree is created, so we can still return success
+        }
+
+        res.status(201).json(tree);
+    } catch (error) {
+        console.error('Error creating tree:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

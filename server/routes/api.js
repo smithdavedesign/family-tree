@@ -8,6 +8,7 @@ const mediaController = require('../controllers/mediaController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
+router.post('/trees', requireAuth, treeController.createTree);
 router.get('/tree/:id', requireAuth, treeController.getTree);
 
 // Person routes
