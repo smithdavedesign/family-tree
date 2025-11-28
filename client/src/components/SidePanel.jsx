@@ -206,75 +206,85 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
 
     return (
         <>
-            <div className="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto border-l">
-                <div className="p-4 md:p-6">
-                    <div className="flex justify-between items-start mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800">Person Details</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
-                            <X className="w-6 h-6 text-gray-500" />
-                        </button>
-                    </div>
+            <div className="h-full w-full bg-white flex flex-col">
+                {/* Header */}
+                <div className="p-4 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-slate-800">Person Details</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-slate-500" />
+                    </button>
+                </div>
 
-                    <div className="flex flex-col items-center mb-8">
-                        <div className="w-32 h-32 rounded-full bg-gray-200 overflow-hidden mb-4 border-4 border-white shadow-lg relative group">
-                            {person.data.profile_photo_url ? (
-                                <img src={person.data.profile_photo_url} alt={person.data.label} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-4xl">👤</div>
-                            )}
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8">
+                    {/* Profile Section */}
+                    <div className="flex flex-col items-center">
+                        <div className="relative group">
+                            <div className="w-32 h-32 rounded-full bg-slate-100 overflow-hidden border-4 border-white shadow-xl ring-1 ring-slate-100">
+                                {person.data.profile_photo_url ? (
+                                    <img src={person.data.profile_photo_url} alt={person.data.label} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-4xl text-slate-300">
+                                        <ImageIcon className="w-12 h-12" />
+                                    </div>
+                                )}
+                            </div>
                             <button
                                 onClick={() => setIsPhotoPickerOpen(true)}
-                                className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white font-medium"
+                                className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
+                                title="Change Photo"
                             >
-                                Change Photo
+                                <ImageIcon className="w-4 h-4" />
                             </button>
                         </div>
 
                         {!isEditing ? (
-                            <>
-                                <h3 className="text-xl font-bold">{person.data.label}</h3>
-                                <p className="text-gray-500">{person.data.subline}</p>
+                            <div className="text-center mt-4 space-y-1">
+                                <h3 className="text-2xl font-bold text-slate-800">{person.data.label}</h3>
+                                <p className="text-slate-500 font-medium">{person.data.subline}</p>
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="mt-2 text-sm text-blue-600 hover:underline"
+                                    className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline mt-2 inline-block"
                                 >
                                     Edit Details
                                 </button>
-                            </>
+                            </div>
                         ) : (
-                            <div className="w-full space-y-3">
-                                <div className="grid grid-cols-2 gap-2">
+                            <div className="w-full mt-6 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs font-semibold text-gray-500">First Name</label>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">First Name</label>
                                         <input
                                             name="first_name"
                                             value={formData.first_name}
                                             onChange={handleChange}
-                                            className="w-full p-2 border rounded text-sm"
+                                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                            placeholder="First Name"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-semibold text-gray-500">Last Name</label>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Last Name</label>
                                         <input
                                             name="last_name"
                                             value={formData.last_name}
                                             onChange={handleChange}
-                                            className="w-full p-2 border rounded text-sm"
+                                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                            placeholder="Last Name"
                                         />
                                     </div>
                                 </div>
-                                <div className="flex justify-end gap-2 mt-2">
+                                <div className="flex justify-end gap-2 pt-2">
                                     <button
                                         onClick={() => setIsEditing(false)}
-                                        className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={() => handleSave()}
-                                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                                        className="px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-sm transition-colors"
                                     >
-                                        Save
+                                        Save Changes
                                     </button>
                                 </div>
                             </div>
@@ -282,36 +292,36 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                     </div>
 
                     {isEditing && (
-                        <div className="mb-8 space-y-4 border-t pt-4">
-                            <h4 className="font-semibold text-gray-700">Vital Statistics</h4>
+                        <div className="space-y-4 animate-fadeIn">
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Birth Date</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Birth Date</label>
                                     <input
                                         type="date"
                                         name="dob"
                                         value={formData.dob ? formData.dob.split('T')[0] : ''}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded text-sm"
+                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Death Date</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Death Date</label>
                                     <input
                                         type="date"
                                         name="dod"
                                         value={formData.dod ? formData.dod.split('T')[0] : ''}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded text-sm"
+                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Gender</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</label>
                                     <select
                                         name="gender"
                                         value={formData.gender}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded text-sm"
+                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                     >
                                         <option value="">Select...</option>
                                         <option value="Male">Male</option>
@@ -320,71 +330,80 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                                     </select>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Occupation</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Occupation</label>
                                     <input
                                         name="occupation"
                                         value={formData.occupation}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded text-sm"
+                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                        placeholder="e.g. Engineer"
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Place of Birth</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Place of Birth</label>
                                     <input
                                         name="pob"
                                         value={formData.pob}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded text-sm"
+                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                        placeholder="e.g. New York, USA"
                                     />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="mb-8">
+                    {/* Photos Section */}
+                    <div>
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-semibold text-gray-700">Photos</h4>
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Photos</h4>
                             <button
                                 onClick={() => setIsPhotoPickerOpen(true)}
-                                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
                             >
-                                <Plus className="w-4 h-4" /> Add Photo
+                                <Plus className="w-3 h-3" /> Add Photo
                             </button>
                         </div>
 
                         {loadingMedia ? (
-                            <div className="text-center py-4 text-gray-500">Loading photos...</div>
+                            <div className="flex justify-center py-8">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600"></div>
+                            </div>
                         ) : media.length === 0 ? (
-                            <div className="bg-gray-50 rounded-lg p-8 text-center border border-dashed border-gray-300">
-                                <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">No photos attached yet</p>
+                            <div className="bg-slate-50 rounded-xl p-6 text-center border-2 border-dashed border-slate-200">
+                                <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500">No photos attached yet</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-3">
                                 {media.map((item) => (
-                                    <div key={item.id} className="aspect-square rounded-lg overflow-hidden border">
+                                    <div key={item.id} className="aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow group relative">
                                         <img src={item.url} alt="Attached" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    <div className="mb-8">
+                    {/* Relationships Section */}
+                    <div>
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-semibold text-gray-700">Relationships</h4>
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
                             <button
                                 onClick={() => setIsAddRelationshipOpen(true)}
-                                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
                             >
-                                <Plus className="w-4 h-4" /> Add
+                                <Plus className="w-3 h-3" /> Add
                             </button>
                         </div>
                         {loadingRelationships ? (
-                            <div className="text-center py-4 text-gray-500">Loading...</div>
+                            <div className="flex justify-center py-4">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
+                            </div>
                         ) : relationships.length === 0 ? (
-                            <div className="bg-gray-50 rounded-lg p-4 text-center border border-dashed border-gray-300">
-                                <p className="text-sm text-gray-500">No relationships found</p>
+                            <div className="bg-slate-50 rounded-xl p-4 text-center border-2 border-dashed border-slate-200">
+                                <p className="text-sm text-slate-500">No relationships found</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -395,14 +414,14 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                                                 rel.direction === 'from' ? 'Parent of' : 'Child of';
 
                                     return (
-                                        <div key={rel.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
+                                        <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
                                             <div className="flex-1">
-                                                <div className="text-sm font-medium">{rel.otherPerson}</div>
-                                                <div className="text-xs text-gray-500">{typeLabel}</div>
+                                                <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
+                                                <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
                                             </div>
                                             <button
                                                 onClick={() => handleDeleteRelationship(rel.id)}
-                                                className="text-xs text-red-600 hover:text-red-800 px-2 py-1 hover:bg-red-50 rounded"
+                                                className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded font-medium transition-colors"
                                             >
                                                 Remove
                                             </button>
@@ -413,35 +432,37 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                         )}
                     </div>
 
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-uppercase text-gray-500 font-semibold mb-1">Bio</label>
-                            {isEditing ? (
-                                <textarea
-                                    name="bio"
-                                    value={formData.bio}
-                                    onChange={handleChange}
-                                    rows={4}
-                                    className="w-full p-3 border rounded text-sm"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border">
-                                    {person.data.bio || "No biography available."}
-                                </p>
-                            )}
-                        </div>
+                    {/* Bio Section */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
+                        {isEditing ? (
+                            <textarea
+                                name="bio"
+                                value={formData.bio}
+                                onChange={handleChange}
+                                rows={4}
+                                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                placeholder="Write something about this person..."
+                            />
+                        ) : (
+                            <div className="text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">
+                                {person.data.bio || "No biography available."}
+                            </div>
+                        )}
                     </div>
-                    <div className="mt-8 pt-4 border-t">
-                        <h4 className="font-semibold text-red-700 mb-2">Danger Zone</h4>
+
+                    {/* Danger Zone */}
+                    <div className="pt-6 border-t border-slate-100">
                         <button
                             onClick={() => setIsMergeModalOpen(true)}
-                            className="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 text-sm font-medium"
+                            className="w-full py-3 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2"
                         >
-                            Merge Duplicate...
+                            Merge Duplicate Person
                         </button>
                     </div>
-                </div >
-            </div >
+                </div>
+            </div>
+
 
             <PhotoPicker
                 isOpen={isPhotoPickerOpen}

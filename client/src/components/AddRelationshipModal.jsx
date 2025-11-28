@@ -135,69 +135,81 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
     ];
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
-                <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-semibold">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col border border-slate-200 overflow-hidden transform transition-all">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h2 className="text-lg font-bold text-slate-800">
                         {step === 1 ? 'Add Relationship' : `Select ${relationshipType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`}
                     </h2>
-                    <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-full">
-                        <X className="w-6 h-6" />
+                    <button onClick={handleClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-slate-500" />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6">
                     {step === 1 ? (
-                        <div className="space-y-2">
-                            <p className="text-sm text-gray-600 mb-4">
-                                Choose the type of relationship to add for <strong>{currentPerson.data.label}</strong>
+                        <div className="space-y-3">
+                            <p className="text-sm text-slate-600 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                Choose the type of relationship to add for <strong className="text-blue-800">{currentPerson.data.label}</strong>
                             </p>
-                            {relationshipTypes.map((type, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleTypeSelect(type.value, type.isParent)}
-                                    className="w-full text-left p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition"
-                                >
-                                    <div className="font-medium">{type.label}</div>
-                                    <div className="text-sm text-gray-500">{type.description}</div>
-                                </button>
-                            ))}
+                            <div className="grid gap-2">
+                                {relationshipTypes.map((type, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleTypeSelect(type.value, type.isParent)}
+                                        className="w-full text-left p-4 border border-slate-200 rounded-xl hover:bg-teal-50 hover:border-teal-200 transition-all group"
+                                    >
+                                        <div className="font-bold text-slate-700 group-hover:text-teal-800">{type.label}</div>
+                                        <div className="text-xs text-slate-500 group-hover:text-teal-600">{type.description}</div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     ) : (
-                        <div>
+                        <div className="flex flex-col h-full">
                             <div className="mb-4">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                                     <input
                                         type="text"
                                         placeholder="Search by name..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all text-sm"
+                                        autoFocus
                                     />
                                 </div>
                             </div>
 
                             {loading ? (
-                                <div className="text-center py-8 text-gray-500">Loading...</div>
+                                <div className="flex justify-center py-12">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                                </div>
                             ) : filteredPersons.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    {searchQuery ? 'No matching persons found' : 'No other persons in this tree'}
+                                <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                    <p className="text-slate-500 text-sm font-medium">
+                                        {searchQuery ? 'No matching persons found' : 'No other persons in this tree'}
+                                    </p>
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-2 overflow-y-auto max-h-[400px] pr-1">
                                     {filteredPersons.map((person) => (
                                         <button
                                             key={person.id}
                                             onClick={() => handlePersonSelect(person)}
-                                            className="w-full text-left p-3 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition"
+                                            className="w-full text-left p-3 border border-slate-100 rounded-xl hover:bg-teal-50 hover:border-teal-200 transition-all flex justify-between items-center group"
                                         >
-                                            <div className="font-medium">{person.first_name} {person.last_name || ''}</div>
-                                            {person.dob && (
-                                                <div className="text-sm text-gray-500">
-                                                    Born: {new Date(person.dob).getFullYear()}
-                                                </div>
-                                            )}
+                                            <div>
+                                                <div className="font-bold text-slate-700 group-hover:text-teal-900">{person.first_name} {person.last_name || ''}</div>
+                                                {person.dob && (
+                                                    <div className="text-xs text-slate-500 group-hover:text-teal-700">
+                                                        Born: {new Date(person.dob).getFullYear()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-teal-200 group-hover:text-teal-700 transition-colors">
+                                                <span className="text-lg">+</span>
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
@@ -205,7 +217,7 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
 
                             <button
                                 onClick={() => setStep(1)}
-                                className="mt-4 w-full py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                                className="mt-6 w-full py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                             >
                                 ← Back to relationship types
                             </button>

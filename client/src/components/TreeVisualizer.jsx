@@ -16,9 +16,7 @@ import { Undo, Redo, TreePine, Plus } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 
-const nodeTypes = {
-    custom: CustomNode,
-};
+
 
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -59,6 +57,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 };
 
 const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
+    const nodeTypes = React.useMemo(() => ({ custom: CustomNode }), []);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [history, setHistory] = useState({ past: [], future: [] });
@@ -467,31 +466,36 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
             >
-                <Controls />
-                <Background color="#aaa" gap={16} />
-                <Panel position="top-right" className="flex gap-2">
-                    <div className="flex bg-white rounded shadow overflow-hidden">
-                        <button
-                            onClick={handleUndo}
-                            disabled={history.past.length === 0}
-                            className="p-2 hover:bg-gray-100 disabled:opacity-50 border-r"
-                            title="Undo"
-                        >
-                            <Undo size={16} />
-                        </button>
-                        <button
-                            onClick={handleRedo}
-                            disabled={history.future.length === 0}
-                            className="p-2 hover:bg-gray-100 disabled:opacity-50"
-                            title="Redo"
-                        >
-                            <Redo size={16} />
-                        </button>
-                    </div>
-                    <button className="bg-white p-2 rounded shadow text-sm font-medium" onClick={() => fetchTreeData()}>
-                        Refresh
+                <Panel position="top-left" className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
+                    <button
+                        onClick={handleUndo}
+                        disabled={history.past.length === 0}
+                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
+                        title="Undo"
+                    >
+                        <Undo className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={handleRedo}
+                        disabled={history.future.length === 0}
+                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
+                        title="Redo"
+                    >
+                        <Redo className="w-5 h-5" />
+                    </button>
+                    <div className="w-px bg-slate-200 mx-1" />
+                    <button
+                        onClick={() => handleMenuAction('add_root')}
+                        className="p-2 rounded-lg hover:bg-teal-50 text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-2 font-medium text-sm"
+                        title="Add Root Person"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Root</span>
                     </button>
                 </Panel>
+
+                <Controls className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4" />
+                <Background color="#cbd5e1" gap={16} />
                 {menu && (
                     <div
                         style={{ top: menu.top, left: menu.left }}

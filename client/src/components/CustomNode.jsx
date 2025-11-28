@@ -3,27 +3,41 @@ import { Handle, Position } from 'reactflow';
 
 const CustomNode = ({ data }) => {
     const highlightClass = data.highlighted
-        ? 'border-yellow-400 bg-yellow-50 shadow-xl ring-4 ring-yellow-200'
-        : 'border-stone-400 bg-white';
+        ? 'ring-4 ring-yellow-300 shadow-xl scale-105'
+        : 'border-slate-200 hover:border-teal-400 hover:shadow-lg';
 
     return (
-        <div className={`px-4 py-2 shadow-md rounded-md border-2 w-64 cursor-pointer hover:border-teal-500 hover:shadow-lg transition-all ${highlightClass}`}>
-            <div className="flex items-center">
-                <div className="rounded-full w-12 h-12 flex justify-center items-center bg-gray-100 overflow-hidden mr-3">
-                    {data.profile_photo_url ? (
-                        <img src={data.profile_photo_url} alt={data.label} className="w-full h-full object-cover" />
-                    ) : (
-                        <span className="text-2xl">👤</span>
-                    )}
+        <div className={`w-72 bg-white rounded-xl shadow-md border transition-all duration-300 group ${highlightClass}`}>
+            <div className="flex items-center p-3">
+                <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-slate-100 overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100 flex items-center justify-center text-2xl">
+                        {data.profile_photo_url ? (
+                            <img src={data.profile_photo_url} alt={data.label} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="opacity-50">👤</span>
+                        )}
+                    </div>
+                    {data.gender === 'Male' && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs border border-white shadow-sm">♂</div>}
+                    {data.gender === 'Female' && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs border border-white shadow-sm">♀</div>}
                 </div>
-                <div>
-                    <div className="text-lg font-bold">{data.label}</div>
-                    <div className="text-gray-500 text-sm">{data.subline}</div>
+
+                <div className="ml-4 flex-1 min-w-0">
+                    <div className="text-sm font-bold text-slate-800 truncate group-hover:text-teal-700 transition-colors">
+                        {data.label}
+                    </div>
+                    <div className="text-xs text-slate-500 font-medium truncate">
+                        {data.subline}
+                    </div>
+                    {data.occupation && (
+                        <div className="text-[10px] text-slate-400 mt-1 truncate uppercase tracking-wide">
+                            {data.occupation}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <Handle type="target" position={Position.Top} className="w-16 !bg-teal-500" />
-            <Handle type="source" position={Position.Bottom} className="w-16 !bg-teal-500" />
+            <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-slate-400 group-hover:!bg-teal-500 transition-colors" />
+            <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-slate-400 group-hover:!bg-teal-500 transition-colors" />
         </div>
     );
 };

@@ -57,29 +57,29 @@ const SearchBar = ({ persons, onHighlight, onClear }) => {
     };
 
     return (
-        <div className="bg-white border-b shadow-sm">
-            <div className="p-3 flex gap-2">
+        <div className="bg-white border-b border-slate-200 shadow-sm z-30 relative">
+            <div className="p-3 flex gap-2 max-w-4xl mx-auto">
                 <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
                         placeholder="Search by name..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm md:text-base"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all text-sm md:text-base placeholder-slate-400 text-slate-800"
                     />
                 </div>
                 <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-3 py-2 border rounded-lg hover:bg-gray-50 transition ${showFilters ? 'bg-gray-100' : ''}`}
+                    className={`px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors text-slate-600 ${showFilters ? 'bg-slate-100 border-slate-300 text-teal-600' : ''}`}
                     title="Filters"
                 >
                     <Filter className="w-5 h-5" />
                 </button>
                 <button
                     onClick={handleSearch}
-                    className="px-3 md:px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition text-sm md:text-base"
+                    className="px-3 md:px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-sm hover:shadow transition-all text-sm md:text-base font-medium"
                 >
                     <span className="hidden md:inline">Search</span>
                     <Search className="w-5 h-5 md:hidden" />
@@ -87,7 +87,7 @@ const SearchBar = ({ persons, onHighlight, onClear }) => {
                 {(searchQuery || yearFrom || yearTo) && (
                     <button
                         onClick={handleClear}
-                        className="px-3 py-2 border rounded-lg hover:bg-gray-50 transition"
+                        className="px-3 py-2 border border-slate-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors text-slate-500"
                         title="Clear"
                     >
                         <X className="w-5 h-5" />
@@ -96,39 +96,41 @@ const SearchBar = ({ persons, onHighlight, onClear }) => {
             </div>
 
             {showFilters && (
-                <div className="px-3 pb-3 border-t bg-gray-50">
-                    <div className="pt-3 space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Year</label>
-                            <div className="flex gap-2 items-center">
-                                <input
-                                    type="number"
-                                    placeholder="From"
-                                    value={yearFrom}
-                                    onChange={(e) => setYearFrom(e.target.value)}
-                                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                />
-                                <span className="text-gray-500">to</span>
-                                <input
-                                    type="number"
-                                    placeholder="To"
-                                    value={yearTo}
-                                    onChange={(e) => setYearTo(e.target.value)}
-                                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                />
+                <div className="px-3 pb-4 border-t border-slate-100 bg-slate-50/50 backdrop-blur-sm">
+                    <div className="pt-4 space-y-4 max-w-4xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filter by Year</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="number"
+                                        placeholder="From"
+                                        value={yearFrom}
+                                        onChange={(e) => setYearFrom(e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                    />
+                                    <span className="text-slate-400 font-medium text-sm">to</span>
+                                    <input
+                                        type="number"
+                                        placeholder="To"
+                                        value={yearTo}
+                                        onChange={(e) => setYearTo(e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Year Type</label>
-                            <select
-                                value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                            >
-                                <option value="all">Birth or Death</option>
-                                <option value="birth">Birth Year Only</option>
-                                <option value="death">Death Year Only</option>
-                            </select>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Year Type</label>
+                                <select
+                                    value={filterType}
+                                    onChange={(e) => setFilterType(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm text-slate-700"
+                                >
+                                    <option value="all">Birth or Death</option>
+                                    <option value="birth">Birth Year Only</option>
+                                    <option value="death">Death Year Only</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
