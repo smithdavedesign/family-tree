@@ -79,7 +79,7 @@ const MergeModal = ({ isOpen, onClose, currentPerson, onMergeSuccess }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
             <div className="bg-white rounded-lg p-6 w-96 max-h-[80vh] flex flex-col">
                 <h2 className="text-xl font-bold mb-4">Merge Person</h2>
                 <p className="text-sm text-gray-600 mb-4">

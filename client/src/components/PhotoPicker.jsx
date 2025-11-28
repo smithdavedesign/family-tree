@@ -18,6 +18,10 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        console.log("PhotoPicker error state changed:", error);
+    }, [error]);
+
     const fetchPhotos = async (pageToken = null) => {
         setLoading(true);
         setError(null);
@@ -53,6 +57,7 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                 console.error("No provider token found. User needs to re-auth.");
                 setLoading(false);
                 setError('REAUTH_NEEDED');
+                console.log("Error state set to REAUTH_NEEDED");
                 return;
             }
 

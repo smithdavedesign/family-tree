@@ -135,7 +135,7 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
     ];
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fadeIn">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col border border-slate-200 overflow-hidden transform transition-all">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <h2 className="text-lg font-bold text-slate-800">
