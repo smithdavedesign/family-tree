@@ -134,31 +134,36 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                             <Loader className="w-8 h-8 animate-spin text-blue-600" />
                         </div>
                     ) : error === 'REAUTH_NEEDED' ? (
-                        <div className="text-center p-8">
-                            <div className="mb-4">
-                                <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Google Photos Access Needed</h3>
-                                <p className="text-gray-600 mb-6">
-                                    Your Google Photos access has expired or was not granted. Please sign in again to continue adding photos.
-                                </p>
-                            </div>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        console.log("Re-authenticating with Google...");
-                                        const { signInWithGoogle } = await import('../auth');
-                                        await signInWithGoogle();
-                                        // After redirect back, the modal will reopen and fetch photos
-                                    } catch (err) {
-                                        console.error("Re-auth error:", err);
-                                        setError("Failed to re-authenticate. Please try again.");
-                                    }
-                                }}
-                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
-                            >
-                                Re-authenticate with Google Photos
-                            </button>
-                        </div>
+                        (() => {
+                            console.log("Rendering REAUTH_NEEDED UI");
+                            return (
+                                <div className="text-center p-8">
+                                    <div className="mb-4">
+                                        <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-2">Google Photos Access Needed</h3>
+                                        <p className="text-gray-600 mb-6">
+                                            Your Google Photos access has expired or was not granted. Please sign in again to continue adding photos.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                console.log("Re-authenticating with Google...");
+                                                const { signInWithGoogle } = await import('../auth');
+                                                await signInWithGoogle();
+                                                // After redirect back, the modal will reopen and fetch photos
+                                            } catch (err) {
+                                                console.error("Re-auth error:", err);
+                                                setError("Failed to re-authenticate. Please try again.");
+                                            }
+                                        }}
+                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+                                    >
+                                        Re-authenticate with Google Photos
+                                    </button>
+                                </div>
+                            );
+                        })()
                     ) : error ? (
                         <div className="text-center text-red-500 p-8">
                             <p>{error}</p>
