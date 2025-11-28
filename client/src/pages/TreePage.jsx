@@ -84,12 +84,14 @@ const TreePage = () => {
                 onClear={() => setHighlightedNodes([])}
             />
             <div className="flex-grow relative">
-                <TreeVisualizer
-                    treeId={id}
-                    onNodeClick={handleNodeClick}
-                    highlightedNodes={highlightedNodes}
-                    key={refreshTrigger}
-                />
+                <div className="absolute inset-0">
+                    <TreeVisualizer
+                        treeId={id}
+                        onNodeClick={handleNodeClick}
+                        highlightedNodes={highlightedNodes}
+                        key={refreshTrigger}
+                    />
+                </div>
             </div>
 
             {selectedPerson && (

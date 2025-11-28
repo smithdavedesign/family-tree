@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../auth';
+import { sessionManager } from '../utils/sessionManager';
 import { X, Image as ImageIcon, Loader } from 'lucide-react';
 
 const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
@@ -22,17 +23,32 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
         setError(null);
         try {
             // Try to refresh the session first to get a fresh token
+            console.log("Attempting to refresh session for Google Photos...");
             const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
 
+            if (sessionError) console.error("Session refresh error:", sessionError);
+
             let providerToken = session?.provider_token;
+            console.log("Provider token from refresh:", providerToken ? "Found" : "Missing");
 
             // If refresh didn't work, try getting current session
             if (!providerToken) {
+                console.log("Falling back to current session...");
                 const { data: { session: currentSession } } = await supabase.auth.getSession();
                 providerToken = currentSession?.provider_token;
+                console.log("Provider token from current session:", providerToken ? "Found" : "Missing");
+            }
+
+            // Fallback to session manager
+            if (!providerToken) {
+                console.log("Falling back to sessionManager...");
+                const storedSession = sessionManager.getSession();
+                providerToken = storedSession?.provider_token;
+                console.log("Provider token from sessionManager:", providerToken ? "Found" : "Missing");
             }
 
             if (!providerToken) {
+                console.error("No provider token found. User needs to re-auth.");
                 throw new Error('REAUTH_NEEDED');
             }
 

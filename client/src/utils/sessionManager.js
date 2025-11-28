@@ -16,6 +16,7 @@ class SessionManager {
             localStorage.setItem(SESSION_KEY, JSON.stringify({
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
+                provider_token: session.provider_token,
                 expires_at: session.expires_at,
                 user: session.user
             }));

@@ -66,7 +66,11 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
     const [error, setError] = useState(null);
 
     const fetchTreeData = useCallback(async () => {
-        if (!treeId) return;
+        console.log("fetchTreeData called with treeId:", treeId);
+        if (!treeId) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         setError(null);
@@ -77,6 +81,8 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
 
             if (!token) {
                 console.error("No auth token found");
+                setError("Authentication required");
+                setLoading(false);
                 return;
             }
 
@@ -89,6 +95,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
             if (!response.ok) throw new Error('Failed to fetch tree');
 
             const { persons, relationships } = await response.json();
+            console.log(`Fetched ${persons.length} persons and ${relationships.length} relationships`);
 
             // Transform to React Flow nodes
             const initialNodes = persons.map(p => ({
@@ -369,6 +376,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
             const newPerson = await newPersonResponse.json();
 
             if (action === 'add_root') {
+                console.log("Root person created:", newPerson);
                 // No relationship needed for root node
                 addToHistory({
                     type: 'ADD_PERSON',
@@ -379,7 +387,9 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                     }
                 });
 
+                console.log("Fetching tree data after root creation...");
                 await fetchTreeData();
+                console.log("Tree data fetched.");
                 return;
             }
 
@@ -439,8 +449,11 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
         }
     };
 
+    const showEmptyState = !loading && !error && nodes.length === 0;
+    console.log('TreeVisualizer Render State:', { loading, error, nodesLength: nodes.length, treeId, showEmptyState });
+
     return (
-        <div className="h-screen w-full relative">
+        <div className="h-full w-full relative">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -572,8 +585,8 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 </div>
             )}
 
-            {!loading && !error && nodes.length === 0 && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none">
+            {showEmptyState && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-50 pointer-events-none bg-black/5">
                     <div className="bg-white p-8 rounded-xl shadow-xl text-center pointer-events-auto max-w-md border border-gray-100">
                         <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <TreePine className="w-8 h-8 text-teal-600" />
