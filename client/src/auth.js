@@ -21,25 +21,33 @@ if (!useMock) {
     });
 }
 
-// 1. The Login Function
+// 1. The Login Function - Updated for Google Photos Picker API
 export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            // Crucial: This forces Google to give us a "Refresh Token" 
-            // so we can access photos even when the user isn't looking.
+            // Request the new Photos Picker API scope (replaces deprecated photoslibrary.readonly)
+            // Note: This still requires Google OAuth verification for production use
+            scopes: 'https://www.googleapis.com/auth/photospicker.mediaitems.readonly',
             queryParams: {
+                // Crucial: This forces Google to give us a "Refresh Token" 
+                // so we can access photos even when the user isn't looking.
                 access_type: 'offline',
+                // Force consent screen to ensure we get refresh token on first login
                 prompt: 'consent',
             },
-            // Request access to their photos (read-only)
-            scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly',
         },
     });
 
-    if (error) console.error('Error logging in:', error);
+    if (error) {
+        console.error('Error logging in:', error);
+        return null;
+    }
+
+    console.log('Google sign-in successful, session data:', data);
     return data;
 };
+
 
 // 2. The Logout Function
 export const signOut = async () => {
