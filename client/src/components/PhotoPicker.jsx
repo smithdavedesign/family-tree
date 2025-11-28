@@ -26,7 +26,9 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             console.log("Attempting to refresh session for Google Photos...");
             const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
 
-            if (sessionError) console.error("Session refresh error:", sessionError);
+            if (sessionError) {
+                console.error("Session refresh error:", sessionError);
+            }
 
             let providerToken = session?.provider_token;
             console.log("Provider token from refresh:", providerToken ? "Found" : "Missing");
@@ -49,7 +51,9 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
 
             if (!providerToken) {
                 console.error("No provider token found. User needs to re-auth.");
-                throw new Error('REAUTH_NEEDED');
+                setLoading(false);
+                setError('REAUTH_NEEDED');
+                return;
             }
 
             let url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20';
@@ -65,7 +69,9 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    throw new Error('REAUTH_NEEDED');
+                    setLoading(false);
+                    setError('REAUTH_NEEDED');
+                    return;
                 }
                 const errData = await response.json();
                 throw new Error(errData.error?.message || 'Failed to fetch photos');
@@ -114,6 +120,10 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4">
+                    {(() => {
+                        console.log("PhotoPicker render state:", { loading, error, photosCount: photos.length });
+                        return null;
+                    })()}
                     {loading ? (
                         <div className="flex justify-center items-center h-64">
                             <Loader className="w-8 h-8 animate-spin text-blue-600" />
@@ -124,13 +134,20 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                                 <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Google Photos Access Needed</h3>
                                 <p className="text-gray-600 mb-6">
-                                    Your Google Photos access has expired. Please sign in again to continue adding photos.
+                                    Your Google Photos access has expired or was not granted. Please sign in again to continue adding photos.
                                 </p>
                             </div>
                             <button
                                 onClick={async () => {
-                                    const { signInWithGoogle } = await import('../auth');
-                                    await signInWithGoogle();
+                                    try {
+                                        console.log("Re-authenticating with Google...");
+                                        const { signInWithGoogle } = await import('../auth');
+                                        await signInWithGoogle();
+                                        // After redirect back, the modal will reopen and fetch photos
+                                    } catch (err) {
+                                        console.error("Re-auth error:", err);
+                                        setError("Failed to re-authenticate. Please try again.");
+                                    }
                                 }}
                                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
                             >
