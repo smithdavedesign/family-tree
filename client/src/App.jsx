@@ -7,6 +7,12 @@ import AuthError from './pages/AuthError';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    console.log("Token scopes:", session.provider_token);
+  }
+});
+
 function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);

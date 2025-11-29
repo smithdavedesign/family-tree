@@ -5,7 +5,7 @@ import { sessionManager } from './utils/sessionManager';
 const useMock = import.meta.env.VITE_USE_MOCK === 'true';
 
 // Initialize the client (Use the same URL/Key as backend, it's safe to expose Anon Key)
-const supabase = useMock ? mockSupabase : createClient(
+export const supabase = useMock ? mockSupabase : createClient(
     import.meta.env.VITE_SUPABASE_URL,
     import.meta.env.VITE_SUPABASE_ANON_KEY
 );
@@ -30,13 +30,8 @@ export const signInWithGoogle = async () => {
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
-                scope: [
-                    'openid',
-                    'email',
-                    'profile',
-                    'https://www.googleapis.com/auth/photoslibrary.readonly'
-                ].join(' ')
-            }
+            },
+            scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly',
         },
     });
 
