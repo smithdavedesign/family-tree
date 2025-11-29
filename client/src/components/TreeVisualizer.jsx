@@ -91,10 +91,12 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 }
             });
 
-            if (!response.ok) throw new Error('Failed to fetch tree');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to fetch tree: ${response.status} ${errorText}`);
+            }
 
             const { persons, relationships } = await response.json();
-            console.log(`Fetched ${persons.length} persons and ${relationships.length} relationships`);
 
             // Transform to React Flow nodes
             const initialNodes = persons.map(p => ({

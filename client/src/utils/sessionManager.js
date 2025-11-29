@@ -13,14 +13,25 @@ class SessionManager {
     // Save session to localStorage
     saveSession(session) {
         if (session) {
-            localStorage.setItem(SESSION_KEY, JSON.stringify({
+            // Preserve provider_token if missing in new session (Supabase doesn't return it on refresh)
+            let providerToken = session.provider_token;
+            if (!providerToken && this.session?.provider_token) {
+                providerToken = this.session.provider_token;
+                console.log('Preserving existing provider_token during refresh');
+            }
+
+            const sessionToSave = {
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
-                provider_token: session.provider_token,
+                provider_token: providerToken,
                 expires_at: session.expires_at,
                 user: session.user
-            }));
-            this.session = session;
+            };
+
+            localStorage.setItem(SESSION_KEY, JSON.stringify(sessionToSave));
+
+            // Update in-memory session with the preserved token
+            this.session = { ...session, provider_token: providerToken };
             this.scheduleRefresh(session);
         }
     }

@@ -26,16 +26,17 @@ export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            // Request the new Photos Picker API scope (replaces deprecated photoslibrary.readonly)
-            // Note: This still requires Google OAuth verification for production use
-            scopes: 'https://www.googleapis.com/auth/photospicker.mediaitems.readonly',
+            redirectTo: window.location.origin,
             queryParams: {
-                // Crucial: This forces Google to give us a "Refresh Token" 
-                // so we can access photos even when the user isn't looking.
                 access_type: 'offline',
-                // Force consent screen to ensure we get refresh token on first login
                 prompt: 'consent',
-            },
+                scope: [
+                    'openid',
+                    'email',
+                    'profile',
+                    'https://www.googleapis.com/auth/photoslibrary.readonly'
+                ].join(' ')
+            }
         },
     });
 
@@ -44,7 +45,10 @@ export const signInWithGoogle = async () => {
         return null;
     }
 
-    console.log('Google sign-in successful, session data:', data);
+    supabase.auth.getSession().then(({ data }) => {
+        console.log("Token scopes:", data.session?.provider_token);
+    });
+    console.log('Google sign-in successful:', data);
     return data;
 };
 

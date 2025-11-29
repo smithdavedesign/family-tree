@@ -83,34 +83,35 @@ const TreePage = () => {
                 onHighlight={setHighlightedNodes}
                 onClear={() => setHighlightedNodes([])}
             />
-            <div className="flex-1 flex relative overflow-hidden w-full h-full">
-                <div className="flex-1 relative h-full w-full bg-gray-50">
-                    <TreeVisualizer
-                        treeId={id}
-                        onNodeClick={handleNodeClick}
-                        highlightedNodes={highlightedNodes}
-                        key={refreshTrigger}
-                    />
-                </div>
-
-                {selectedPerson && (
-                    <div className="w-full md:w-96 border-l bg-white shadow-xl z-20 h-full shrink-0 transition-all duration-300">
-                        <SidePanel
-                            person={selectedPerson}
-                            onClose={handleClosePanel}
-                            onUpdate={handleUpdate}
-                        />
-                    </div>
-                )}
+            <div className="flex-grow relative overflow-hidden">
+                <TreeVisualizer
+                    treeId={id}
+                    onNodeClick={handleNodeClick}
+                    highlightedNodes={highlightedNodes}
+                    key={refreshTrigger}
+                />
             </div>
 
-            {showSettings && user && (
-                <AccountSettings
-                    user={user}
-                    onClose={() => setShowSettings(false)}
-                />
+            {selectedPerson && (
+                <div className="w-full md:w-96 border-l bg-white shadow-xl z-20 h-full shrink-0 transition-all duration-300">
+                    <SidePanel
+                        person={selectedPerson}
+                        onClose={handleClosePanel}
+                        onUpdate={handleUpdate}
+                    />
+                </div>
             )}
-        </div>
+
+
+            {
+                showSettings && user && (
+                    <AccountSettings
+                        user={user}
+                        onClose={() => setShowSettings(false)}
+                    />
+                )
+            }
+        </div >
     );
 };
 

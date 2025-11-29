@@ -64,13 +64,18 @@ exports.getUserTrees = async (req, res) => {
             return res.json(trees);
         }
 
+        console.log('Fetching trees for user:', userId);
         const { data: trees, error } = await supabase
             .from('trees')
             .select('*')
             .eq('owner_id', userId);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase query error:', error);
+            throw error;
+        }
 
+        console.log('Trees found:', trees ? trees.length : 0);
         res.json(trees);
     } catch (error) {
         console.error('Error fetching user trees:', error);
