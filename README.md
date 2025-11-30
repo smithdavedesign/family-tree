@@ -34,6 +34,17 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - **Authentication:** Supabase Auth (Google OAuth + Magic Links)
 - **Deployment:** Vercel (Frontend), Render (Backend)
 
+## 🗄️ Database Schema
+
+The application uses a relational database (PostgreSQL) with the following key entities:
+
+![Database Schema](assets/database_schema.png)
+
+- **Trees & Members:** Users can create trees and invite others with specific roles (Owner, Editor, Viewer).
+- **Persons & Relationships:** The core genealogy data, supporting complex family structures.
+- **Media:** Photos linked to persons, integrated with Google Photos.
+- **Security:** Audit logs and invitations for secure access control.
+
 ## 📊 Development Progress
 
 ### ✅ Phase A: Backend & Auth (100%)
