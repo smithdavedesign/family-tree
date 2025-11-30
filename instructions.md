@@ -45,6 +45,7 @@ Available tables:
 - `persons`: (id, tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes JSONB)
 - `relationships`: (id, tree_id, person_1_id, person_2_id, type [parent_child, spouse, adoptive_parent_child, step_parent_child])
 - `media`: (id, person_id, url, type, google_media_id)
+- `invitations`: (id, tree_id, inviter_id, role, token, expires_at)
 - `audit_logs`: (id, user_id, action, resource_type, resource_id, ip_address, user_agent, status_code, metadata JSONB, created_at)
 
 **Key SQL Migrations:**
