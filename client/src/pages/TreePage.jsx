@@ -5,6 +5,7 @@ import SidePanel from '../components/SidePanel';
 import SearchBar from '../components/SearchBar';
 import AccountSettings from '../components/AccountSettings';
 import TreeSwitcher from '../components/TreeSwitcher';
+import PhotoPicker from '../components/PhotoPicker';
 import { supabase, getCurrentUser } from '../auth';
 import { Settings } from 'lucide-react';
 
@@ -14,6 +15,8 @@ const TreePage = () => {
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [highlightedNodes, setHighlightedNodes] = useState([]);
+    const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
+    const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
     const [persons, setPersons] = useState([]);
     const [showSettings, setShowSettings] = useState(false);
     const [user, setUser] = useState(null);
@@ -98,9 +101,24 @@ const TreePage = () => {
                         person={selectedPerson}
                         onClose={handleClosePanel}
                         onUpdate={handleUpdate}
+                        onOpenPhotoPicker={(handler) => {
+                            setPhotoSelectHandler(() => handler);
+                            setIsPhotoPickerOpen(true);
+                        }}
                     />
                 </div>
             )}
+
+            <PhotoPicker
+                isOpen={isPhotoPickerOpen}
+                onClose={() => setIsPhotoPickerOpen(false)}
+                onSelect={(photo) => {
+                    if (photoSelectHandler) {
+                        photoSelectHandler(photo);
+                    }
+                    setIsPhotoPickerOpen(false);
+                }}
+            />
 
 
             {

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
-import PhotoPicker from './PhotoPicker';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { supabase } from '../auth';
 
-const SidePanel = ({ person, onClose, onUpdate }) => {
+const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
     const [media, setMedia] = useState([]);
-    const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
     const [loadingMedia, setLoadingMedia] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
@@ -64,7 +62,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
     };
 
     const handlePhotoSelect = async (googlePhoto) => {
-        setIsPhotoPickerOpen(false);
+        // Picker is closed by parent component
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -230,7 +228,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                                 )}
                             </div>
                             <button
-                                onClick={() => setIsPhotoPickerOpen(true)}
+                                onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
                                 className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
                                 title="Change Photo"
                             >
@@ -358,7 +356,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Photos</h4>
                             <button
-                                onClick={() => setIsPhotoPickerOpen(true)}
+                                onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
                                 className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
                             >
                                 <Plus className="w-3 h-3" /> Add Photo
@@ -464,11 +462,7 @@ const SidePanel = ({ person, onClose, onUpdate }) => {
             </div>
 
 
-            <PhotoPicker
-                isOpen={isPhotoPickerOpen}
-                onClose={() => setIsPhotoPickerOpen(false)}
-                onSelect={handlePhotoSelect}
-            />
+
 
             <MergeModal
                 isOpen={isMergeModalOpen}

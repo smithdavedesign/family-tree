@@ -1,120 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../auth';
-import { sessionManager } from '../utils/sessionManager';
-import { X, Image as ImageIcon, Loader } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
-    const [photos, setPhotos] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [pickerReady, setPickerReady] = useState(false);
     const [error, setError] = useState(null);
 
-    const [nextPageToken, setNextPageToken] = useState(null);
+    console.log('PhotoPicker render - isOpen:', isOpen);
 
     useEffect(() => {
-        if (isOpen) {
-            setPhotos([]); // Reset photos when opening
-            setNextPageToken(null);
-            fetchPhotos();
+        if (!isOpen) return;
+
+        // Check if gapi is already loaded
+        if (window.gapi?.client?.picker) {
+            setPickerReady(true);
+            return;
+        }
+
+        // Load the Google API script
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.async = true;
+        script.defer = true;
+
+        script.onload = () => {
+            window.gapi.load('picker', {
+                callback: () => {
+                    console.log('Google Picker API loaded successfully');
+                    setPickerReady(true);
+                },
+                onerror: (err) => {
+                    console.error('Error loading picker:', err);
+                    setError('Failed to load Google Picker');
+                }
+            });
+        };
+
+        script.onerror = () => {
+            setError('Failed to load Google API script');
+        };
+
+        if (!document.querySelector('script[src="https://apis.google.com/js/api.js"]')) {
+            document.body.appendChild(script);
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        console.log("PhotoPicker error state changed:", error);
-    }, [error]);
+    const openPicker = () => {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
-    const fetchPhotos = async (pageToken = null) => {
-        setLoading(true);
-        setError(null);
-        try {
-            // Try to refresh the session first to get a fresh token
-            console.log("Attempting to refresh session for Google Photos...");
-            const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
-
-            if (sessionError) {
-                console.error("Session refresh error:", sessionError);
-            }
-
-            let providerToken = session?.provider_token;
-            console.log("Provider token from refresh:", providerToken ? "Found" : "Missing");
-
-            // If refresh didn't work, try getting current session
-            if (!providerToken) {
-                console.log("Falling back to current session...");
-                const { data: { session: currentSession } } = await supabase.auth.getSession();
-                providerToken = currentSession?.provider_token;
-                console.log("Provider token from current session:", providerToken ? "Found" : "Missing");
-            }
-
-            // Fallback to session manager
-            if (!providerToken) {
-                console.log("Falling back to sessionManager...");
-                const storedSession = sessionManager.getSession();
-                providerToken = storedSession?.provider_token;
-                console.log("Provider token from sessionManager:", providerToken ? "Found" : "Missing");
-            }
-
-            if (!providerToken) {
-                console.error("No provider token found. User needs to re-auth.");
-                setLoading(false);
-                setError('REAUTH_NEEDED');
-                console.log("Error state set to REAUTH_NEEDED");
-                return;
-            }
-
-            let url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20';
-            if (pageToken) {
-                url += `&pageToken=${pageToken}`;
-            }
-
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${providerToken}`
-                }
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    setLoading(false);
-                    setError('REAUTH_NEEDED');
-                    return;
-                }
-                const errData = await response.json();
-                throw new Error(errData.error?.message || 'Failed to fetch photos');
-            }
-
-            const data = await response.json();
-
-            if (pageToken) {
-                setPhotos(prev => [...prev, ...(data.mediaItems || [])]);
-            } else {
-                setPhotos(data.mediaItems || []);
-            }
-
-            setNextPageToken(data.nextPageToken || null);
-        } catch (err) {
-            console.error("Error fetching photos:", err);
-            if (err.message === 'REAUTH_NEEDED') {
-                setError('REAUTH_NEEDED');
-            } else {
-                setError(err.message);
-            }
-        } finally {
-            setLoading(false);
+        if (!clientId || !apiKey) {
+            setError('Google configuration is missing. Please check your environment variables.');
+            return;
         }
-    };
 
-    const loadMore = () => {
-        if (nextPageToken) {
-            fetchPhotos(nextPageToken);
+        // Get access token from localStorage
+        const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
+        const accessToken = storedSession.provider_token;
+
+        if (!accessToken) {
+            setError('Please sign in with Google first to access your photos.');
+            return;
+        }
+
+        try {
+            const picker = new window.google.picker.PickerBuilder()
+                .addView(window.google.picker.ViewId.PHOTOS)
+                .setOAuthToken(accessToken)
+                .setDeveloperKey(apiKey)
+                .setCallback((data) => {
+                    if (data.action === window.google.picker.Action.PICKED) {
+                        const photo = data.docs[0];
+                        onSelect({
+                            id: photo.id,
+                            baseUrl: photo.url,
+                            filename: photo.name,
+                            mimeType: photo.mimeType
+                        });
+                        onClose();
+                    } else if (data.action === window.google.picker.Action.CANCEL) {
+                        onClose();
+                    }
+                })
+                .build();
+
+            picker.setVisible(true);
+        } catch (err) {
+            console.error('Error opening picker:', err);
+            setError('Failed to open photo picker: ' + err.message);
         }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-                <div className="p-4 border-b flex justify-between items-center">
+        <div className="fixed inset-0 bg-red-500 flex items-center justify-center z-[9999]" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 flex flex-col items-center border-8 border-blue-500" onClick={(e) => e.stopPropagation()}>
+                <div className="w-full flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold flex items-center gap-2">
                         <ImageIcon className="w-5 h-5 text-blue-600" />
                         Select from Google Photos
@@ -124,85 +105,37 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4">
-                    {(() => {
-                        console.log("PhotoPicker render state:", { loading, error, photosCount: photos.length });
-                        return null;
-                    })()}
-                    {loading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <Loader className="w-8 h-8 animate-spin text-blue-600" />
+                {error ? (
+                    <div className="w-full mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-sm font-medium text-red-900">Error</p>
+                                <p className="text-sm text-red-700 mt-1">{error}</p>
+                            </div>
                         </div>
-                    ) : error === 'REAUTH_NEEDED' ? (
-                        (() => {
-                            console.log("Rendering REAUTH_NEEDED UI");
-                            return (
-                                <div className="text-center p-8">
-                                    <div className="mb-4">
-                                        <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-lg font-semibold text-gray-800 mb-2">Google Photos Access Needed</h3>
-                                        <p className="text-gray-600 mb-6">
-                                            Your Google Photos access has expired or was not granted. Please sign in again to continue adding photos.
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                console.log("Re-authenticating with Google...");
-                                                const { signInWithGoogle } = await import('../auth');
-                                                await signInWithGoogle();
-                                                // After redirect back, the modal will reopen and fetch photos
-                                            } catch (err) {
-                                                console.error("Re-auth error:", err);
-                                                setError("Failed to re-authenticate. Please try again.");
-                                            }
-                                        }}
-                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
-                                    >
-                                        Re-authenticate with Google Photos
-                                    </button>
-                                </div>
-                            );
-                        })()
-                    ) : error ? (
-                        <div className="text-center text-red-500 p-8">
-                            <p>{error}</p>
-                            <button onClick={fetchPhotos} className="mt-4 text-blue-600 underline">Try Again</button>
-                        </div>
-                    ) : photos.length === 0 ? (
-                        <div className="text-center text-gray-500 p-8">
-                            No photos found in your Google Photos library.
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                            {photos.map((photo) => (
-                                <div
-                                    key={photo.id}
-                                    className="aspect-square relative group cursor-pointer overflow-hidden rounded-lg border hover:border-blue-500"
-                                    onClick={() => onSelect(photo)}
-                                >
-                                    <img
-                                        src={`${photo.baseUrl}=w300-h300-c`}
-                                        alt={photo.filename}
-                                        className="w-full h-full object-cover transition group-hover:scale-105"
-                                        loading="lazy"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    </div>
+                ) : (
+                    <div className="text-center mb-6">
+                        <ImageIcon className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">
+                            Click below to open Google Photos and select a photo for this person.
+                        </p>
+                    </div>
+                )}
 
-                    {nextPageToken && !loading && (
-                        <div className="mt-4 flex justify-center">
-                            <button
-                                onClick={loadMore}
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition"
-                            >
-                                Load More Photos
-                            </button>
-                        </div>
-                    )}
-                </div>
+                <button
+                    onClick={openPicker}
+                    disabled={!pickerReady || !!error}
+                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition flex items-center justify-center gap-2"
+                >
+                    <ImageIcon className="w-5 h-5" />
+                    {pickerReady ? 'Open Google Photos' : 'Loading...'}
+                </button>
+
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                    You'll be able to browse and select photos from your Google Photos library.
+                </p>
             </div>
         </div>
     );

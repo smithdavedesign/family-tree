@@ -26,7 +26,11 @@ const nodeHeight = 80;
 
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     const isHorizontal = direction === 'LR';
-    dagreGraph.setGraph({ rankdir: direction });
+    dagreGraph.setGraph({
+        rankdir: direction,
+        nodesep: 100, // Increased horizontal spacing (default 50)
+        ranksep: 150  // Increased vertical spacing (default 50)
+    });
 
     nodes.forEach((node) => {
         dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });

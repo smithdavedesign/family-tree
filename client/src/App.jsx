@@ -4,6 +4,8 @@ import TreePage from './pages/TreePage';
 import TreeDashboard from './pages/TreeDashboard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AuthError from './pages/AuthError';
+import PhotoPickerTest from './pages/PhotoPickerTest';
+import TermsOfService from './pages/TermsOfService';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 
@@ -77,6 +79,10 @@ function Home() {
             <p className="text-sm text-gray-500">Redirecting to your trees...</p>
           </div>
         )}
+        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center gap-6 text-sm text-gray-500">
+          <Link to="/privacy" className="hover:text-teal-600 transition-colors">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-teal-600 transition-colors">Terms of Service</Link>
+        </div>
       </div>
     </div>
   );
@@ -91,7 +97,9 @@ function App() {
         <Route path="/trees" element={<TreeDashboard />} />
         <Route path="/tree/:id" element={<TreePage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         <Route path="/auth-error" element={<AuthError />} />
+        <Route path="/test-picker" element={<PhotoPickerTest />} />
       </Routes>
     </Router>
   );

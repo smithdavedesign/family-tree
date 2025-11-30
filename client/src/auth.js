@@ -13,7 +13,13 @@ const supabase = useMock ? mockSupabase : createClient(
 // Set up auth state change listener
 if (!useMock) {
     supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, 'Has provider_token:', !!session?.provider_token);
+
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // CRITICAL: Capture provider_token immediately - it's only available here!
+            if (session?.provider_token) {
+                console.log('Capturing provider_token from auth callback');
+            }
             sessionManager.saveSession(session);
         } else if (event === 'SIGNED_OUT') {
             sessionManager.clearSession();
