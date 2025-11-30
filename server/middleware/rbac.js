@@ -1,0 +1,136 @@
+const { supabase, supabaseAdmin } = require('./auth');
+
+/**
+ * Role-Based Access Control Middleware
+ * Checks if user has required permission level for tree operations
+ */
+
+// Permission levels (in order of access)
+const ROLES = {
+    OWNER: 'owner',
+    EDITOR: 'editor',
+    VIEWER: 'viewer'
+};
+
+// Role hierarchy - higher roles include lower role permissions
+const ROLE_HIERARCHY = {
+    owner: 3,
+    editor: 2,
+    viewer: 1
+};
+
+/**
+ * Check if user has required role for a tree
+ * @param {string} requiredRole - Minimum required role (owner, editor, viewer)
+ */
+const requireTreeRole = (requiredRole) => {
+    return async (req, res, next) => {
+        // Skip in mock mode
+        if (process.env.USE_MOCK === 'true') {
+            return next();
+        }
+
+        try {
+            const userId = req.user?.id;
+            const treeId = req.params.id || req.body?.tree_id;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            if (!treeId) {
+                return res.status(400).json({ error: 'Tree ID required' });
+            }
+
+            // Check user's role in this tree
+            const { data: membership, error } = await supabaseAdmin
+                .from('tree_members')
+                .select('role')
+                .eq('tree_id', treeId)
+                .eq('user_id', userId)
+                .single();
+
+            if (error || !membership) {
+                return res.status(403).json({
+                    error: 'Access denied',
+                    message: 'You do not have access to this tree'
+                });
+            }
+
+            const userRole = membership.role;
+            const requiredLevel = ROLE_HIERARCHY[requiredRole];
+            const userLevel = ROLE_HIERARCHY[userRole];
+
+            if (userLevel < requiredLevel) {
+                return res.status(403).json({
+                    error: 'Insufficient permissions',
+                    message: `This action requires ${requiredRole} role. You have ${userRole} role.`,
+                    required: requiredRole,
+                    current: userRole
+                });
+            }
+
+            // Attach user's role to request for later use
+            req.userRole = userRole;
+            req.treeId = treeId;
+
+            next();
+        } catch (err) {
+            console.error('RBAC error:', err);
+            res.status(500).json({ error: 'Error checking permissions' });
+        }
+    };
+};
+
+/**
+ * Check if user is tree owner
+ */
+const requireOwner = requireTreeRole(ROLES.OWNER);
+
+/**
+ * Check if user can edit (owner or editor)
+ */
+const requireEditor = requireTreeRole(ROLES.EDITOR);
+
+/**
+ * Check if user can view (any role)
+ */
+const requireViewer = requireTreeRole(ROLES.VIEWER);
+
+/**
+ * Helper function to check if user owns a tree (for use in controllers)
+ */
+async function isTreeOwner(userId, treeId) {
+    const { data, error } = await supabaseAdmin
+        .from('tree_members')
+        .select('role')
+        .eq('tree_id', treeId)
+        .eq('user_id', userId)
+        .single();
+
+    return !error && data?.role === ROLES.OWNER;
+}
+
+/**
+ * Helper function to get user's role in a tree
+ */
+async function getUserTreeRole(userId, treeId) {
+    const { data, error } = await supabaseAdmin
+        .from('tree_members')
+        .select('role')
+        .eq('tree_id', treeId)
+        .eq('user_id', userId)
+        .single();
+
+    return error ? null : data?.role;
+}
+
+module.exports = {
+    requireOwner,
+    requireEditor,
+    requireViewer,
+    requireTreeRole,
+    isTreeOwner,
+    getUserTreeRole,
+    ROLES
+};

@@ -6,6 +6,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import AuthError from './pages/AuthError';
 import PhotoPickerTest from './pages/PhotoPickerTest';
 import TermsOfService from './pages/TermsOfService';
+import MagicLinkAuth from './pages/MagicLinkAuth';
+import ResetPassword from './pages/ResetPassword';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 
@@ -67,12 +69,28 @@ function Home() {
         <p className="text-gray-600 mb-8">Discover and preserve your family history</p>
 
         {!user ? (
-          <button
-            onClick={handleSignIn}
-            className="w-full px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold"
-          >
-            🌳 Sign In with Google
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleSignIn}
+              className="w-full px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold"
+            >
+              🌳 Sign In with Google
+            </button>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">or</span>
+              </div>
+            </div>
+            <Link
+              to="/magic-link"
+              className="block w-full px-6 py-3 bg-white text-teal-600 border-2 border-teal-600 rounded-lg hover:bg-teal-50 transition font-semibold text-center"
+            >
+              📧 Sign In with Email
+            </Link>
+          </div>
         ) : (
           <div>
             <p className="text-gray-700 mb-4">Welcome back, {user.email}!</p>
@@ -96,6 +114,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/trees" element={<TreeDashboard />} />
         <Route path="/tree/:id" element={<TreePage />} />
+        <Route path="/magic-link" element={<MagicLinkAuth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/auth-error" element={<AuthError />} />
