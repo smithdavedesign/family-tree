@@ -30,6 +30,8 @@ export const mockSupabase = {
                 data: {
                     session: {
                         access_token: 'mock-token',
+                        refresh_token: 'mock-refresh-token',
+                        expires_at: Date.now() + 3600000, // 1 hour from now
                         user: {
                             id: 'mock-user-id',
                             email: 'mock@example.com'
@@ -37,6 +39,34 @@ export const mockSupabase = {
                     }
                 }
             }
+        },
+        onAuthStateChange: (callback) => {
+            console.log("Mock onAuthStateChange registered");
+            // Return a subscription object with unsubscribe method
+            return {
+                data: {
+                    subscription: {
+                        unsubscribe: () => console.log("Mock auth listener unsubscribed")
+                    }
+                }
+            };
+        },
+        refreshSession: async ({ refresh_token }) => {
+            console.log("Mock refreshSession called");
+            return {
+                data: {
+                    session: {
+                        access_token: 'mock-token-refreshed',
+                        refresh_token: 'mock-refresh-token',
+                        expires_at: Date.now() + 3600000,
+                        user: {
+                            id: 'mock-user-id',
+                            email: 'mock@example.com'
+                        }
+                    }
+                },
+                error: null
+            };
         }
     },
     from: (table) => {
