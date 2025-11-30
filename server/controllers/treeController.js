@@ -3,6 +3,7 @@ const { supabase, supabaseAdmin } = require('../middleware/auth');
 exports.getTree = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user.id;
 
         // MOCK MODE
         if (process.env.USE_MOCK === 'true') {
@@ -14,7 +15,16 @@ exports.getTree = async (req, res) => {
             const persons = MOCK_PERSONS.filter(p => p.tree_id === id);
             const relationships = MOCK_RELATIONSHIPS.filter(r => r.tree_id === id);
 
-            return res.json({ tree, persons, relationships });
+            // Mock role (owner if matches owner_id, else viewer)
+            const role = tree.owner_id === userId ? 'owner' : 'viewer';
+
+            return res.json({
+                tree,
+                persons,
+                relationships,
+                name: tree.name,
+                role
+            });
         }
 
         // 1. Fetch Tree Details
@@ -26,7 +36,17 @@ exports.getTree = async (req, res) => {
 
         if (treeError) throw treeError;
 
-        // Fetch persons in the tree
+        // 2. Fetch User's Role
+        const { data: member } = await supabase
+            .from('tree_members')
+            .select('role')
+            .eq('tree_id', id)
+            .eq('user_id', userId)
+            .single();
+
+        const role = member ? member.role : (tree.owner_id === userId ? 'owner' : null);
+
+        // 3. Fetch persons in the tree
         const { data: persons, error: personsError } = await supabase
             .from('persons')
             .select('*')
@@ -34,7 +54,7 @@ exports.getTree = async (req, res) => {
 
         if (personsError) throw personsError;
 
-        // Fetch relationships in the tree
+        // 4. Fetch relationships in the tree
         const { data: relationships, error: relationshipsError } = await supabase
             .from('relationships')
             .select('*')
@@ -45,7 +65,9 @@ exports.getTree = async (req, res) => {
         res.json({
             tree,
             persons,
-            relationships
+            relationships,
+            name: tree.name,
+            role
         });
     } catch (error) {
         console.error('Error fetching tree:', error);
