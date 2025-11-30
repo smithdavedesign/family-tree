@@ -51,6 +51,46 @@ const requireTreeRole = (requiredRole) => {
                 .single();
 
             if (error || !membership) {
+                // Fallback: Check if user is the owner in 'trees' table
+                // This handles cases where the owner wasn't added to tree_members (legacy/bug)
+                const { data: tree, error: treeError } = await supabaseAdmin
+                    .from('trees')
+                    .select('owner_id')
+                    .eq('id', treeId)
+                    .single();
+
+                if (!treeError && tree && tree.owner_id === userId) {
+                    // User is owner.
+
+                    // Auto-fix: Ensure user exists in public.users first
+                    // This is required because tree_members references public.users
+                    const { error: userError } = await supabaseAdmin
+                        .from('users')
+                        .upsert({
+                            id: userId,
+                            email: req.user.email,
+                            // We can add other fields if available in req.user.user_metadata
+                        }, { onConflict: 'id', ignoreDuplicates: true });
+
+                    if (userError) {
+                        console.error('Error ensuring user exists in public.users:', userError);
+                    }
+
+                    // Auto-fix: Add to tree_members
+                    // We don't await this to avoid slowing down the request
+                    supabaseAdmin.from('tree_members').insert({
+                        tree_id: treeId,
+                        user_id: userId,
+                        role: ROLES.OWNER
+                    }).then(({ error }) => {
+                        if (error) console.error('Error auto-fixing tree membership:', error);
+                    });
+
+                    req.userRole = ROLES.OWNER;
+                    req.treeId = treeId;
+                    return next();
+                }
+
                 return res.status(403).json({
                     error: 'Access denied',
                     message: 'You do not have access to this tree'

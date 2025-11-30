@@ -60,8 +60,9 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes, edges };
 };
 
+const nodeTypes = { custom: CustomNode };
+
 const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
-    const nodeTypes = React.useMemo(() => ({ custom: CustomNode }), []);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [history, setHistory] = useState({ past: [], future: [] });
