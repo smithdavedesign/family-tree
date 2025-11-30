@@ -9,12 +9,21 @@ const personController = require('../controllers/personController');
 const relationshipController = require('../controllers/relationshipController');
 const mediaController = require('../controllers/mediaController');
 const accountController = require('../controllers/accountController');
+const invitationController = require('../controllers/invitationController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
 router.post('/trees', requireAuth, writeLimiter, auditLog('CREATE', 'tree'), treeController.createTree);
 router.get('/tree/:id', requireAuth, requireViewer, treeController.getTree);
 router.delete('/tree/:id', requireAuth, requireOwner, writeLimiter, auditLog('DELETE', 'tree'), treeController.deleteTree);
+
+// Invitation & Member routes
+router.post('/tree/:treeId/invite', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'invitation'), invitationController.createInvitation);
+router.get('/invite/:token', invitationController.getInvitation); // Public endpoint (no auth required to view invite details)
+router.post('/invite/:token/accept', requireAuth, auditLog('UPDATE', 'membership'), invitationController.acceptInvitation);
+router.get('/tree/:treeId/members', requireAuth, requireOwner, invitationController.getTreeMembers);
+router.delete('/tree/:treeId/member/:userId', requireAuth, requireOwner, auditLog('DELETE', 'membership'), invitationController.removeMember);
+router.put('/tree/:treeId/member/:userId', requireAuth, requireOwner, auditLog('UPDATE', 'membership'), invitationController.updateMemberRole);
 
 // Person routes (require editor role to modify)
 router.post('/person', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'person'), personController.createPerson);
@@ -34,5 +43,6 @@ router.post('/media', requireAuth, requireEditor, writeLimiter, auditLog('CREATE
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
 
 module.exports = router;
+
 
 

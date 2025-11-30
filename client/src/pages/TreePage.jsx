@@ -7,7 +7,8 @@ import AccountSettings from '../components/AccountSettings';
 import TreeSwitcher from '../components/TreeSwitcher';
 import PhotoPicker from '../components/PhotoPicker';
 import { supabase, getCurrentUser } from '../auth';
-import { Settings } from 'lucide-react';
+import { Settings, Share2 } from 'lucide-react';
+import ShareModal from '../components/ShareModal';
 
 const TreePage = () => {
     const { id } = useParams();
@@ -20,6 +21,9 @@ const TreePage = () => {
     const [persons, setPersons] = useState([]);
     const [showSettings, setShowSettings] = useState(false);
     const [user, setUser] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [treeName, setTreeName] = useState('');
+    const [userRole, setUserRole] = useState('viewer');
 
     useEffect(() => {
         const getTree = async () => {
@@ -32,8 +36,10 @@ const TreePage = () => {
                 });
 
                 if (response.ok) {
-                    const { persons: treePersons } = await response.json();
+                    const { persons: treePersons, name, role } = await response.json();
                     setPersons(treePersons);
+                    setTreeName(name);
+                    setUserRole(role);
                 }
             } catch (error) {
                 console.error("Error fetching tree:", error);
@@ -73,14 +79,34 @@ const TreePage = () => {
                     <h1 className="text-xl font-bold text-teal-800 hidden md:block">Roots & Branches</h1>
                     <TreeSwitcher currentTreeId={id} />
                 </div>
-                <button
-                    onClick={() => setShowSettings(true)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition"
-                    title="Account Settings"
-                >
-                    <Settings className="w-5 h-5 text-gray-600" />
-                </button>
+                <div className="flex items-center gap-2">
+                    {userRole === 'owner' && (
+                        <button
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            <span className="hidden sm:inline">Share</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowSettings(true)}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                        title="Account Settings"
+                    >
+                        <Settings className="w-5 h-5" />
+                    </button>
+                </div>
             </header>
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                treeId={id}
+                treeName={treeName}
+                currentUserRole={userRole}
+            />
             <SearchBar
                 persons={persons}
                 onHighlight={setHighlightedNodes}

@@ -8,6 +8,7 @@ import PhotoPickerTest from './pages/PhotoPickerTest';
 import TermsOfService from './pages/TermsOfService';
 import MagicLinkAuth from './pages/MagicLinkAuth';
 import ResetPassword from './pages/ResetPassword';
+import InviteAcceptPage from './pages/InviteAcceptPage';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 
@@ -114,6 +115,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/trees" element={<TreeDashboard />} />
         <Route path="/tree/:id" element={<TreePage />} />
+        <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/magic-link" element={<MagicLinkAuth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
