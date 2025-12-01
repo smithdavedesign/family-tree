@@ -249,27 +249,46 @@ exports.deleteTree = async (req, res) => {
         }
 
         // Cascade delete using admin client
-        // 1. Delete Media
-        await supabaseAdmin
-            .from('media')
-            .delete()
-            .in('person_id',
-                supabaseAdmin.from('persons').select('id').eq('tree_id', id)
-            );
+        // 1. Get all person IDs for this tree
+        const { data: persons } = await supabaseAdmin
+            .from('persons')
+            .select('id')
+            .eq('tree_id', id);
 
-        // 2. Delete Relationships
+        // 2. Delete Media if there are persons
+        if (persons && persons.length > 0) {
+            const personIds = persons.map(p => p.id);
+            await supabaseAdmin
+                .from('media')
+                .delete()
+                .in('person_id', personIds);
+        }
+
+        // 3. Delete Relationships
         await supabaseAdmin
             .from('relationships')
             .delete()
             .eq('tree_id', id);
 
-        // 3. Delete Persons
+        // 4. Delete Persons
         await supabaseAdmin
             .from('persons')
             .delete()
             .eq('tree_id', id);
 
-        // 4. Delete Tree
+        // 5. Delete tree members
+        await supabaseAdmin
+            .from('tree_members')
+            .delete()
+            .eq('tree_id', id);
+
+        // 6. Delete invitations
+        await supabaseAdmin
+            .from('invitations')
+            .delete()
+            .eq('tree_id', id);
+
+        // 7. Delete Tree
         const { error: deleteError } = await supabaseAdmin
             .from('trees')
             .delete()
