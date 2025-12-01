@@ -212,7 +212,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
             event.preventDefault();
 
             // Don't show context menu for viewers
-            if (userRole === 'viewer') {
+            if (userRole !== 'owner' && userRole !== 'editor') {
                 return;
             }
 
@@ -346,7 +346,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
     const handleMenuAction = async (action, sourceNodeId) => {
         // ... (existing implementation)
         // Add check for viewer role just in case
-        if (userRole === 'viewer') return;
+        if (userRole !== 'owner' && userRole !== 'editor') return;
 
         setMenu(null);
 
@@ -497,9 +497,9 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
                 nodeTypes={nodeTypes}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
-                nodesConnectable={userRole !== 'viewer'}
+                nodesConnectable={userRole === 'owner' || userRole === 'editor'}
             >
-                {userRole !== 'viewer' && (
+                {(userRole === 'owner' || userRole === 'editor') && (
                     <Panel position="top-left" className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
                         <button
                             onClick={handleUndo}

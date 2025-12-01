@@ -206,7 +206,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
 
     if (!person) return null;
 
-    const canEdit = userRole !== 'viewer';
+    const canEdit = userRole === 'owner' || userRole === 'editor';
 
     return (
         <>
