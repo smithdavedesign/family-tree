@@ -39,8 +39,11 @@ const TreePage = () => {
     const loadTreeData = async () => {
         setLoading(true);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch(`/api/tree/${id}`, {
-                credentials: 'include',
+                headers: { Authorization: `Bearer ${token}` }
             });
 
             if (!response.ok) throw new Error('Failed to load tree');

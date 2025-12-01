@@ -23,7 +23,13 @@ const ROLE_HIERARCHY = {
  * Check if user has required role for a tree
  * @param {string} requiredRole - Minimum required role (owner, editor, viewer)
  */
-const requireTreeRole = (requiredRole) => {
+/**
+ * Check if user has required role for a tree
+ * @param {string} requiredRole - Minimum required role (owner, editor, viewer)
+ * @param {object} options - Options for ID resolution
+ * @param {string} options.lookupFromTable - Table to lookup tree_id from if id param is provided (e.g. 'persons', 'relationships')
+ */
+const requireTreeRole = (requiredRole, options = {}) => {
     return async (req, res, next) => {
         // Skip in mock mode
         if (process.env.USE_MOCK === 'true') {
@@ -32,8 +38,27 @@ const requireTreeRole = (requiredRole) => {
 
         try {
             const userId = req.user?.id;
-            // Support both :id and :treeId parameter names, and body
-            const treeId = req.params.id || req.params.treeId || req.body?.tree_id;
+            let treeId = req.params.treeId || req.body?.tree_id;
+
+            // If no explicit treeId, try to resolve from :id param
+            if (!treeId && req.params.id) {
+                if (options.lookupFromTable) {
+                    // Resolve tree_id from the entity (person, relationship, etc.)
+                    const { data, error } = await supabaseAdmin
+                        .from(options.lookupFromTable)
+                        .select('tree_id')
+                        .eq('id', req.params.id)
+                        .single();
+
+                    if (error || !data) {
+                        return res.status(404).json({ error: 'Entity not found' });
+                    }
+                    treeId = data.tree_id;
+                } else {
+                    // Default: :id is the treeId
+                    treeId = req.params.id;
+                }
+            }
 
             if (!userId) {
                 return res.status(401).json({ error: 'Authentication required' });
@@ -138,6 +163,13 @@ const requireEditor = requireTreeRole(ROLES.EDITOR);
  */
 const requireViewer = requireTreeRole(ROLES.VIEWER);
 
+// Person-specific middlewares
+const requirePersonEditor = requireTreeRole(ROLES.EDITOR, { lookupFromTable: 'persons' });
+const requirePersonViewer = requireTreeRole(ROLES.VIEWER, { lookupFromTable: 'persons' });
+
+// Relationship-specific middlewares
+const requireRelationshipEditor = requireTreeRole(ROLES.EDITOR, { lookupFromTable: 'relationships' });
+
 /**
  * Helper function to check if user owns a tree (for use in controllers)
  */
@@ -170,6 +202,9 @@ module.exports = {
     requireOwner,
     requireEditor,
     requireViewer,
+    requirePersonEditor,
+    requirePersonViewer,
+    requireRelationshipEditor,
     requireTreeRole,
     isTreeOwner,
     getUserTreeRole,

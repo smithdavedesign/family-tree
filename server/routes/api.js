@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireOwner, requireEditor, requireViewer } = require('../middleware/rbac');
+const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor } = require('../middleware/rbac');
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const treeController = require('../controllers/treeController');
@@ -27,14 +27,14 @@ router.put('/tree/:treeId/member/:userId', requireAuth, requireOwner, auditLog('
 
 // Person routes (require editor role to modify)
 router.post('/person', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'person'), personController.createPerson);
-router.put('/person/:id', requireAuth, requireEditor, writeLimiter, auditLog('UPDATE', 'person'), personController.updatePerson);
-router.delete('/person/:id', requireAuth, requireEditor, writeLimiter, auditLog('DELETE', 'person'), personController.deletePerson);
+router.put('/person/:id', requireAuth, requirePersonEditor, writeLimiter, auditLog('UPDATE', 'person'), personController.updatePerson);
+router.delete('/person/:id', requireAuth, requirePersonEditor, writeLimiter, auditLog('DELETE', 'person'), personController.deletePerson);
 router.post('/person/merge', requireAuth, requireEditor, writeLimiter, auditLog('UPDATE', 'person'), personController.mergePersons);
-router.get('/person/:id/media', requireAuth, requireViewer, mediaController.getMediaForPerson);
+router.get('/person/:id/media', requireAuth, requirePersonViewer, mediaController.getMediaForPerson);
 
 // Relationship routes (require editor role)
 router.post('/relationship', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'relationship'), relationshipController.createRelationship);
-router.delete('/relationship/:id', requireAuth, requireEditor, writeLimiter, auditLog('DELETE', 'relationship'), relationshipController.deleteRelationship);
+router.delete('/relationship/:id', requireAuth, requireRelationshipEditor, writeLimiter, auditLog('DELETE', 'relationship'), relationshipController.deleteRelationship);
 
 // Media routes (require editor role to add)
 router.post('/media', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'media'), mediaController.addMedia);
