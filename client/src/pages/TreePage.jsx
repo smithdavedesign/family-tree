@@ -7,6 +7,7 @@ import TreeSwitcher from '../components/TreeSwitcher';
 import ShareModal from '../components/ShareModal';
 import AccountSettings from '../components/AccountSettings';
 import PhotoPicker from '../components/PhotoPicker';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Share2, Settings } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
@@ -102,6 +103,14 @@ const TreePage = () => {
                     </Button>
                 </div>
             </header>
+
+            {/* Breadcrumbs */}
+            <Breadcrumbs
+                items={[
+                    { label: treeName, href: `/tree/${id}` },
+                    ...(selectedPerson ? [{ label: selectedPerson.data.label }] : [])
+                ]}
+            />
 
             {/* Share Modal */}
             <ShareModal

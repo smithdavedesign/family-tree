@@ -7,6 +7,7 @@ import ReactFlow, {
     useEdgesState,
     Controls,
     Background,
+    MiniMap,
 } from 'reactflow';
 import dagre from 'dagre';
 import 'reactflow/dist/style.css';
@@ -530,6 +531,16 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
                 )}
 
                 <Controls className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4" />
+
+                {/* MiniMap for navigation */}
+                <MiniMap
+                    className="bg-white border-2 border-slate-200 shadow-lg rounded-lg overflow-hidden !bottom-4 !right-4"
+                    nodeStrokeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
+                    nodeColor={(node) => node.data.highlighted ? '#fef3c7' : '#ffffff'}
+                    nodeBorderRadius={16}
+                    maskColor="rgb(248, 250, 252, 0.6)"
+                />
+
                 <Background color="#cbd5e1" gap={16} />
                 {menu && (
                     <div
