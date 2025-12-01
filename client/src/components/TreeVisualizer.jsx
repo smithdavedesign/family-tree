@@ -62,13 +62,12 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
 const nodeTypes = { custom: CustomNode };
 
-const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
+const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer' }) => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [history, setHistory] = useState({ past: [], future: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userRole, setUserRole] = useState(null); // 'owner', 'editor', or 'viewer'
 
     const fetchTreeData = useCallback(async () => {
         console.log("fetchTreeData called with treeId:", treeId);
@@ -109,10 +108,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 return;
             }
 
-            const { persons, relationships, role } = await response.json();
-
-            // Set user role
-            setUserRole(role || 'viewer');
+            const { persons, relationships } = await response.json();
 
             // Transform to React Flow nodes
             const initialNodes = persons.map(p => ({
@@ -215,7 +211,6 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
 
             // Don't show context menu for viewers
             if (userRole === 'viewer') {
-                window.addToast?.('View-only access - You cannot edit this tree', 'warning');
                 return;
             }
 
@@ -237,26 +232,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
 
     // Command Pattern for Undo/Redo
     const executeCommand = async (command) => {
-        const { type, data, undoData } = command;
-
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const token = session?.access_token;
-
-            if (type === 'ADD_PERSON') {
-                // Do: Create Person + Relationship
-                // We assume data contains the full payloads
-                // Actually, let's keep it simple: we just call the API
-                // But for Undo, we need the ID of the created person.
-                // So we execute, get the ID, then push to history.
-            }
-            // This is getting complex because 'data' might depend on execution result.
-            // Let's use a simpler approach:
-            // The 'command' object contains 'do' and 'undo' functions? No, can't serialize functions easily if we persist history.
-            // But for React state it's fine.
-        } catch (e) {
-            console.error(e);
-        }
+        // ... (existing implementation)
     };
 
     // Simplified Undo/Redo: We just track the *actions* and know how to reverse them.
@@ -355,8 +331,13 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
     };
 
     const handleMenuAction = async (action, sourceNodeId) => {
+        // ... (existing implementation)
+        // Add check for viewer role just in case
+        if (userRole === 'viewer') return;
+
         setMenu(null);
 
+        // ... (rest of the function)
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
@@ -489,34 +470,37 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 nodeTypes={nodeTypes}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
+                nodesConnectable={userRole !== 'viewer'}
             >
-                <Panel position="top-left" className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
-                    <button
-                        onClick={handleUndo}
-                        disabled={history.past.length === 0}
-                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
-                        title="Undo"
-                    >
-                        <Undo className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={handleRedo}
-                        disabled={history.future.length === 0}
-                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
-                        title="Redo"
-                    >
-                        <Redo className="w-5 h-5" />
-                    </button>
-                    <div className="w-px bg-slate-200 mx-1" />
-                    <button
-                        onClick={() => handleMenuAction('add_root')}
-                        className="p-2 rounded-lg hover:bg-teal-50 text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-2 font-medium text-sm"
-                        title="Add Root Person"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Root</span>
-                    </button>
-                </Panel>
+                {userRole !== 'viewer' && (
+                    <Panel position="top-left" className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
+                        <button
+                            onClick={handleUndo}
+                            disabled={history.past.length === 0}
+                            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
+                            title="Undo"
+                        >
+                            <Undo className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={handleRedo}
+                            disabled={history.future.length === 0}
+                            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
+                            title="Redo"
+                        >
+                            <Redo className="w-5 h-5" />
+                        </button>
+                        <div className="w-px bg-slate-200 mx-1" />
+                        <button
+                            onClick={() => handleMenuAction('add_root')}
+                            className="p-2 rounded-lg hover:bg-teal-50 text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-2 font-medium text-sm"
+                            title="Add Root Person"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>Add Root</span>
+                        </button>
+                    </Panel>
+                )}
 
                 <Controls className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4" />
                 <Background color="#cbd5e1" gap={16} />
@@ -525,6 +509,11 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                         style={{ top: menu.top, left: menu.left }}
                         className="absolute z-50 bg-white border rounded shadow-lg p-2 w-56 flex flex-col gap-1"
                     >
+                        {/* ... (Menu items) ... */}
+                        {/* Since we block menu for viewers in onNodeContextMenu, we don't need to hide items here, 
+                            but we should double check if we want to show a "View Details" option instead. 
+                            For now, we just block the menu entirely for viewers as per plan. 
+                        */}
                         <div className="text-xs font-bold text-gray-500 px-2 py-1 uppercase border-b mb-1">
                             Actions
                         </div>
@@ -538,6 +527,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                         >
                             Edit Person
                         </button>
+                        {/* ... (rest of menu) ... */}
                         <div className="border-t my-1"></div>
                         <div className="text-xs font-bold text-gray-500 px-2 py-1 uppercase border-b mb-1">
                             Add Relative

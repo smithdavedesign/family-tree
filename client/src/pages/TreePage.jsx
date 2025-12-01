@@ -118,6 +118,7 @@ const TreePage = () => {
                     onNodeClick={handleNodeClick}
                     highlightedNodes={highlightedNodes}
                     key={refreshTrigger}
+                    userRole={userRole}
                 />
             </div>
 
@@ -131,6 +132,7 @@ const TreePage = () => {
                             setPhotoSelectHandler(() => handler);
                             setIsPhotoPickerOpen(true);
                         }}
+                        userRole={userRole}
                     />
                 </div>
             )}

@@ -28,8 +28,9 @@ const SearchBar = ({ persons = [], onHighlight, onClear }) => {
                     const birthYear = person.dob ? new Date(person.dob).getFullYear() : null;
                     const deathYear = person.dod ? new Date(person.dod).getFullYear() : null;
 
-                    const startYear = yearRange.start ? parseInt(yearRange.start) : -Infinity;
-                    const endYear = yearRange.end ? parseInt(yearRange.end) : Infinity;
+                    // Extract years from date inputs (format: YYYY-MM-DD)
+                    const startYear = yearRange.start ? parseInt(yearRange.start.split('-')[0]) : -Infinity;
+                    const endYear = yearRange.end ? parseInt(yearRange.end.split('-')[0]) : Infinity;
 
                     return (birthYear && birthYear >= startYear && birthYear <= endYear) ||
                         (deathYear && deathYear >= startYear && deathYear <= endYear);
@@ -118,25 +119,29 @@ const SearchBar = ({ persons = [], onHighlight, onClear }) => {
                             <div className="flex gap-2 items-center">
                                 <Calendar className="w-4 h-4 text-gray-500" />
                                 <input
-                                    type="number"
+                                    type="date"
+                                    id="yearRangeStart"
+                                    name="yearRangeStart"
                                     value={yearRange.start}
                                     onChange={(e) => {
                                         setYearRange({ ...yearRange, start: e.target.value });
                                         handleSearch(searchTerm);
                                     }}
-                                    placeholder="Start year"
-                                    className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    placeholder="Start date"
+                                    className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                                 <span className="text-gray-500">to</span>
                                 <input
-                                    type="number"
+                                    type="date"
+                                    id="yearRangeEnd"
+                                    name="yearRangeEnd"
                                     value={yearRange.end}
                                     onChange={(e) => {
                                         setYearRange({ ...yearRange, end: e.target.value });
                                         handleSearch(searchTerm);
                                     }}
-                                    placeholder="End year"
-                                    className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    placeholder="End date"
+                                    className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                             </div>
                         )}

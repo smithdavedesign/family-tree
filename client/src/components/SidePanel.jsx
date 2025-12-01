@@ -202,6 +202,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
 
     if (!person) return null;
 
+    const canEdit = userRole !== 'viewer';
+
     return (
         <>
             <div className="h-full w-full bg-white flex flex-col">
@@ -227,28 +229,33 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                     </div>
                                 )}
                             </div>
-                            <button
-                                onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
-                                className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
-                                title="Change Photo"
-                            >
-                                <ImageIcon className="w-4 h-4" />
-                            </button>
+                            {canEdit && (
+                                <button
+                                    onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
+                                    className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
+                                    title="Change Photo"
+                                >
+                                    <ImageIcon className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
 
                         {!isEditing ? (
                             <div className="text-center mt-4 space-y-1">
                                 <h3 className="text-2xl font-bold text-slate-800">{person.data.label}</h3>
                                 <p className="text-slate-500 font-medium">{person.data.subline}</p>
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline mt-2 inline-block"
-                                >
-                                    Edit Details
-                                </button>
+                                {canEdit && (
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline mt-2 inline-block"
+                                    >
+                                        Edit Details
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="w-full mt-6 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                {/* ... (Edit Form - same as before) ... */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">First Name</label>
@@ -291,6 +298,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
 
                     {isEditing && (
                         <div className="space-y-4 animate-fadeIn">
+                            {/* ... (Vital Statistics Form - same as before) ... */}
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -351,16 +359,46 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                         </div>
                     )}
 
+                    {!isEditing && (
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Birth Date</label>
+                                    <div className="text-sm text-slate-800">{formData.dob ? new Date(formData.dob).toLocaleDateString() : '-'}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Death Date</label>
+                                    <div className="text-sm text-slate-800">{formData.dod ? new Date(formData.dod).toLocaleDateString() : '-'}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</label>
+                                    <div className="text-sm text-slate-800">{formData.gender || '-'}</div>
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Occupation</label>
+                                    <div className="text-sm text-slate-800">{formData.occupation || '-'}</div>
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Place of Birth</label>
+                                    <div className="text-sm text-slate-800">{formData.pob || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Photos Section */}
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Photos</h4>
-                            <button
-                                onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
-                                className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
-                            >
-                                <Plus className="w-3 h-3" /> Add Photo
-                            </button>
+                            {canEdit && (
+                                <button
+                                    onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
+                                    className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
+                                >
+                                    <Plus className="w-3 h-3" /> Add Photo
+                                </button>
+                            )}
                         </div>
 
                         {loadingMedia ? (
@@ -388,12 +426,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
-                            <button
-                                onClick={() => setIsAddRelationshipOpen(true)}
-                                className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
-                            >
-                                <Plus className="w-3 h-3" /> Add
-                            </button>
+                            {canEdit && (
+                                <button
+                                    onClick={() => setIsAddRelationshipOpen(true)}
+                                    className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
+                                >
+                                    <Plus className="w-3 h-3" /> Add
+                                </button>
+                            )}
                         </div>
                         {loadingRelationships ? (
                             <div className="flex justify-center py-4">
@@ -417,12 +457,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                                 <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
                                                 <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
                                             </div>
-                                            <button
-                                                onClick={() => handleDeleteRelationship(rel.id)}
-                                                className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded font-medium transition-colors"
-                                            >
-                                                Remove
-                                            </button>
+                                            {canEdit && (
+                                                <button
+                                                    onClick={() => handleDeleteRelationship(rel.id)}
+                                                    className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded font-medium transition-colors"
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -450,19 +492,18 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="pt-6 border-t border-slate-100">
-                        <button
-                            onClick={() => setIsMergeModalOpen(true)}
-                            className="w-full py-3 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2"
-                        >
-                            Merge Duplicate Person
-                        </button>
-                    </div>
+                    {canEdit && (
+                        <div className="pt-6 border-t border-slate-100">
+                            <button
+                                onClick={() => setIsMergeModalOpen(true)}
+                                className="w-full py-3 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                            >
+                                Merge Duplicate Person
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
-
-
-
 
             <MergeModal
                 isOpen={isMergeModalOpen}
