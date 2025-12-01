@@ -76,7 +76,7 @@ const TreePage = () => {
     if (loading) return <div>Loading tree...</div>;
 
     return (
-        <div className="flex flex-col h-screen relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center p-4 animate-fadeIn">
             <header className="bg-white shadow p-4 z-10 flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <h1 className="text-xl font-bold text-teal-800 hidden md:block">Roots & Branches</h1>
@@ -107,7 +107,10 @@ const TreePage = () => {
             {/* Breadcrumbs */}
             <Breadcrumbs
                 items={[
-                    { label: treeName, href: `/tree/${id}` },
+                    {
+                        label: treeName,
+                        onClick: () => setSelectedPerson(null) // Close panel when clicking tree name
+                    },
                     ...(selectedPerson ? [{ label: selectedPerson.data.label }] : [])
                 ]}
             />

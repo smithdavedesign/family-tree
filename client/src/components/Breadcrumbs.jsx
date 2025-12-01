@@ -24,6 +24,13 @@ const Breadcrumbs = ({ items = [] }) => {
                             <span className="text-slate-900 font-semibold" aria-current="page">
                                 {item.label}
                             </span>
+                        ) : item.onClick ? (
+                            <button
+                                onClick={item.onClick}
+                                className="text-slate-600 hover:text-teal-600 transition-colors font-medium hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded px-1"
+                            >
+                                {item.label}
+                            </button>
                         ) : (
                             <Link
                                 to={item.href}

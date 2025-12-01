@@ -139,17 +139,44 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
 
             // Transform to React Flow edges
             const initialEdges = relationships.map(r => {
-                let edgeStyle = {};
+                let edgeStyle = {
+                    stroke: '#14b8a6', // Default teal for parent-child
+                    strokeWidth: 2.5,
+                };
                 let label = '';
+                let labelStyle = {
+                    fill: '#475569',
+                    fontWeight: 600,
+                    fontSize: 11,
+                };
+                let labelBgStyle = {
+                    fill: '#ffffff',
+                    fillOpacity: 0.9,
+                };
 
                 if (r.type === 'spouse') {
                     label = '❤️';
+                    edgeStyle = {
+                        stroke: '#ec4899', // Pink for spouse
+                        strokeWidth: 3,
+                    };
+                    labelStyle = { ...labelStyle, fontSize: 14 };
                 } else if (r.type === 'adoptive_parent_child') {
-                    edgeStyle = { strokeDasharray: '5,5', stroke: '#10b981' };
+                    edgeStyle = {
+                        strokeDasharray: '8,4',
+                        stroke: '#10b981', // Emerald green
+                        strokeWidth: 2.5,
+                    };
                     label = 'Adoptive';
+                    labelStyle = { ...labelStyle, fill: '#059669' };
                 } else if (r.type === 'step_parent_child') {
-                    edgeStyle = { strokeDasharray: '5,5', stroke: '#f59e0b' };
+                    edgeStyle = {
+                        strokeDasharray: '8,4',
+                        stroke: '#f59e0b', // Amber
+                        strokeWidth: 2.5,
+                    };
                     label = 'Step';
+                    labelStyle = { ...labelStyle, fill: '#d97706' };
                 }
 
                 return {
@@ -159,6 +186,8 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
                     type: 'smoothstep',
                     animated: r.type === 'spouse',
                     label,
+                    labelStyle,
+                    labelBgStyle,
                     style: edgeStyle,
                     data: { relationshipType: r.type, relationshipId: r.id }
                 };
