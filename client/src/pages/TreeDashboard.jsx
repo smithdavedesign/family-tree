@@ -5,6 +5,7 @@ import { supabase } from '../auth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Button, useToast } from '../components/ui';
 import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 import AccountSettings from '../components/AccountSettings';
 
 const TreeDashboard = (props) => {
@@ -16,6 +17,7 @@ const TreeDashboard = (props) => {
     const [newTreeName, setNewTreeName] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [activeView, setActiveView] = useState('all');
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -135,195 +137,199 @@ const TreeDashboard = (props) => {
                 onOpenSettings={() => setShowSettings(true)}
             />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900">My Family Trees</h1>
-                        <p className="text-slate-600 mt-1">Manage and explore your family history</p>
-                    </div>
+            <div className="flex">
+                <Sidebar activeView={activeView} onViewChange={setActiveView} />
 
-                    {/* Create New Tree Button */}
-                    <Button
-                        variant="primary"
-                        leftIcon={<Plus className="w-5 h-5" />}
-                        onClick={() => setShowCreateModal(true)}
-                    >
-                        Create New Tree
-                    </Button>
-                </div>
+                <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900">
+                                {activeView === 'all' && 'All Trees'}
+                                {activeView === 'shared' && 'Shared with Me'}
+                                {activeView === 'recent' && 'Recent Trees'}
+                                {activeView === 'favorites' && 'Favorites'}
+                                {activeView === 'archived' && 'Archived Trees'}
+                            </h1>
+                            <p className="text-slate-600 mt-1">Manage and explore your family history</p>
+                        </div>
 
-                {/* Trees Grid */}
-                {ownedTrees.length === 0 && sharedTrees.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-lg shadow">
-                        <TreePine className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No trees yet</h3>
-                        <p className="text-gray-500 mb-6">Create your first family tree to get started</p>
+                        {/* Create New Tree Button */}
                         <Button
                             variant="primary"
-                            size="lg"
+                            leftIcon={<Plus className="w-5 h-5" />}
                             onClick={() => setShowCreateModal(true)}
                         >
-                            Create Your First Tree
+                            Create New Tree
                         </Button>
                     </div>
-                ) : (
-                    <div className="space-y-8">
-                        {/* My Trees Section */}
-                        {ownedTrees.length > 0 && (
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <TreePine className="w-6 h-6 text-teal-600" />
-                                    My Trees
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {ownedTrees.map(tree => (
-                                        <div
-                                            key={tree.id}
-                                            className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer group"
-                                            onClick={() => navigate(`/tree/${tree.id}`)}
-                                        >
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-3 bg-teal-100 rounded-lg">
-                                                        <TreePine className="w-6 h-6 text-teal-600" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-800 group-hover:text-teal-600 transition">
-                                                            {tree.name}
-                                                        </h3>
-                                                        <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">Owner</span>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteTree(tree.id, tree.name);
-                                                    }}
-                                                    className="p-2 hover:bg-red-50 rounded-lg transition opacity-0 group-hover:opacity-100"
-                                                    title="Delete tree"
-                                                >
-                                                    <Trash2 className="w-4 h-4 text-red-500" />
-                                                </button>
-                                            </div>
 
-                                            <div className="space-y-2 text-sm text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    <span>Created {new Date(tree.created_at).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-4 pt-4 border-t">
-                                                <button className="text-teal-600 font-semibold hover:text-teal-700 transition">
-                                                    Open Tree →
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Shared Trees Section */}
-                        {sharedTrees.length > 0 && (
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <Users className="w-6 h-6 text-blue-600" />
-                                    Shared With Me
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {sharedTrees.map(tree => (
-                                        <div
-                                            key={tree.id}
-                                            className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer group"
-                                            onClick={() => navigate(`/tree/${tree.id}`)}
-                                        >
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                                        <Users className="w-6 h-6 text-blue-600" />
+                    {/* Trees Grid */}
+                    {(activeView === 'all' || activeView === 'recent') && (
+                        <>
+                            {ownedTrees.length > 0 && (
+                                <div className="mb-12">
+                                    <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                        <TreePine className="w-5 h-5 text-teal-600" />
+                                        My Trees
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {ownedTrees.map((tree) => (
+                                            <div key={tree.id} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 overflow-hidden group">
+                                                <div className="p-6">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform duration-200">
+                                                            <TreePine className="w-6 h-6" />
+                                                        </div>
+                                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteTree(tree.id, tree.name);
+                                                                }}
+                                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Delete Tree"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
-                                                            {tree.name}
-                                                        </h3>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${tree.memberRole === 'editor'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-gray-100 text-gray-800'
-                                                            }`}>
-                                                            {tree.memberRole}
+                                                    <h3 className="text-lg font-bold text-slate-900 mb-1">{tree.name}</h3>
+                                                    <div className="flex items-center gap-4 text-sm text-slate-500">
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="w-4 h-4" />
+                                                            {new Date(tree.created_at).toLocaleDateString()}
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Users className="w-4 h-4" />
+                                                            Owner
                                                         </span>
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <div className="space-y-2 text-sm text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    <span>Created {new Date(tree.created_at).toLocaleDateString()}</span>
+                                                <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                                                    <span className="text-sm font-medium text-teal-600 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 cursor-pointer" onClick={() => navigate(`/tree/${tree.id}`)}>
+                                                        View Tree <ChevronRight className="w-4 h-4" />
+                                                    </span>
                                                 </div>
                                             </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
 
-                                            <div className="mt-4 pt-4 border-t">
-                                                <button className="text-blue-600 font-semibold hover:text-blue-700 transition">
-                                                    Open Tree →
-                                                </button>
+                    {(activeView === 'all' || activeView === 'shared') && sharedTrees.length > 0 && (
+                        <div>
+                            <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                <Users className="w-5 h-5 text-blue-600" />
+                                Shared with Me
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {sharedTrees.map((tree) => (
+                                    <div key={tree.id} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 overflow-hidden group">
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-200">
+                                                    <Users className="w-6 h-6" />
+                                                </div>
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900 mb-1">{tree.name}</h3>
+                                            <div className="flex items-center gap-4 text-sm text-slate-500">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-4 h-4" />
+                                                    {new Date(tree.created_at).toLocaleDateString()}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Users className="w-4 h-4" />
+                                                    {tree.role || 'Viewer'}
+                                                </span>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Create Tree Modal */}
-                {showCreateModal && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Create New Tree</h2>
-
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Tree Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newTreeName}
-                                    onChange={(e) => setNewTreeName(e.target.value)}
-                                    placeholder="e.g., Smith Family Tree"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    autoFocus
-                                    onKeyPress={(e) => e.key === 'Enter' && handleCreateTree()}
-                                />
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="ghost"
-                                    fullWidth
-                                    onClick={() => {
-                                        setShowCreateModal(false);
-                                        setNewTreeName('');
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    fullWidth
-                                    onClick={handleCreateTree}
-                                    disabled={creating || !newTreeName.trim()}
-                                    loading={creating}
-                                >
-                                    Create Tree
-                                </Button>
+                                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                                            <span className="text-sm font-medium text-blue-600 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 cursor-pointer" onClick={() => navigate(`/tree/${tree.id}`)}>
+                                                View Tree <ChevronRight className="w-4 h-4" />
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {/* Empty States */}
+                    {activeView === 'favorites' && (
+                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                            <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-slate-900">No favorites yet</h3>
+                            <p className="text-slate-500 mt-1">Star your most important trees to see them here.</p>
+                        </div>
+                    )}
+
+                    {activeView === 'archived' && (
+                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                            <Archive className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-slate-900">No archived trees</h3>
+                            <p className="text-slate-500 mt-1">Archived trees will appear here.</p>
+                        </div>
+                    )}
+                </main>
             </div>
+
+            {/* Create Tree Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-scaleIn">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Create New Tree</h2>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Tree Name
+                            </label>
+                            <input
+                                type="text"
+                                value={newTreeName}
+                                onChange={(e) => setNewTreeName(e.target.value)}
+                                placeholder="e.g., Smith Family Tree"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                autoFocus
+                                onKeyPress={(e) => e.key === 'Enter' && handleCreateTree()}
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <Button
+                                variant="ghost"
+                                fullWidth
+                                onClick={() => {
+                                    setShowCreateModal(false);
+                                    setNewTreeName('');
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="primary"
+                                fullWidth
+                                onClick={handleCreateTree}
+                                disabled={creating || !newTreeName.trim()}
+                                loading={creating}
+                            >
+                                Create Tree
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Account Settings Modal */}
+            {showSettings && (
+                <AccountSettings
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    user={user}
+                />
+            )}
         </div>
     );
 };
