@@ -76,8 +76,9 @@ const TreePage = () => {
     if (loading) return <div>Loading tree...</div>;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center p-4 animate-fadeIn">
-            <header className="bg-white shadow p-4 z-10 flex justify-between items-center">
+        <div className="h-screen flex flex-col bg-gradient-to-br from-teal-50 to-blue-50">
+            {/* Fixed Header */}
+            <header className="bg-white shadow-md p-4 z-10 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-4">
                     <h1 className="text-xl font-bold text-teal-800 hidden md:block">Roots & Branches</h1>
                     <TreeSwitcher currentTreeId={id} />
@@ -115,7 +116,44 @@ const TreePage = () => {
                 ]}
             />
 
-            {/* Share Modal */}
+            {/* Search Bar */}
+            <SearchBar
+                persons={persons}
+                onHighlight={setHighlightedNodes}
+                onClear={() => setHighlightedNodes([])}
+            />
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Tree Visualizer */}
+                <div className="flex-1 relative">
+                    <TreeVisualizer
+                        treeId={id}
+                        onNodeClick={handleNodeClick}
+                        highlightedNodes={highlightedNodes}
+                        key={refreshTrigger}
+                        userRole={userRole}
+                    />
+                </div>
+
+                {/* Side Panel */}
+                {selectedPerson && (
+                    <div className="w-full md:w-96 border-l bg-white shadow-xl z-20 shrink-0 overflow-y-auto">
+                        <SidePanel
+                            person={selectedPerson}
+                            onClose={handleClosePanel}
+                            onUpdate={handleUpdate}
+                            onOpenPhotoPicker={(handler) => {
+                                setPhotoSelectHandler(() => handler);
+                                setIsPhotoPickerOpen(true);
+                            }}
+                            userRole={userRole}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Modals */}
             <ShareModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
@@ -123,35 +161,6 @@ const TreePage = () => {
                 treeName={treeName}
                 currentUserRole={userRole}
             />
-            <SearchBar
-                persons={persons}
-                onHighlight={setHighlightedNodes}
-                onClear={() => setHighlightedNodes([])}
-            />
-            <div className="flex-grow relative overflow-hidden">
-                <TreeVisualizer
-                    treeId={id}
-                    onNodeClick={handleNodeClick}
-                    highlightedNodes={highlightedNodes}
-                    key={refreshTrigger}
-                    userRole={userRole}
-                />
-            </div>
-
-            {selectedPerson && (
-                <div className="w-full md:w-96 border-l bg-white shadow-xl z-20 h-full shrink-0 transition-all duration-300">
-                    <SidePanel
-                        person={selectedPerson}
-                        onClose={handleClosePanel}
-                        onUpdate={handleUpdate}
-                        onOpenPhotoPicker={(handler) => {
-                            setPhotoSelectHandler(() => handler);
-                            setIsPhotoPickerOpen(true);
-                        }}
-                        userRole={userRole}
-                    />
-                </div>
-            )}
 
             <PhotoPicker
                 isOpen={isPhotoPickerOpen}
@@ -164,16 +173,13 @@ const TreePage = () => {
                 }}
             />
 
-
-            {
-                showSettings && user && (
-                    <AccountSettings
-                        user={user}
-                        onClose={() => setShowSettings(false)}
-                    />
-                )
-            }
-        </div >
+            {showSettings && user && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
+                />
+            )}
+        </div>
     );
 };
 
