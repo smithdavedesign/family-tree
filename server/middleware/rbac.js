@@ -32,7 +32,8 @@ const requireTreeRole = (requiredRole) => {
 
         try {
             const userId = req.user?.id;
-            const treeId = req.params.id || req.body?.tree_id;
+            // Support both :id and :treeId parameter names, and body
+            const treeId = req.params.id || req.params.treeId || req.body?.tree_id;
 
             if (!userId) {
                 return res.status(401).json({ error: 'Authentication required' });

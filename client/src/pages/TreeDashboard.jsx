@@ -5,7 +5,8 @@ import { supabase } from '../auth';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const TreeDashboard = ({ user }) => {
-    const [trees, setTrees] = useState([]);
+    const [ownedTrees, setOwnedTrees] = useState([]);
+    const [sharedTrees, setSharedTrees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
     const [newTreeName, setNewTreeName] = useState('');
@@ -26,8 +27,15 @@ const TreeDashboard = ({ user }) => {
             });
 
             if (response.ok) {
-                const treesData = await response.json();
-                setTrees(treesData);
+                const data = await response.json();
+                // Handle both old format (array) and new format (object with ownedTrees/sharedTrees)
+                if (Array.isArray(data)) {
+                    setOwnedTrees(data);
+                    setSharedTrees([]);
+                } else {
+                    setOwnedTrees(data.ownedTrees || []);
+                    setSharedTrees(data.sharedTrees || []);
+                }
             }
         } catch (error) {
             console.error('Error fetching trees:', error);
@@ -125,7 +133,7 @@ const TreeDashboard = ({ user }) => {
                 </button>
 
                 {/* Trees Grid */}
-                {trees.length === 0 ? (
+                {ownedTrees.length === 0 && sharedTrees.length === 0 ? (
                     <div className="text-center py-16 bg-white rounded-lg shadow">
                         <TreePine className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <h3 className="text-xl font-semibold text-gray-700 mb-2">No trees yet</h3>
@@ -138,50 +146,113 @@ const TreeDashboard = ({ user }) => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {trees.map(tree => (
-                            <div
-                                key={tree.id}
-                                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer group"
-                                onClick={() => navigate(`/tree/${tree.id}`)}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-teal-100 rounded-lg">
-                                            <TreePine className="w-6 h-6 text-teal-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-teal-600 transition">
-                                                {tree.name}
-                                            </h3>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteTree(tree.id, tree.name);
-                                        }}
-                                        className="p-2 hover:bg-red-50 rounded-lg transition opacity-0 group-hover:opacity-100"
-                                        title="Delete tree"
-                                    >
-                                        <Trash2 className="w-4 h-4 text-red-500" />
-                                    </button>
-                                </div>
+                    <div className="space-y-8">
+                        {/* My Trees Section */}
+                        {ownedTrees.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <TreePine className="w-6 h-6 text-teal-600" />
+                                    My Trees
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {ownedTrees.map(tree => (
+                                        <div
+                                            key={tree.id}
+                                            className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer group"
+                                            onClick={() => navigate(`/tree/${tree.id}`)}
+                                        >
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-3 bg-teal-100 rounded-lg">
+                                                        <TreePine className="w-6 h-6 text-teal-600" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-gray-800 group-hover:text-teal-600 transition">
+                                                            {tree.name}
+                                                        </h3>
+                                                        <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">Owner</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteTree(tree.id, tree.name);
+                                                    }}
+                                                    className="p-2 hover:bg-red-50 rounded-lg transition opacity-0 group-hover:opacity-100"
+                                                    title="Delete tree"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                </button>
+                                            </div>
 
-                                <div className="space-y-2 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>Created {new Date(tree.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
+                                            <div className="space-y-2 text-sm text-gray-600">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="w-4 h-4" />
+                                                    <span>Created {new Date(tree.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
 
-                                <div className="mt-4 pt-4 border-t">
-                                    <button className="text-teal-600 font-semibold hover:text-teal-700 transition">
-                                        Open Tree →
-                                    </button>
+                                            <div className="mt-4 pt-4 border-t">
+                                                <button className="text-teal-600 font-semibold hover:text-teal-700 transition">
+                                                    Open Tree →
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
+                        )}
+
+                        {/* Shared Trees Section */}
+                        {sharedTrees.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <Users className="w-6 h-6 text-blue-600" />
+                                    Shared With Me
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {sharedTrees.map(tree => (
+                                        <div
+                                            key={tree.id}
+                                            className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer group"
+                                            onClick={() => navigate(`/tree/${tree.id}`)}
+                                        >
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-3 bg-blue-100 rounded-lg">
+                                                        <Users className="w-6 h-6 text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
+                                                            {tree.name}
+                                                        </h3>
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${tree.memberRole === 'editor'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                            {tree.memberRole}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2 text-sm text-gray-600">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="w-4 h-4" />
+                                                    <span>Created {new Date(tree.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 pt-4 border-t">
+                                                <button className="text-blue-600 font-semibold hover:text-blue-700 transition">
+                                                    Open Tree →
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

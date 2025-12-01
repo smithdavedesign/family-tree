@@ -126,8 +126,8 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                     <button
                         onClick={() => setActiveTab('invite')}
                         className={`flex-1 py-3 text-sm font-medium ${activeTab === 'invite'
-                                ? 'text-teal-600 border-b-2 border-teal-600'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-teal-600 border-b-2 border-teal-600'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <div className="flex items-center justify-center gap-2">
@@ -138,8 +138,8 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                     <button
                         onClick={() => setActiveTab('members')}
                         className={`flex-1 py-3 text-sm font-medium ${activeTab === 'members'
-                                ? 'text-teal-600 border-b-2 border-teal-600'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-teal-600 border-b-2 border-teal-600'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <div className="flex items-center justify-center gap-2">
@@ -158,7 +158,7 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                                     Permission Level
                                 </label>
                                 <div className="flex gap-4">
-                                    <label className={`flex-1 p-3 border rounded-lg cursor-pointer transition ${inviteRole === 'viewer' ? 'border-teal-500 bg-teal-50' : 'hover:bg-gray-50'}`}>
+                                    <label className={`flex-1 p-3 border-2 rounded-lg cursor-pointer transition relative ${inviteRole === 'viewer' ? 'border-teal-600 bg-teal-50 ring-2 ring-teal-200' : 'border-gray-200 hover:bg-gray-50'}`}>
                                         <input
                                             type="radio"
                                             name="role"
@@ -167,10 +167,13 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                                             onChange={(e) => setInviteRole(e.target.value)}
                                             className="sr-only"
                                         />
-                                        <div className="font-medium text-gray-900">Viewer</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-medium text-gray-900">Viewer</div>
+                                            {inviteRole === 'viewer' && <Check className="w-5 h-5 text-teal-600" />}
+                                        </div>
                                         <div className="text-xs text-gray-500">Can view tree and details</div>
                                     </label>
-                                    <label className={`flex-1 p-3 border rounded-lg cursor-pointer transition ${inviteRole === 'editor' ? 'border-teal-500 bg-teal-50' : 'hover:bg-gray-50'}`}>
+                                    <label className={`flex-1 p-3 border-2 rounded-lg cursor-pointer transition relative ${inviteRole === 'editor' ? 'border-teal-600 bg-teal-50 ring-2 ring-teal-200' : 'border-gray-200 hover:bg-gray-50'}`}>
                                         <input
                                             type="radio"
                                             name="role"
@@ -179,7 +182,10 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                                             onChange={(e) => setInviteRole(e.target.value)}
                                             className="sr-only"
                                         />
-                                        <div className="font-medium text-gray-900">Editor</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-medium text-gray-900">Editor</div>
+                                            {inviteRole === 'editor' && <Check className="w-5 h-5 text-teal-600" />}
+                                        </div>
                                         <div className="text-xs text-gray-500">Can add/edit people & photos</div>
                                     </label>
                                 </div>
@@ -235,7 +241,7 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                                         </div>
                                         <div>
                                             <div className="font-medium text-gray-900">
-                                                {member.users.user_metadata?.full_name || member.users.email}
+                                                {member.users.email}
                                             </div>
                                             <div className="text-xs text-gray-500 capitalize">
                                                 {member.role}

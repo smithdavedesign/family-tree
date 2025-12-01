@@ -60,8 +60,7 @@ exports.getInvitation = async (req, res) => {
             .from('invitations')
             .select(`
                 *,
-                trees (name, owner_id),
-                users:inviter_id (email, user_metadata)
+                trees (name, owner_id)
             `)
             .eq('token', token)
             .eq('is_active', true)
@@ -92,6 +91,8 @@ exports.acceptInvitation = async (req, res) => {
         const { token } = req.params;
         const userId = req.user.id;
 
+        console.log('Accept invitation called - Token:', token, 'UserId:', userId);
+
         // 1. Get invitation
         const { data: invitation, error: inviteError } = await supabaseAdmin
             .from('invitations')
@@ -100,7 +101,10 @@ exports.acceptInvitation = async (req, res) => {
             .eq('is_active', true)
             .single();
 
+        console.log('Invitation lookup result:', { invitation, inviteError });
+
         if (inviteError || !invitation) {
+            console.log('Returning 404 - invitation not found');
             return res.status(404).json({ error: 'Invitation not found or expired' });
         }
 
@@ -112,11 +116,27 @@ exports.acceptInvitation = async (req, res) => {
             .eq('user_id', userId)
             .single();
 
+        console.log('Existing member check:', existingMember);
+
         if (existingMember) {
+            console.log('Returning 400 - already a member');
             return res.status(400).json({ error: 'You are already a member of this tree' });
         }
 
-        // 3. Add to tree_members
+        // 3. Ensure user exists in public.users before adding to tree_members
+        const { error: userError } = await supabaseAdmin
+            .from('users')
+            .upsert({
+                id: userId,
+                email: req.user.email,
+            }, { onConflict: 'id', ignoreDuplicates: true });
+
+        if (userError) {
+            console.error('Error ensuring user exists in public.users:', userError);
+            return res.status(500).json({ error: 'Failed to process invitation' });
+        }
+
+        // 4. Add to tree_members
         const { error: memberError } = await supabaseAdmin
             .from('tree_members')
             .insert([{
@@ -126,6 +146,9 @@ exports.acceptInvitation = async (req, res) => {
             }]);
 
         if (memberError) throw memberError;
+
+        // Small delay to ensure database propagation (especially for distributed DBs)
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // 4. Mark invitation as used (optional: keep active for multiple uses? For now, let's keep it active)
         // If we wanted one-time use:
@@ -146,16 +169,22 @@ exports.getTreeMembers = async (req, res) => {
     try {
         const { treeId } = req.params;
 
+        console.log('Fetching members for tree:', treeId);
+
         const { data: members, error } = await supabaseAdmin
             .from('tree_members')
             .select(`
                 role,
-                created_at,
-                users (id, email, user_metadata)
+                users (id, email)
             `)
             .eq('tree_id', treeId);
 
-        if (error) throw error;
+        console.log('Members query result:', { members, error });
+
+        if (error) {
+            console.error('Error fetching members:', error);
+            throw error;
+        }
 
         res.json({ members });
 

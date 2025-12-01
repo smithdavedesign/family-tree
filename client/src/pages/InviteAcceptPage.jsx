@@ -51,7 +51,8 @@ const InviteAcceptPage = () => {
                 if (err.error === 'You are already a member of this tree') {
                     setStatus('success');
                     setMessage('You are already a member of this tree!');
-                    setTimeout(() => navigate(`/tree/${invitation.tree_id}`), 2000);
+                    // Use the invitation's tree_id since we couldn't get it from the response
+                    setTimeout(() => navigate(`/tree/${invitation.tree_id}`), 2500);
                     return;
                 }
                 throw new Error(err.error || 'Failed to accept invitation');
@@ -61,8 +62,8 @@ const InviteAcceptPage = () => {
             setStatus('success');
             setMessage('Invitation accepted successfully!');
 
-            // Redirect to tree after delay
-            setTimeout(() => navigate(`/tree/${data.treeId}`), 2000);
+            // Redirect to tree after delay (increased to ensure DB write completes)
+            setTimeout(() => navigate(`/tree/${data.treeId}`), 2500);
 
         } catch (error) {
             console.error("Invite error:", error);

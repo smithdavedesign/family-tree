@@ -68,6 +68,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
     const [history, setHistory] = useState({ past: [], future: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userRole, setUserRole] = useState(null); // 'owner', 'editor', or 'viewer'
 
     const fetchTreeData = useCallback(async () => {
         console.log("fetchTreeData called with treeId:", treeId);
@@ -97,11 +98,21 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to fetch tree: ${response.status} ${errorText}`);
+                if (response.status === 403) {
+                    setError("You don't have permission to view this tree");
+                    window.addToast?.('Access denied - You need permission to view this tree', 'error');
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch tree: ${response.status} ${errorText}`);
+                }
+                setLoading(false);
+                return;
             }
 
-            const { persons, relationships } = await response.json();
+            const { persons, relationships, role } = await response.json();
+
+            // Set user role
+            setUserRole(role || 'viewer');
 
             // Transform to React Flow nodes
             const initialNodes = persons.map(p => ({
@@ -202,7 +213,13 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
             // Prevent native context menu from showing
             event.preventDefault();
 
-            // Calculate position
+            // Don't show context menu for viewers
+            if (userRole === 'viewer') {
+                window.addToast?.('View-only access - You cannot edit this tree', 'warning');
+                return;
+            }
+
+            //Calculate position
             const pane = document.querySelector('.react-flow__pane');
             const paneRect = pane.getBoundingClientRect();
 
@@ -213,7 +230,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [] }) => {
                 data: node.data
             });
         },
-        [setMenu]
+        [setMenu, userRole]
     );
 
     const onPaneClick = useCallback(() => setMenu(null), [setMenu]);

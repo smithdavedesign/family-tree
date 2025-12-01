@@ -82,23 +82,46 @@ exports.getUserTrees = async (req, res) => {
         // MOCK MODE
         if (process.env.USE_MOCK === 'true') {
             const { MOCK_TREES } = require('../mockData');
-            const trees = MOCK_TREES.filter(t => t.owner_id === userId);
-            return res.json(trees);
+            const ownedTrees = MOCK_TREES.filter(t => t.owner_id === userId);
+            return res.json({ ownedTrees, sharedTrees: [] });
         }
 
         console.log('Fetching trees for user:', userId);
-        const { data: trees, error } = await supabase
+
+        // Fetch owned trees
+        const { data: ownedTrees, error: ownError } = await supabase
             .from('trees')
             .select('*')
             .eq('owner_id', userId);
 
-        if (error) {
-            console.error('Supabase query error:', error);
-            throw error;
+        if (ownError) {
+            console.error('Error fetching owned trees:', ownError);
+            throw ownError;
         }
 
-        console.log('Trees found:', trees ? trees.length : 0);
-        res.json(trees);
+        // Fetch shared trees (where user is a member but not owner)
+        const { data: membershipData, error: memberError } = await supabaseAdmin
+            .from('tree_members')
+            .select(`
+                role,
+                trees (*)
+            `)
+            .eq('user_id', userId)
+            .neq('role', 'owner'); // Exclude owned trees (they're already in ownedTrees)
+
+        if (memberError) {
+            console.error('Error fetching shared trees:', memberError);
+            throw memberError;
+        }
+
+        // Extract the tree data from the membership objects
+        const sharedTrees = membershipData
+            ? membershipData.map(m => ({ ...m.trees, memberRole: m.role }))
+            : [];
+
+        console.log('Trees found - Owned:', ownedTrees?.length || 0, 'Shared:', sharedTrees?.length || 0);
+
+        res.json({ ownedTrees: ownedTrees || [], sharedTrees });
     } catch (error) {
         console.error('Error fetching user trees:', error);
         res.status(500).json({ error: error.message });
