@@ -1,61 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import TreeVisualizer from '../components/TreeVisualizer';
 import SidePanel from '../components/SidePanel';
 import SearchBar from '../components/SearchBar';
-import AccountSettings from '../components/AccountSettings';
 import TreeSwitcher from '../components/TreeSwitcher';
-import PhotoPicker from '../components/PhotoPicker';
-import { supabase, getCurrentUser } from '../auth';
-import { Settings, Share2 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
+import AccountSettings from '../components/AccountSettings';
+import PhotoPicker from '../components/PhotoPicker';
+import { Share2, Settings } from 'lucide-react';
+import { Button } from '../components/ui';
+import { supabase } from '../auth';
 
 const TreePage = () => {
     const { id } = useParams();
-    const [loading, setLoading] = useState(true);
     const [selectedPerson, setSelectedPerson] = useState(null);
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [highlightedNodes, setHighlightedNodes] = useState([]);
-    const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
-    const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
     const [persons, setPersons] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [highlightedNodes, setHighlightedNodes] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [showSettings, setShowSettings] = useState(false);
-    const [user, setUser] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [treeName, setTreeName] = useState('');
     const [userRole, setUserRole] = useState('viewer');
+    const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
+    const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const getTree = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                const token = session?.access_token;
-
-                const response = await fetch(`/api/tree/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const { persons: treePersons, name, role } = await response.json();
-                    setPersons(treePersons);
-                    setTreeName(name);
-                    setUserRole(role);
-                }
-            } catch (error) {
-                console.error("Error fetching tree:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const loadUser = async () => {
-            const currentUser = await getCurrentUser();
-            setUser(currentUser);
-        };
-
-        getTree();
-        loadUser();
+        loadTreeData();
+        fetchUser();
     }, [id]);
+
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    };
+
+    const loadTreeData = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/tree/${id}`, {
+                credentials: 'include',
+            });
+
+            if (!response.ok) throw new Error('Failed to load tree');
+
+            const { persons: treePersons, name, role } = await response.json();
+            setPersons(treePersons);
+            setTreeName(name);
+            setUserRole(role);
+        } catch (error) {
+            console.error('Error loading tree:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleNodeClick = (event, node) => {
         setSelectedPerson(node);
@@ -66,8 +65,8 @@ const TreePage = () => {
     };
 
     const handleUpdate = () => {
-        // Force tree refresh to show new photo
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
+        loadTreeData();
     };
 
     if (loading) return <div>Loading tree...</div>;
@@ -81,21 +80,23 @@ const TreePage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                     {userRole === 'owner' && (
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Share2 className="w-4 h-4" />}
                             onClick={() => setIsShareModalOpen(true)}
-                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm"
                         >
-                            <Share2 className="w-4 h-4" />
                             <span className="hidden sm:inline">Share</span>
-                        </button>
+                        </Button>
                     )}
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowSettings(true)}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
-                        title="Account Settings"
+                        className="p-2"
                     >
                         <Settings className="w-5 h-5" />
-                    </button>
+                    </Button>
                 </div>
             </header>
 

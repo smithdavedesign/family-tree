@@ -3,19 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, TreePine, Users, Calendar, Trash2 } from 'lucide-react';
 import { supabase } from '../auth';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Button, useToast } from '../components/ui';
+import Navbar from '../components/Navbar';
+import AccountSettings from '../components/AccountSettings';
 
-const TreeDashboard = ({ user }) => {
+const TreeDashboard = (props) => {
+    const [user, setUser] = useState(props.user || null);
     const [ownedTrees, setOwnedTrees] = useState([]);
     const [sharedTrees, setSharedTrees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
     const [newTreeName, setNewTreeName] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
     const navigate = useNavigate();
+    const { toast } = useToast();
 
     useEffect(() => {
+        if (!user) {
+            fetchUser();
+        }
         fetchTrees();
     }, []);
+
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    };
 
     const fetchTrees = async () => {
         try {
@@ -46,7 +60,7 @@ const TreeDashboard = ({ user }) => {
 
     const handleCreateTree = async () => {
         if (!newTreeName.trim()) {
-            window.addToast?.('Please enter a tree name', 'error');
+            toast.error('Please enter a tree name');
             return;
         }
 
@@ -67,14 +81,14 @@ const TreeDashboard = ({ user }) => {
 
             if (response.ok) {
                 const newTree = await response.json();
-                window.addToast?.('Tree created successfully!', 'success');
+                toast.success('Tree created successfully!');
                 navigate(`/tree/${newTree.id}`);
             } else {
-                window.addToast?.('Failed to create tree', 'error');
+                toast.error('Failed to create tree');
             }
         } catch (error) {
             console.error('Error creating tree:', error);
-            window.addToast?.('Failed to create tree', 'error');
+            toast.error('Failed to create tree');
         } finally {
             setCreating(false);
         }
@@ -95,14 +109,14 @@ const TreeDashboard = ({ user }) => {
             });
 
             if (response.ok) {
-                window.addToast?.('Tree deleted successfully', 'success');
+                toast.success('Tree deleted successfully');
                 fetchTrees();
             } else {
-                window.addToast?.('Failed to delete tree', 'error');
+                toast.error('Failed to delete tree');
             }
         } catch (error) {
             console.error('Error deleting tree:', error);
-            window.addToast?.('Failed to delete tree', 'error');
+            toast.error('Failed to delete tree');
         }
     };
 
@@ -115,22 +129,29 @@ const TreeDashboard = ({ user }) => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 p-8">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">My Family Trees</h1>
-                    <p className="text-gray-600">Manage and explore your family history</p>
-                </div>
+        <div className="min-h-screen bg-slate-50">
+            <Navbar
+                user={user}
+                onOpenSettings={() => setShowSettings(true)}
+            />
 
-                {/* Create New Tree Button */}
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="mb-8 flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold"
-                >
-                    <Plus className="w-5 h-5" />
-                    Create New Tree
-                </button>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">My Family Trees</h1>
+                        <p className="text-slate-600 mt-1">Manage and explore your family history</p>
+                    </div>
+
+                    {/* Create New Tree Button */}
+                    <Button
+                        variant="primary"
+                        leftIcon={<Plus className="w-5 h-5" />}
+                        onClick={() => setShowCreateModal(true)}
+                    >
+                        Create New Tree
+                    </Button>
+                </div>
 
                 {/* Trees Grid */}
                 {ownedTrees.length === 0 && sharedTrees.length === 0 ? (
@@ -138,12 +159,13 @@ const TreeDashboard = ({ user }) => {
                         <TreePine className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <h3 className="text-xl font-semibold text-gray-700 mb-2">No trees yet</h3>
                         <p className="text-gray-500 mb-6">Create your first family tree to get started</p>
-                        <button
+                        <Button
+                            variant="primary"
+                            size="lg"
                             onClick={() => setShowCreateModal(true)}
-                            className="px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold"
                         >
                             Create Your First Tree
-                        </button>
+                        </Button>
                     </div>
                 ) : (
                     <div className="space-y-8">
@@ -227,8 +249,8 @@ const TreeDashboard = ({ user }) => {
                                                             {tree.name}
                                                         </h3>
                                                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${tree.memberRole === 'editor'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-gray-100 text-gray-800'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
                                                             }`}>
                                                             {tree.memberRole}
                                                         </span>
@@ -278,22 +300,25 @@ const TreeDashboard = ({ user }) => {
                             </div>
 
                             <div className="flex gap-3">
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    fullWidth
                                     onClick={() => {
                                         setShowCreateModal(false);
                                         setNewTreeName('');
                                     }}
-                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-semibold"
                                 >
                                     Cancel
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    fullWidth
                                     onClick={handleCreateTree}
                                     disabled={creating || !newTreeName.trim()}
-                                    className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                    loading={creating}
                                 >
-                                    {creating ? 'Creating...' : 'Create Tree'}
-                                </button>
+                                    Create Tree
+                                </Button>
                             </div>
                         </div>
                     </div>

@@ -11,6 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 import InviteAcceptPage from './pages/InviteAcceptPage';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
+import { ToastProvider } from './components/ui';
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (session) {
@@ -109,21 +110,23 @@ function Home() {
 
 function App() {
   return (
-    <Router>
-      <ToastContainer />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/trees" element={<TreeDashboard />} />
-        <Route path="/tree/:id" element={<TreePage />} />
-        <Route path="/invite/:token" element={<InviteAcceptPage />} />
-        <Route path="/magic-link" element={<MagicLinkAuth />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/auth-error" element={<AuthError />} />
-        <Route path="/test-picker" element={<PhotoPickerTest />} />
-      </Routes>
-    </Router>
+    <ToastProvider>
+      <Router>
+        <ToastContainer />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/trees" element={<TreeDashboard />} />
+          <Route path="/tree/:id" element={<TreePage />} />
+          <Route path="/invite/:token" element={<InviteAcceptPage />} />
+          <Route path="/magic-link" element={<MagicLinkAuth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/auth-error" element={<AuthError />} />
+          <Route path="/test-picker" element={<PhotoPickerTest />} />
+        </Routes>
+      </Router>
+    </ToastProvider>
   );
 }
 

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
+import { Button, Input, useToast } from './ui';
 import { supabase } from '../auth';
 
-const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
+const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
+    const { toast } = useToast();
     const [media, setMedia] = useState([]);
     const [loadingMedia, setLoadingMedia] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -88,7 +90,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                 setMedia([...media, newMedia]);
 
                 // Also update the profile photo if it's the first one
-                if (!person.data.profile_photo_url) {
+                if (person && !person.data.profile_photo_url) {
                     await handleSave({ profile_photo_url: googlePhoto.baseUrl });
                 } else if (onUpdate) {
                     onUpdate();
@@ -96,7 +98,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
             }
         } catch (error) {
             console.error("Error saving media:", error);
-            alert("Failed to save photo");
+            toast.error("Failed to save photo");
         }
     };
 
@@ -119,12 +121,13 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
             if (response.ok) {
                 setIsEditing(false);
                 if (onUpdate) onUpdate();
+                toast.success("Changes saved successfully");
             } else {
-                alert("Failed to save changes");
+                toast.error("Failed to save changes");
             }
         } catch (error) {
             console.error("Error updating person:", error);
-            alert("Error saving changes");
+            toast.error("Error saving changes");
         }
     };
 
@@ -191,12 +194,13 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
             if (response.ok) {
                 fetchRelationships();
                 if (onUpdate) onUpdate();
+                toast.success("Relationship removed");
             } else {
-                alert("Failed to delete relationship");
+                toast.error("Failed to delete relationship");
             }
         } catch (error) {
             console.error("Error deleting relationship:", error);
-            alert("Error deleting relationship");
+            toast.error("Error deleting relationship");
         }
     };
 
@@ -230,13 +234,17 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                 )}
                             </div>
                             {canEdit && (
-                                <button
-                                    onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
-                                    className="absolute bottom-0 right-0 bg-teal-600 text-white p-2 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
-                                    title="Change Photo"
-                                >
-                                    <ImageIcon className="w-4 h-4" />
-                                </button>
+                                <div className="absolute bottom-0 right-0">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
+                                        className="rounded-full w-8 h-8 p-0 flex items-center justify-center shadow-lg"
+                                        title="Change Photo"
+                                    >
+                                        <ImageIcon className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             )}
                         </div>
 
@@ -245,12 +253,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                 <h3 className="text-2xl font-bold text-slate-800">{person.data.label}</h3>
                                 <p className="text-slate-500 font-medium">{person.data.subline}</p>
                                 {canEdit && (
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() => setIsEditing(true)}
-                                        className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline mt-2 inline-block"
+                                        className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                                     >
                                         Edit Details
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         ) : (
@@ -258,39 +268,39 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                 {/* ... (Edit Form - same as before) ... */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">First Name</label>
-                                        <input
+                                        <Input
+                                            label="First Name"
                                             name="first_name"
                                             value={formData.first_name}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                                             placeholder="First Name"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Last Name</label>
-                                        <input
+                                        <Input
+                                            label="Last Name"
                                             name="last_name"
                                             value={formData.last_name}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                                             placeholder="Last Name"
                                         />
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-2 pt-2">
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() => setIsEditing(false)}
-                                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
                                     >
                                         Cancel
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
                                         onClick={() => handleSave()}
-                                        className="px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-sm transition-colors"
                                     >
                                         Save Changes
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         )}
@@ -302,56 +312,52 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Birth Date</label>
-                                    <input
+                                    <Input
                                         type="date"
+                                        label="Birth Date"
                                         name="dob"
                                         value={formData.dob ? formData.dob.split('T')[0] : ''}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Death Date</label>
-                                    <input
+                                    <Input
                                         type="date"
+                                        label="Death Date"
                                         name="dod"
                                         value={formData.dod ? formData.dod.split('T')[0] : ''}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</label>
-                                    <select
+                                    <Input
+                                        label="Gender"
                                         name="gender"
                                         value={formData.gender}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                                        as="select"
                                     >
                                         <option value="">Select...</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
-                                    </select>
+                                    </Input>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Occupation</label>
-                                    <input
+                                    <Input
+                                        label="Occupation"
                                         name="occupation"
                                         value={formData.occupation}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                         placeholder="e.g. Engineer"
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Place of Birth</label>
-                                    <input
+                                    <Input
+                                        label="Place of Birth"
                                         name="pob"
                                         value={formData.pob}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                         placeholder="e.g. New York, USA"
                                     />
                                 </div>
@@ -392,12 +398,15 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Photos</h4>
                             {canEdit && (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="xs"
+                                    leftIcon={<Plus className="w-3 h-3" />}
                                     onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
-                                    className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
+                                    className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
                                 >
-                                    <Plus className="w-3 h-3" /> Add Photo
-                                </button>
+                                    Add Photo
+                                </Button>
                             )}
                         </div>
 
@@ -427,12 +436,15 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
                             {canEdit && (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="xs"
+                                    leftIcon={<Plus className="w-3 h-3" />}
                                     onClick={() => setIsAddRelationshipOpen(true)}
-                                    className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-colors"
+                                    className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
                                 >
-                                    <Plus className="w-3 h-3" /> Add
-                                </button>
+                                    Add
+                                </Button>
                             )}
                         </div>
                         {loadingRelationships ? (
@@ -458,12 +470,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                                                 <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
                                             </div>
                                             {canEdit && (
-                                                <button
+                                                <Button
+                                                    variant="danger"
+                                                    size="xs"
                                                     onClick={() => handleDeleteRelationship(rel.id)}
-                                                    className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded font-medium transition-colors"
+                                                    className="px-2 py-1"
                                                 >
                                                     Remove
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                     );
@@ -476,12 +490,12 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                     <div>
                         <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
                         {isEditing ? (
-                            <textarea
+                            <Input
+                                type="textarea"
                                 name="bio"
                                 value={formData.bio}
                                 onChange={handleChange}
                                 rows={4}
-                                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                 placeholder="Write something about this person..."
                             />
                         ) : (
@@ -494,12 +508,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker }) => {
                     {/* Danger Zone */}
                     {canEdit && (
                         <div className="pt-6 border-t border-slate-100">
-                            <button
+                            <Button
+                                variant="danger"
+                                fullWidth
                                 onClick={() => setIsMergeModalOpen(true)}
-                                className="w-full py-3 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                                className="bg-white text-red-600 border border-red-200 hover:bg-red-50"
                             >
                                 Merge Duplicate Person
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

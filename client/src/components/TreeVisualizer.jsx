@@ -15,6 +15,7 @@ import { supabase } from '../auth';
 import { Undo, Redo, TreePine, Plus } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import { useToast } from './ui';
 
 
 
@@ -63,6 +64,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 const nodeTypes = { custom: CustomNode };
 
 const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer' }) => {
+    const { toast } = useToast();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [history, setHistory] = useState({ past: [], future: [] });
@@ -266,13 +268,18 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
                 });
                 fetchTreeData();
             } else {
-                // For other actions, just skip for now to avoid complexity
-                alert("Undo not supported for this action yet");
+                console.warn("Undo not supported for action type:", action.type);
+                toast.info("Undo not supported for this action yet");
+                // Push back to past as we couldn't undo
+                setHistory(prev => ({
+                    past: [...prev.past, action],
+                    future: prev.future
+                }));
                 return;
             }
         } catch (error) {
-            console.error("Undo failed:", error);
-            alert("Undo failed");
+            console.error("Undo error:", error);
+            toast.error("Undo failed");
         }
     };
 
@@ -321,12 +328,18 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
                 });
                 fetchTreeData();
             } else {
-                alert("Redo not supported for this action yet");
+                console.warn("Redo not supported for action type:", action.type);
+                toast.info("Redo not supported for this action yet");
+                // Push back to future as we couldn't redo
+                setHistory(prev => ({
+                    past: prev.past,
+                    future: [...prev.future, action]
+                }));
                 return;
             }
         } catch (error) {
-            console.error("Redo failed:", error);
-            alert("Redo failed");
+            console.error("Redo error:", error);
+            toast.error("Redo failed");
         }
     };
 
@@ -345,16 +358,30 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
             if (!confirm('Are you sure you want to delete this person?')) return;
 
             try {
-                await fetch(`/api/person/${sourceNodeId}`, {
+                // Fetch the person and their relationships before deleting for undo purposes
+                const personToDelete = nodes.find(n => n.id === sourceNodeId)?.data;
+                const relationships = edges.filter(e => e.source === sourceNodeId || e.target === sourceNodeId);
+
+                const response = await fetch(`/api/person/${sourceNodeId}`, {
                     method: 'DELETE',
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                // Don't track deletes in history for now to avoid complexity
+                if (!response.ok) throw new Error("Failed to delete person");
+
+                addToHistory({
+                    type: 'DELETE_PERSON',
+                    data: {
+                        personId: sourceNodeId,
+                        person: personToDelete,
+                        relationships: relationships // Store for Undo (need to fetch relationships first ideally, but for now simple delete)
+                    }
+                });
+
                 fetchTreeData();
             } catch (error) {
-                console.error("Delete failed:", error);
-                alert("Failed to delete person");
+                console.error("Error deleting person:", error);
+                toast.error("Failed to delete person");
             }
             return;
         }
@@ -449,7 +476,7 @@ const TreeVisualizer = ({ treeId, onNodeClick, highlightedNodes = [], userRole =
 
         } catch (error) {
             console.error("Error adding relative:", error);
-            alert("Failed to add relative");
+            toast.error("Failed to add relative");
         }
     };
 
