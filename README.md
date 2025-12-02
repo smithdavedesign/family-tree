@@ -143,13 +143,13 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Photo thumbnails in nodes
 - [x] Lightbox for full photo view
 
-### 🚧 Phase J: Analytics & Timeline (0%)
-- [ ] Family timeline (chronological events)
-- [ ] Scrollable timeline with event dots
-- [ ] Filter by family side (maternal/paternal)
-- [ ] Age distribution stats
-- [ ] Most common locations
-- [ ] Family branches visualization
+### ✅ Phase J: Analytics & Timeline (100%)
+- [x] Family timeline (chronological events)
+- [x] Scrollable timeline with event dots
+- [x] Filter by family side (maternal/paternal)
+- [x] Age distribution stats
+- [x] Most common locations
+- [x] Family branches visualization
 
 ## 🔌 API Endpoints
 
