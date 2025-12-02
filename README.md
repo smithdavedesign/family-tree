@@ -91,7 +91,8 @@ The application uses a relational database (PostgreSQL) with the following key e
   - [x] Animations & micro-interactions (Transitions, Hover effects)
   - [x] **Tailwind CSS Configuration Fix** - Downgraded to v3 for stability
   - [x] **Removed inline style workarounds** - All styling now uses Tailwind utilities
-  - [x] Accessibility & Dark Mode (Deferred to future phase)
+  - [x] **Accessibility Improvements** - High contrast buttons, semantic HTML
+  - [x] **UI Consistency** - Uniform padding, stable transitions, no layout shifts
 
 - [x] **Tree Visualization Enhancements** (100%)
   - [x] Mini-map view
