@@ -170,6 +170,67 @@ const requirePersonViewer = requireTreeRole(ROLES.VIEWER, { lookupFromTable: 'pe
 // Relationship-specific middlewares
 const requireRelationshipEditor = requireTreeRole(ROLES.EDITOR, { lookupFromTable: 'relationships' });
 
+// Photo-specific middlewares
+const requirePhotoRole = (requiredRole) => {
+    return async (req, res, next) => {
+        if (process.env.USE_MOCK === 'true') return next();
+
+        const photoId = req.params.id;
+        if (!photoId) return res.status(400).json({ error: 'Photo ID required' });
+
+        try {
+            // Lookup tree_id via person
+            const { data: photo, error } = await supabaseAdmin
+                .from('photos')
+                .select('person_id, persons!inner(tree_id)')
+                .eq('id', photoId)
+                .single();
+
+            if (error || !photo || !photo.persons) {
+                return res.status(404).json({ error: 'Photo not found' });
+            }
+
+            // Set treeId for the generic checker
+            req.params.treeId = photo.persons.tree_id;
+
+            // Delegate to generic checker
+            return requireTreeRole(requiredRole)(req, res, next);
+        } catch (err) {
+            console.error('RBAC Photo lookup error:', err);
+            return res.status(500).json({ error: 'Error checking permissions' });
+        }
+    };
+};
+
+const requirePhotoEditor = requirePhotoRole(ROLES.EDITOR);
+const requirePhotoViewer = requirePhotoRole(ROLES.VIEWER);
+
+// Middleware for creating a photo (checks person_id in body)
+const requirePersonEditorBody = async (req, res, next) => {
+    if (process.env.USE_MOCK === 'true') return next();
+
+    const personId = req.body.person_id;
+    if (!personId) return res.status(400).json({ error: 'Person ID required' });
+
+    try {
+        const { data: person, error } = await supabaseAdmin
+            .from('persons')
+            .select('tree_id')
+            .eq('id', personId)
+            .single();
+
+        if (error || !person) {
+            return res.status(404).json({ error: 'Person not found' });
+        }
+
+        req.params.treeId = person.tree_id;
+        return requireTreeRole(ROLES.EDITOR)(req, res, next);
+    } catch (err) {
+        console.error('RBAC Person Body lookup error:', err);
+        return res.status(500).json({ error: 'Error checking permissions' });
+    }
+};
+
 /**
  * Helper function to check if user owns a tree (for use in controllers)
  */
@@ -205,6 +266,9 @@ module.exports = {
     requirePersonEditor,
     requirePersonViewer,
     requireRelationshipEditor,
+    requirePhotoEditor,
+    requirePhotoViewer,
+    requirePersonEditorBody,
     requireTreeRole,
     isTreeOwner,
     getUserTreeRole,

@@ -78,3 +78,122 @@ exports.getMediaForPerson = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// --- Photos (Phase H) ---
+
+exports.addPhoto = async (req, res) => {
+    const { person_id, url, caption, taken_date, location, is_primary } = req.body;
+
+    try {
+        // If setting as primary, unset others first
+        if (is_primary) {
+            await supabase
+                .from('photos')
+                .update({ is_primary: false })
+                .eq('person_id', person_id);
+        }
+
+        const { data, error } = await supabase
+            .from('photos')
+            .insert([{ person_id, url, caption, taken_date, location, is_primary }])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // If primary, also update person's profile_photo_url
+        if (is_primary) {
+            await supabase
+                .from('persons')
+                .update({ profile_photo_url: url })
+                .eq('id', person_id);
+        }
+
+        res.status(201).json(data);
+    } catch (error) {
+        console.error('Error adding photo:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getPhotos = async (req, res) => {
+    const { personId } = req.params;
+
+    try {
+        const { data, error } = await supabase
+            .from('photos')
+            .select('*')
+            .eq('person_id', personId)
+            .order('is_primary', { ascending: false }) // Primary first
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching photos:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updatePhoto = async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+
+    try {
+        // If setting as primary, unset others first
+        if (updates.is_primary) {
+            // Get person_id for this photo
+            const { data: photo } = await supabase
+                .from('photos')
+                .select('person_id, url')
+                .eq('id', id)
+                .single();
+
+            if (photo) {
+                await supabase
+                    .from('photos')
+                    .update({ is_primary: false })
+                    .eq('person_id', photo.person_id);
+
+                // Update person profile photo
+                await supabase
+                    .from('persons')
+                    .update({ profile_photo_url: photo.url })
+                    .eq('id', photo.person_id);
+            }
+        }
+
+        const { data, error } = await supabase
+            .from('photos')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error updating photo:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.deletePhoto = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const { error } = await supabase
+            .from('photos')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error deleting photo:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

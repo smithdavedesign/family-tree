@@ -3,6 +3,7 @@ import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast } from './ui';
+import PhotoGallery from './PhotoGallery';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
@@ -15,6 +16,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
     const [loadingRelationships, setLoadingRelationships] = useState(false);
     const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
     const [isAddRelationshipOpen, setIsAddRelationshipOpen] = useState(false);
+    const [showPhotoSourceModal, setShowPhotoSourceModal] = useState(false);
+    const [pendingRefreshGallery, setPendingRefreshGallery] = useState(null);
 
     useEffect(() => {
         console.log("SidePanel received person:", person);
@@ -35,6 +38,12 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 dod: person.data.dod || '',
                 occupation: person.data.occupation || '',
                 pob: person.data.pob || '',
+                // New Phase H fields
+                place_of_death: person.data.place_of_death || '',
+                cause_of_death: person.data.cause_of_death || '',
+                burial_place: person.data.burial_place || '',
+                occupation_history: person.data.occupation_history || '',
+                education: person.data.education || '',
             });
             setIsEditing(false);
         }
@@ -63,6 +72,102 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
         }
     };
 
+    const handleGalleryPhotoAdd = (refreshGallery) => {
+        // Show modal to choose between Google Photos and Local File
+        setPendingRefreshGallery(() => refreshGallery);
+        setShowPhotoSourceModal(true);
+    };
+
+    const handleGooglePhotosUpload = () => {
+        setShowPhotoSourceModal(false);
+        const refreshGallery = pendingRefreshGallery;
+
+        onOpenPhotoPicker(async (googlePhoto) => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                const response = await fetch('/api/photos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        person_id: person.id,
+                        url: googlePhoto.baseUrl,
+                        google_media_id: googlePhoto.id,
+                        taken_date: googlePhoto.mediaMetadata?.creationTime,
+                    })
+                });
+
+                if (response.ok) {
+                    toast.success("Photo added to gallery");
+                    refreshGallery();
+                    if (onUpdate) onUpdate();
+                } else {
+                    toast.error("Failed to add photo");
+                }
+            } catch (error) {
+                console.error("Error adding gallery photo:", error);
+                toast.error("Error adding photo");
+            }
+        });
+    };
+
+    const handleLocalFileUpload = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            toast.error("Please select an image file");
+            return;
+        }
+
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be smaller than 5MB");
+            return;
+        }
+
+        setShowPhotoSourceModal(false);
+
+        try {
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                const response = await fetch('/api/photos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        person_id: person.id,
+                        url: reader.result, // base64 data URL
+                        caption: file.name
+                    })
+                });
+
+                if (response.ok) {
+                    toast.success("Photo added to gallery");
+                    if (pendingRefreshGallery) pendingRefreshGallery();
+                    if (onUpdate) onUpdate();
+                } else {
+                    toast.error("Failed to add photo");
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            toast.error("Error adding photo");
+        }
+    };
+
     const handlePhotoSelect = async (googlePhoto) => {
         // Picker is closed by parent component
 
@@ -70,7 +175,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            // Save to database
+            // Save to database (Legacy/Profile Photo flow)
+            // We still use this for the main "Add Photo" button in the header if it exists,
+            // or we can migrate that button to use the gallery flow too?
+            // The header button usually sets the profile photo.
+            // Let's keep this as is for now, but maybe update it to also add to 'photos' table?
+            // For now, let's keep the legacy 'media' table usage for the header button 
+            // to avoid breaking existing profile photo logic until we fully migrate.
+
             const response = await fetch('/api/media', {
                 method: 'POST',
                 headers: {
@@ -307,219 +419,317 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     </div>
 
                     {isEditing && (
-                        <div className="space-y-4 animate-fadeIn">
-                            {/* ... (Vital Statistics Form - same as before) ... */}
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Input
-                                        type="date"
-                                        label="Birth Date"
-                                        name="dob"
-                                        value={formData.dob ? formData.dob.split('T')[0] : ''}
-                                        onChange={handleChange}
-                                    />
+                        <div className="space-y-6 animate-fadeIn">
+                            {/* Vital Statistics */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Vital Statistics</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Input
+                                            type="date"
+                                            label="Birth Date"
+                                            name="dob"
+                                            value={formData.dob ? formData.dob.split('T')[0] : ''}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Place of Birth"
+                                            name="pob"
+                                            value={formData.pob}
+                                            onChange={handleChange}
+                                            placeholder="e.g. New York, USA"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            type="date"
+                                            label="Death Date"
+                                            name="dod"
+                                            value={formData.dod ? formData.dod.split('T')[0] : ''}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Place of Death"
+                                            name="place_of_death"
+                                            value={formData.place_of_death}
+                                            onChange={handleChange}
+                                            placeholder="e.g. Hospital, City"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            label="Cause of Death"
+                                            name="cause_of_death"
+                                            value={formData.cause_of_death}
+                                            onChange={handleChange}
+                                            placeholder="e.g. Natural Causes"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Burial Place"
+                                            name="burial_place"
+                                            value={formData.burial_place}
+                                            onChange={handleChange}
+                                            placeholder="e.g. Cemetery Name"
+                                        />
+                                    </div>
+
+                                    <div className="col-span-2">
+                                        <Input
+                                            label="Gender"
+                                            name="gender"
+                                            value={formData.gender}
+                                            onChange={handleChange}
+                                            as="select"
+                                        >
+                                            <option value="">Select...</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </Input>
+                                    </div>
                                 </div>
-                                <div>
+                            </div>
+
+                            {/* Life & Work */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Life & Work</h4>
+                                <div className="space-y-4">
                                     <Input
-                                        type="date"
-                                        label="Death Date"
-                                        name="dod"
-                                        value={formData.dod ? formData.dod.split('T')[0] : ''}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Gender"
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={handleChange}
-                                        as="select"
-                                    >
-                                        <option value="">Select...</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </Input>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        label="Occupation"
+                                        label="Primary Occupation"
                                         name="occupation"
                                         value={formData.occupation}
                                         onChange={handleChange}
                                         placeholder="e.g. Engineer"
                                     />
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Occupation History</label>
+                                        <textarea
+                                            name="occupation_history"
+                                            value={formData.occupation_history}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                            placeholder="List other jobs, dates, companies..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Education</label>
+                                        <textarea
+                                            name="education"
+                                            value={formData.education}
+                                            onChange={handleChange}
+                                            rows={2}
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                            placeholder="Schools, degrees, years..."
+                                        />
+                                    </div>
                                 </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        label="Place of Birth"
-                                        name="pob"
-                                        value={formData.pob}
-                                        onChange={handleChange}
-                                        placeholder="e.g. New York, USA"
-                                    />
-                                </div>
+                            </div>
+
+                            {/* Biography */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Biography</h4>
+                                <textarea
+                                    name="bio"
+                                    value={formData.bio}
+                                    onChange={handleChange}
+                                    rows={6}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                    placeholder="Write a biography..."
+                                />
                             </div>
                         </div>
                     )}
 
                     {!isEditing && (
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2">Vital Statistics</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Birth Date</label>
-                                    <div className="text-sm text-slate-800">{formData.dob ? new Date(formData.dob).toLocaleDateString() : '-'}</div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Death Date</label>
-                                    <div className="text-sm text-slate-800">{formData.dod ? new Date(formData.dod).toLocaleDateString() : '-'}</div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</label>
-                                    <div className="text-sm text-slate-800">{formData.gender || '-'}</div>
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Occupation</label>
-                                    <div className="text-sm text-slate-800">{formData.occupation || '-'}</div>
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Place of Birth</label>
-                                    <div className="text-sm text-slate-800">{formData.pob || '-'}</div>
+                        <div className="space-y-6">
+                            {/* Vital Statistics */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Vital Statistics</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Birth</label>
+                                        <div className="text-sm text-slate-800 font-medium">{formData.dob ? new Date(formData.dob).toLocaleDateString() : '-'}</div>
+                                        <div className="text-xs text-slate-500">{formData.pob}</div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Death</label>
+                                        <div className="text-sm text-slate-800 font-medium">{formData.dod ? new Date(formData.dod).toLocaleDateString() : '-'}</div>
+                                        <div className="text-xs text-slate-500">{formData.place_of_death}</div>
+                                    </div>
+
+                                    {(formData.cause_of_death || formData.burial_place) && (
+                                        <>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Cause of Death</label>
+                                                <div className="text-sm text-slate-800">{formData.cause_of_death || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Burial</label>
+                                                <div className="text-sm text-slate-800">{formData.burial_place || '-'}</div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</label>
+                                        <div className="text-sm text-slate-800">{formData.gender || '-'}</div>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Life & Work */}
+                            {(formData.occupation || formData.occupation_history || formData.education) && (
+                                <div>
+                                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Life & Work</h4>
+                                    <div className="space-y-3">
+                                        {formData.occupation && (
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Primary Occupation</label>
+                                                <div className="text-sm text-slate-800">{formData.occupation}</div>
+                                            </div>
+                                        )}
+                                        {formData.occupation_history && (
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">History</label>
+                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">{formData.occupation_history}</div>
+                                            </div>
+                                        )}
+                                        {formData.education && (
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Education</label>
+                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">{formData.education}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Biography */}
+                            {formData.bio && (
+                                <div>
+                                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Biography</h4>
+                                    <div className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
+                                        {formData.bio}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
                     {/* Photos Section */}
                     <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Photos</h4>
-                            {canEdit && (
-                                <Button
-                                    variant="ghost"
-                                    size="xs"
-                                    leftIcon={<Plus className="w-3 h-3" />}
-                                    onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
-                                    className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
-                                >
-                                    Add Photo
-                                </Button>
-                            )}
-                        </div>
-
-                        {loadingMedia ? (
-                            <div className="flex justify-center py-8">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600"></div>
-                            </div>
-                        ) : media.length === 0 ? (
-                            <div className="bg-slate-50 rounded-xl p-6 text-center border-2 border-dashed border-slate-200">
-                                <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                                <p className="text-sm text-slate-500">No photos attached yet</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 gap-3">
-                                {media.map((item) => (
-                                    <div key={item.id} className="aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow group relative">
-                                        <img src={item.url} alt="Attached" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        {/* Legacy Media Section (Hidden or kept for backward compat?) 
+                            Let's replace the old media list with the new PhotoGallery component 
+                            but keep the header "Add Photo" button logic if it was doing something specific.
+                            Actually, let's just render PhotoGallery here.
+                        */}
+                        <PhotoGallery
+                            personId={person.id}
+                            onAddPhoto={handleGalleryPhotoAdd}
+                            canEdit={canEdit}
+                        />
                     </div>
-
-                    {/* Relationships Section */}
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
-                            {canEdit && (
-                                <Button
-                                    variant="ghost"
-                                    size="xs"
-                                    leftIcon={<Plus className="w-3 h-3" />}
-                                    onClick={() => setIsAddRelationshipOpen(true)}
-                                    className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
-                                >
-                                    Add
-                                </Button>
-                            )}
-                        </div>
-                        {loadingRelationships ? (
-                            <div className="flex justify-center py-4">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
-                            </div>
-                        ) : relationships.length === 0 ? (
-                            <div className="bg-slate-50 rounded-xl p-4 text-center border-2 border-dashed border-slate-200">
-                                <p className="text-sm text-slate-500">No relationships found</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                {relationships.map((rel) => {
-                                    const typeLabel = rel.type === 'spouse' ? 'Spouse' :
-                                        rel.type === 'adoptive_parent_child' ? 'Adoptive' :
-                                            rel.type === 'step_parent_child' ? 'Step' :
-                                                rel.direction === 'from' ? 'Parent of' : 'Child of';
-
-                                    return (
-                                        <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
-                                            <div className="flex-1">
-                                                <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
-                                                <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
-                                            </div>
-                                            {canEdit && (
-                                                <Button
-                                                    variant="danger"
-                                                    size="xs"
-                                                    onClick={() => handleDeleteRelationship(rel.id)}
-                                                    className="px-2 py-1"
-                                                >
-                                                    Remove
-                                                </Button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Bio Section */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
-                        {isEditing ? (
-                            <Input
-                                type="textarea"
-                                name="bio"
-                                value={formData.bio}
-                                onChange={handleChange}
-                                rows={4}
-                                placeholder="Write something about this person..."
-                            />
-                        ) : (
-                            <div className="text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">
-                                {person.data.bio || "No biography available."}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Danger Zone */}
-                    {canEdit && (
-                        <div className="pt-6 border-t border-slate-100">
-                            <Button
-                                variant="danger"
-                                fullWidth
-                                onClick={() => setIsMergeModalOpen(true)}
-                                className="bg-white text-red-600 border border-red-200 hover:bg-red-50"
-                            >
-                                Merge Duplicate Person
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* Relationships Section */}
+            <div>
+                <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
+                    {canEdit && (
+                        <Button
+                            variant="ghost"
+                            size="xs"
+                            leftIcon={<Plus className="w-3 h-3" />}
+                            onClick={() => setIsAddRelationshipOpen(true)}
+                            className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
+                        >
+                            Add
+                        </Button>
+                    )}
+                </div>
+                {loadingRelationships ? (
+                    <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
+                    </div>
+                ) : relationships.length === 0 ? (
+                    <div className="bg-slate-50 rounded-xl p-4 text-center border-2 border-dashed border-slate-200">
+                        <p className="text-sm text-slate-500">No relationships found</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {relationships.map((rel) => {
+                            const typeLabel = rel.type === 'spouse' ? 'Spouse' :
+                                rel.type === 'adoptive_parent_child' ? 'Adoptive' :
+                                    rel.type === 'step_parent_child' ? 'Step' :
+                                        rel.direction === 'from' ? 'Parent of' : 'Child of';
+
+                            return (
+                                <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
+                                    <div className="flex-1">
+                                        <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
+                                        <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
+                                    </div>
+                                    {canEdit && (
+                                        <Button
+                                            variant="danger"
+                                            size="xs"
+                                            onClick={() => handleDeleteRelationship(rel.id)}
+                                            className="px-2 py-1"
+                                        >
+                                            Remove
+                                        </Button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Bio Section */}
+            <div>
+                <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
+                {isEditing ? (
+                    <Input
+                        type="textarea"
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleChange}
+                        rows={4}
+                        placeholder="Write something about this person..."
+                    />
+                ) : (
+                    <div className="text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">
+                        {person.data.bio || "No biography available."}
+                    </div>
+                )}
+            </div>
+
+            {/* Danger Zone */}
+            {canEdit && (
+                <div className="pt-6 border-t border-slate-100">
+                    <Button
+                        variant="danger"
+                        fullWidth
+                        onClick={() => setIsMergeModalOpen(true)}
+                        className="bg-white text-red-600 border border-red-200 hover:bg-red-50"
+                    >
+                        Merge Duplicate Person
+                    </Button>
+                </div>
+            )}
 
             <MergeModal
                 isOpen={isMergeModalOpen}
@@ -541,6 +751,63 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     fetchRelationships();
                     if (onUpdate) onUpdate();
                 }}
+            />
+
+            {/* Photo Source Selection Modal */}
+            {showPhotoSourceModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-scaleIn">
+                        <h3 className="text-xl font-bold text-slate-900 mb-4">Add Photo</h3>
+                        <p className="text-sm text-slate-600 mb-6">Choose a photo source:</p>
+
+                        <div className="space-y-3">
+                            <Button
+                                variant="outline"
+                                fullWidth
+                                leftIcon={<ImageIcon className="w-5 h-5" />}
+                                onClick={() => document.getElementById('local-file-input').click()}
+                                className="justify-start text-left"
+                            >
+                                <div>
+                                    <div className="font-semibold">Upload from Device</div>
+                                    <div className="text-xs text-slate-500">Choose a photo from your computer</div>
+                                </div>
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                fullWidth
+                                leftIcon={<ImageIcon className="w-5 h-5" />}
+                                onClick={handleGooglePhotosUpload}
+                                className="justify-start text-left"
+                            >
+                                <div>
+                                    <div className="font-semibold">Google Photos</div>
+                                    <div className="text-xs text-slate-500">Import from Google Photos</div>
+                                </div>
+                            </Button>
+                        </div>
+
+                        <div className="mt-6">
+                            <Button
+                                variant="ghost"
+                                fullWidth
+                                onClick={() => setShowPhotoSourceModal(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hidden file input for local uploads */}
+            <input
+                id="local-file-input"
+                type="file"
+                accept="image/*"
+                onChange={handleLocalFileUpload}
+                style={{ display: 'none' }}
             />
         </>
     );

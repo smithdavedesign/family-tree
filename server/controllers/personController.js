@@ -1,21 +1,31 @@
 const { supabase } = require('../middleware/auth');
 
 exports.createPerson = async (req, res) => {
-    const { id, tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes } = req.body;
+    const {
+        id, tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation,
+        profile_photo_url, attributes,
+        // New Phase H fields
+        place_of_death, cause_of_death, burial_place, occupation_history, education
+    } = req.body;
 
     // MOCK MODE
     if (process.env.USE_MOCK === 'true') {
         const { MOCK_PERSONS } = require('../mockData');
         const newPerson = {
             id: id || `mock-p-${Date.now()}`,
-            tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes
+            tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes,
+            place_of_death, cause_of_death, burial_place, occupation_history, education
         };
         MOCK_PERSONS.push(newPerson);
         return res.status(201).json(newPerson);
     }
 
     try {
-        const payload = { tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation, profile_photo_url, attributes };
+        const payload = {
+            tree_id, first_name, last_name, dob, dod, pob, gender, bio, occupation,
+            profile_photo_url, attributes,
+            place_of_death, cause_of_death, burial_place, occupation_history, education
+        };
         if (id) {
             console.log("createPerson called WITH ID:", id);
             payload.id = id;

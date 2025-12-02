@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor } = require('../middleware/rbac');
+const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody } = require('../middleware/rbac');
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const treeController = require('../controllers/treeController');
@@ -38,6 +38,12 @@ router.delete('/relationship/:id', requireAuth, requireRelationshipEditor, write
 
 // Media routes (require editor role to add)
 router.post('/media', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'media'), mediaController.addMedia);
+
+// Photo routes (Phase H)
+router.post('/photos', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'photo'), mediaController.addPhoto);
+router.get('/person/:id/photos', requireAuth, requirePersonViewer, mediaController.getPhotos);
+router.put('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('UPDATE', 'photo'), mediaController.updatePhoto);
+router.delete('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('DELETE', 'photo'), mediaController.deletePhoto);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);

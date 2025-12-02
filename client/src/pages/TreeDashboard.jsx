@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, TreePine, Users, Calendar, Trash2 } from 'lucide-react';
+import { Plus, TreePine, Users, Calendar, Trash2, ChevronRight, Star, Archive } from 'lucide-react';
 import { supabase } from '../auth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Button, useToast } from '../components/ui';

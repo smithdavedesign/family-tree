@@ -125,8 +125,6 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Biography/notes expansion
 - [ ] Sources/documents (Google Drive)
 - [ ] Half-siblings support
-- [ ] Divorce/separated status
-- [ ] Auto-infer relationships
 - [ ] Detect impossible relationships
 
 ### 🚧 Phase I: Tree Visualization Enhancements (0%)
