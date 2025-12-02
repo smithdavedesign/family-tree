@@ -675,10 +675,10 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
                     {canEdit && (
                         <Button
+                            variant="ghost"
                             size="sm"
                             leftIcon={<Plus className="w-4 h-4" />}
                             onClick={() => setIsAddRelationshipOpen(true)}
-                            className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
                         >
                             Add
                         </Button>
