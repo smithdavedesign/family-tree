@@ -808,9 +808,9 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
 
                 <MiniMap
                     className="bg-white border-2 border-slate-200 shadow-lg rounded-lg overflow-hidden !bottom-4 !right-4"
-                    nodeStrokeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
-                    nodeColor={(node) => node.data.highlighted ? '#fef3c7' : '#ffffff'}
-                    nodeBorderRadius={16}
+                    nodeStrokeColor={(node) => node.data.highlighted ? '#b45309' : '#0f766e'}
+                    nodeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
+                    nodeBorderRadius={8}
                     maskColor="rgb(248, 250, 252, 0.6)"
                 />
 
