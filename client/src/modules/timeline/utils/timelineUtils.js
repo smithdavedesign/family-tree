@@ -113,3 +113,25 @@ export const getTimelineRange = (events) => {
         maxYear: Math.max(...years) + 5
     };
 };
+
+/**
+ * Calculates the age of a person at the time of an event.
+ * 
+ * @param {Date} birthDate 
+ * @param {Date} eventDate 
+ * @returns {number|null} Age in years, or null if invalid
+ */
+export const calculateAgeAtEvent = (birthDate, eventDate) => {
+    if (!birthDate || !eventDate) return null;
+    const birth = new Date(birthDate);
+    const event = new Date(eventDate);
+
+    let age = event.getFullYear() - birth.getFullYear();
+    const m = event.getMonth() - birth.getMonth();
+
+    if (m < 0 || (m === 0 && event.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return age >= 0 ? age : null;
+};

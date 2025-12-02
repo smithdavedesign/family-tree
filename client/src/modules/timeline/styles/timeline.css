@@ -35,7 +35,10 @@
     position: relative;
     height: 100%;
     min-width: 100%;
-    /* Width will be dynamic based on year range */
+    /* Horizontal guide line pattern */
+    background-image: linear-gradient(to bottom, transparent 49%, rgba(0, 0, 0, 0.05) 50%, transparent 51%);
+    background-size: 100% 40px;
+    /* Spacing between lines */
 }
 
 .timeline-axis {
@@ -45,6 +48,9 @@
     width: 100%;
     height: 50px;
     border-top: 2px solid #cbd5e1;
+    background-color: #f8fafc;
+    /* Ensure axis covers guides */
+    z-index: 2;
 }
 
 .timeline-year-marker {
@@ -67,25 +73,28 @@
 
 .timeline-event-dot {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background-color: #3b82f6;
+    background-color: #6b7280;
+    /* Default Gray */
     transform: translate(-50%, -50%);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
     z-index: 5;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .timeline-event-dot:hover {
     transform: translate(-50%, -50%) scale(1.5);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
-    z-index: 10;
+    z-index: 100;
 }
 
 .timeline-event-dot.type-birth {
-    background-color: #10b981;
-    /* Green */
+    background-color: #14b8a6;
+    /* Teal */
 }
 
 .timeline-event-dot.type-death {
@@ -94,8 +103,8 @@
 }
 
 .timeline-event-dot.type-marriage {
-    background-color: #f59e0b;
-    /* Amber */
+    background-color: #a855f7;
+    /* Purple */
 }
 
 /* Tooltip */
@@ -103,29 +112,76 @@
     position: fixed;
     background-color: white;
     border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    z-index: 100;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
     pointer-events: none;
-    /* Let clicks pass through if needed, or handle interaction */
-    min-width: 200px;
-    max-width: 300px;
+    min-width: 220px;
+    max-width: 320px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -95%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -100%);
+    }
 }
 
 .timeline-tooltip-header {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+    font-weight: 700;
+    font-size: 1rem;
     color: #1e293b;
-}
-
-.timeline-tooltip-date {
-    font-size: 0.75rem;
-    color: #64748b;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 0.5rem;
     margin-bottom: 0.5rem;
 }
 
-.timeline-tooltip-body {
+.timeline-tooltip-row {
+    display: flex;
+    justify-content: space-between;
     font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-tooltip-label {
+    color: #64748b;
+}
+
+.timeline-tooltip-value {
     color: #334155;
+    font-weight: 500;
+}
+
+/* Decade Ruler */
+.timeline-decade-ruler {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 50px;
+    /* Stop at axis */
+    width: 60px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+    z-index: 20;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.timeline-decade-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 40px;
+    /* Approximate spacing */
 }
