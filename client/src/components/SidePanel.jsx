@@ -753,87 +753,88 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         </div>
                     )}
                 </div>
+            </div>
 
-                <MergeModal
-                    isOpen={isMergeModalOpen}
-                    onClose={() => setIsMergeModalOpen(false)}
-                    currentPerson={person}
-                    onMergeSuccess={() => {
-                        setIsMergeModalOpen(false);
-                        onClose(); // Close side panel as this person might be the one kept, but let's just close to refresh
-                        if (onUpdate) onUpdate();
-                    }}
-                />
+            <MergeModal
+                isOpen={isMergeModalOpen}
+                onClose={() => setIsMergeModalOpen(false)}
+                currentPerson={person}
+                onMergeSuccess={() => {
+                    setIsMergeModalOpen(false);
+                    onClose(); // Close side panel as this person might be the one kept, but let's just close to refresh
+                    if (onUpdate) onUpdate();
+                }}
+            />
 
-                <AddRelationshipModal
-                    isOpen={isAddRelationshipOpen}
-                    onClose={() => setIsAddRelationshipOpen(false)}
-                    currentPerson={person}
-                    onSuccess={() => {
-                        setIsAddRelationshipOpen(false);
-                        fetchRelationships();
-                        if (onUpdate) onUpdate();
-                    }}
-                />
+            <AddRelationshipModal
+                isOpen={isAddRelationshipOpen}
+                onClose={() => setIsAddRelationshipOpen(false)}
+                currentPerson={person}
+                onSuccess={() => {
+                    setIsAddRelationshipOpen(false);
+                    fetchRelationships();
+                    if (onUpdate) onUpdate();
+                }}
+            />
 
-                {/* Photo Source Selection Modal */}
-                <Modal
-                    isOpen={showPhotoSourceModal}
-                    onClose={() => setShowPhotoSourceModal(false)}
-                    title="Add Photo"
-                    size="sm"
-                >
-                    <p className="text-sm text-slate-600 mb-6">Choose a photo source:</p>
+            {/* Photo Source Selection Modal */}
+            <Modal
+                isOpen={showPhotoSourceModal}
+                onClose={() => setShowPhotoSourceModal(false)}
+                title="Add Photo"
+                size="sm"
+            >
+                <p className="text-sm text-slate-600 mb-6">Choose a photo source:</p>
 
-                    <div className="space-y-3">
-                        <Button
-                            variant="outline"
-                            fullWidth
-                            leftIcon={<ImageIcon className="w-5 h-5" />}
-                            onClick={() => document.getElementById('local-file-input').click()}
-                            className="justify-start text-left"
-                        >
-                            <div>
-                                <div className="font-semibold">Upload from Device</div>
-                                <div className="text-xs text-slate-500">Choose a photo from your computer</div>
-                            </div>
-                        </Button>
+                <div className="space-y-3">
+                    <Button
+                        variant="outline"
+                        fullWidth
+                        leftIcon={<ImageIcon className="w-5 h-5" />}
+                        onClick={() => document.getElementById('local-file-input').click()}
+                        className="justify-start text-left"
+                    >
+                        <div>
+                            <div className="font-semibold">Upload from Device</div>
+                            <div className="text-xs text-slate-500">Choose a photo from your computer</div>
+                        </div>
+                    </Button>
 
-                        <Button
-                            variant="outline"
-                            fullWidth
-                            leftIcon={<ImageIcon className="w-5 h-5" />}
-                            onClick={handleGooglePhotosUpload}
-                            className="justify-start text-left"
-                        >
-                            <div>
-                                <div className="font-semibold">Google Photos</div>
-                                <div className="text-xs text-slate-500">Import from Google Photos</div>
-                            </div>
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        fullWidth
+                        leftIcon={<ImageIcon className="w-5 h-5" />}
+                        onClick={handleGooglePhotosUpload}
+                        className="justify-start text-left"
+                    >
+                        <div>
+                            <div className="font-semibold">Google Photos</div>
+                            <div className="text-xs text-slate-500">Import from Google Photos</div>
+                        </div>
+                    </Button>
+                </div>
 
-                    <div className="mt-6">
-                        <Button
-                            variant="ghost"
-                            fullWidth
-                            onClick={() => setShowPhotoSourceModal(false)}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </Modal>
+                <div className="mt-6">
+                    <Button
+                        variant="ghost"
+                        fullWidth
+                        onClick={() => setShowPhotoSourceModal(false)}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </Modal>
 
-                {/* Hidden file input for local uploads */}
-                <input
-                    id="local-file-input"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLocalFileUpload}
-                    style={{ display: 'none' }}
-                />
-            </>
-            );
+            {/* Hidden file input for local uploads */}
+            <input
+                id="local-file-input"
+                type="file"
+                accept="image/*"
+                onChange={handleLocalFileUpload}
+                style={{ display: 'none' }}
+            />
+        </>
+    );
 };
 
-            export default SidePanel;
+export default SidePanel;
