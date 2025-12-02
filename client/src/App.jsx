@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import TreePage from './pages/TreePage';
 import TreeDashboard from './pages/TreeDashboard';
+import TimelinePage from './pages/TimelinePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AuthError from './pages/AuthError';
 import PhotoPickerTest from './pages/PhotoPickerTest';
@@ -117,6 +118,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/trees" element={<TreeDashboard />} />
           <Route path="/tree/:id" element={<TreePage />} />
+          <Route path="/tree/:id/timeline" element={<TimelinePage />} />
           <Route path="/invite/:token" element={<InviteAcceptPage />} />
           <Route path="/magic-link" element={<MagicLinkAuth />} />
           <Route path="/reset-password" element={<ResetPassword />} />

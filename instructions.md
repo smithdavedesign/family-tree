@@ -162,24 +162,22 @@ Available tables:
 
 ### Phase H: Data Structure Enhancements 🚧
 - [ ] Expand person details (birthplace, deathplace)
-- [ ] Photo gallery per person
+- [x] Photo gallery per person
 - [ ] Biography/notes expansion
 - [ ] Sources/documents (Google Drive integration)
-- [ ] Half-siblings support
-- [ ] Divorce/separated status
 - [ ] Auto-infer relationships
 - [ ] Detect impossible relationships
 
 ### Phase I: Tree Visualization Enhancements 🚧
-- [ ] Horizontal & vertical layout toggle
+- [x] Horizontal & vertical layout toggle
 - [ ] Focused mode (ancestors/descendants only)
-- [ ] Mini-map view
+- [x] Mini-map view
 - [ ] Auto-avoid overlapping nodes
-- [ ] Animated transitions
-- [ ] Zoom-to-fit
+- [x] Animated transitions
+- [x] Zoom-to-fit
 - [ ] Center-on-person
-- [ ] Keyboard navigation
-- [ ] Photo thumbnails in nodes
+- [x] Keyboard navigation
+- [x] Photo thumbnails in nodes
 - [ ] Lightbox for full photo view
 
 ### Phase J: Analytics & Timeline 🚧
