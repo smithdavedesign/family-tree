@@ -357,7 +357,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
                     {/* Profile Section */}
                     <div className="flex flex-col items-center">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profile Picture</label>
