@@ -134,7 +134,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 ### ✅ Phase I: Tree Visualization Enhancements (100%)
 - [x] Horizontal & vertical layout toggle
 - [x] Focused mode (ancestors/descendants only)
-- [x] Mini-map view
+- [x] Mini-map view (High-visibility filled nodes)
 - [x] Auto-avoid overlapping nodes
 - [x] Animated transitions
 - [x] Zoom-to-fit
