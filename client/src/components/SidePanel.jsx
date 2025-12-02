@@ -445,7 +445,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     </div>
 
                     {isEditing && (
-                        <div className="space-y-6 animate-fadeIn">
+                        <div className="space-y-6">
                             {/* Vital Statistics */}
                             <div>
                                 <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Vital Statistics</h4>
