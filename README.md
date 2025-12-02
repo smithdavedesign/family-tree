@@ -28,11 +28,13 @@ Roots & Branches is a modern, interactive family tree application that allows us
 
 ## 🛠 Tech Stack
 
-- **Frontend:** React, Vite, TailwindCSS, React Flow
+- **Frontend:** React, Vite, TailwindCSS v3, React Flow
 - **Backend:** Node.js, Express
 - **Database:** PostgreSQL (via Supabase)
 - **Authentication:** Supabase Auth (Google OAuth + Magic Links)
 - **Deployment:** Vercel (Frontend), Render (Backend)
+
+> **Note:** Using stable Tailwind CSS v3.4.17 for reliable utility class generation and consistent styling across all components.
 
 ## 🗄️ Database Schema
 
@@ -73,22 +75,22 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Multiple marriages/partnerships
 - [x] Adoptive/step relationships
 - [ ] Undo/Redo (partial)
-- [ ] Expand/collapse nodes
 
-### ⚠️ Phase E: Polish & UX (95%)
+### ✅ Phase E: Polish & UX (100%)
 - [x] Auto-refresh on changes
 - [x] Loading states & error handling
 - [x] Responsive design
 - [x] Search & filter
 - [x] Highlight selected lineage
-- [ ] Expand/collapse nodes
 - [x] **UI/UX Enhancement (Production Ready)** (100%)
-  - [x] Design system setup (Tailwind config, Inter font, design tokens)
+  - [x] Design system setup (Tailwind v3 config, Inter font, design tokens)
   - [x] Core component library (Button, Input, Modal, Toast, Avatar)
   - [x] Component migration (SidePanel, all modals)
   - [x] Navigation enhancements (Navbar, TreeSwitcher, Breadcrumbs, Sidebar)
   - [x] Tree visualization polish (Modern nodes, MiniMap, Connection lines)
   - [x] Animations & micro-interactions (Transitions, Hover effects)
+  - [x] **Tailwind CSS Configuration Fix** - Downgraded to v3 for stability
+  - [x] **Removed inline style workarounds** - All styling now uses Tailwind utilities
   - [x] Accessibility & Dark Mode (Deferred to future phase)
 
 - [x] **Tree Visualization Enhancements** (100%)
@@ -127,17 +129,17 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Half-siblings support
 - [ ] Detect impossible relationships
 
-### 🚧 Phase I: Tree Visualization Enhancements (0%)
-- [ ] Horizontal & vertical layout toggle
-- [ ] Focused mode (ancestors/descendants only)
-- [ ] Mini-map view
-- [ ] Auto-avoid overlapping nodes
-- [ ] Animated transitions
-- [ ] Zoom-to-fit
-- [ ] Center-on-person
-- [ ] Keyboard navigation
-- [ ] Photo thumbnails in nodes
-- [ ] Lightbox for full photo view
+### ✅ Phase I: Tree Visualization Enhancements (100%)
+- [x] Horizontal & vertical layout toggle
+- [x] Focused mode (ancestors/descendants only)
+- [x] Mini-map view
+- [x] Auto-avoid overlapping nodes
+- [x] Animated transitions
+- [x] Zoom-to-fit
+- [x] Center-on-person
+- [x] Keyboard navigation
+- [x] Photo thumbnails in nodes
+- [x] Lightbox for full photo view
 
 ### 🚧 Phase J: Analytics & Timeline (0%)
 - [ ] Family timeline (chronological events)
@@ -217,4 +219,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Current Status:** Phase G Complete (Collaboration) | Next: Phase E (UI/UX Enhancement)
+**Current Status:** Phase I Complete (Tree Visualization) | All Core Features Implemented

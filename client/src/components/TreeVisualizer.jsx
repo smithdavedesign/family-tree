@@ -817,7 +817,7 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 <Background color="#cbd5e1" gap={16} />
 
                 {menu && (
-                    <div style={{ top: menu.top, left: menu.left }} className="absolute z-50 bg-white border rounded shadow-lg p-2 w-56 flex flex-col gap-1">
+                    <div style={{ top: menu.top, left: menu.left }} className="absolute z-50 bg-white border border-slate-200 rounded-lg shadow-xl p-2 w-56 flex flex-col gap-1">
                         <div className="text-xs font-bold text-gray-500 px-2 py-1 uppercase border-b mb-1">Actions</div>
                         <button className="text-left px-2 py-1 hover:bg-gray-100 rounded text-sm" onClick={() => { setMenu(null); const node = nodes.find(n => n.id === menu.id); if (node && onNodeClick) onNodeClick(null, node); }}>Edit Person</button>
                         <div className="border-t my-1"></div>

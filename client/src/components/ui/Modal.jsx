@@ -43,31 +43,10 @@ const Modal = ({
     if (!isOpen) return null;
 
     return createPortal(
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem'
-            }}
-        >
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(15, 23, 42, 0.5)', // slate-900/50
-                    backdropFilter: 'blur(4px)'
-                }}
+                className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
                 onClick={closeOnOverlayClick ? onClose : undefined}
                 aria-hidden="true"
             />

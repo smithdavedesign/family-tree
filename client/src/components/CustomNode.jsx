@@ -26,7 +26,7 @@ const CustomNode = ({ data }) => {
                 <div className="flex items-center p-4 gap-3">
                     {/* Profile Photo */}
                     <div className="relative flex-shrink-0 group/photo cursor-pointer" onClick={handlePhotoClick}>
-                        <div className={`w-16 h-16 rounded-full overflow-hidden shadow-md ring-2 ring-white flex items-center justify-center transition-transform duration-200 ${data.profile_photo_url ? 'bg-transparent group-hover/photo:scale-105' : 'bg-gradient-to-br from-teal-50 to-blue-50'
+                        <div className={`w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white flex items-center justify-center transition-transform duration-200 ${data.profile_photo_url ? 'bg-transparent group-hover/photo:scale-105' : 'bg-gradient-to-br from-teal-50 to-blue-50'
                             }`}>
                             {data.profile_photo_url ? (
                                 <>
@@ -40,7 +40,7 @@ const CustomNode = ({ data }) => {
                                     </div>
                                 </>
                             ) : (
-                                <User className="w-8 h-8 text-slate-300" />
+                                <User className="w-6 h-6 text-slate-300" />
                             )}
                         </div>
 
