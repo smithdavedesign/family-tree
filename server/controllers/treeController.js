@@ -28,7 +28,7 @@ exports.getTree = async (req, res) => {
         }
 
         // 1. Fetch Tree Details
-        const { data: tree, error: treeError } = await supabase
+        const { data: tree, error: treeError } = await supabaseAdmin
             .from('trees')
             .select('*')
             .eq('id', id)
@@ -37,7 +37,7 @@ exports.getTree = async (req, res) => {
         if (treeError) throw treeError;
 
         // 2. Fetch User's Role
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', id)
@@ -47,7 +47,7 @@ exports.getTree = async (req, res) => {
         const role = member ? member.role : (tree.owner_id === userId ? 'owner' : null);
 
         // 3. Fetch persons in the tree
-        const { data: persons, error: personsError } = await supabase
+        const { data: persons, error: personsError } = await supabaseAdmin
             .from('persons')
             .select('*')
             .eq('tree_id', id);
@@ -55,7 +55,7 @@ exports.getTree = async (req, res) => {
         if (personsError) throw personsError;
 
         // 4. Fetch relationships in the tree
-        const { data: relationships, error: relationshipsError } = await supabase
+        const { data: relationships, error: relationshipsError } = await supabaseAdmin
             .from('relationships')
             .select('*')
             .eq('tree_id', id);

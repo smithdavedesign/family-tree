@@ -217,11 +217,62 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
     }, [highlightedNodes, setNodes]);
 
     const onConnect = useCallback(
-        (params) =>
+        async (params) => {
+            // Optimistically add the edge
             setEdges((eds) =>
                 addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)
-            ),
-        [setEdges]
+            );
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                // Determine relationship type (default to parent-child for now, or maybe prompt user?)
+                // For drag-and-drop, usually it implies a specific direction.
+                // ReactFlow params: source (top) -> target (bottom) usually.
+                // In our layout (TB), source is parent, target is child.
+
+                const response = await fetch('/api/relationship', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        tree_id: treeId,
+                        person_1_id: params.source, // Parent
+                        person_2_id: params.target, // Child
+                        type: 'parent_child'
+                    })
+                });
+
+                if (response.ok) {
+                    toast.success("Relationship created!");
+                    // We could refresh the tree here to get the real ID and data, 
+                    // but optimistic update is smoother. 
+                    // However, we should probably fetch to ensure consistency.
+                    // Let's debounce the fetch or just let it be.
+                    // Ideally we update the edge with the real ID from response.
+                    const newRel = await response.json();
+                    setEdges((eds) =>
+                        eds.map(e => {
+                            if (e.source === params.source && e.target === params.target && !e.id) {
+                                return { ...e, id: newRel.id, data: { relationshipType: 'parent_child', relationshipId: newRel.id } };
+                            }
+                            return e;
+                        })
+                    );
+                } else {
+                    throw new Error("Failed to create relationship");
+                }
+            } catch (error) {
+                console.error("Error creating relationship:", error);
+                toast.error("Failed to connect nodes");
+                // Rollback
+                setEdges((eds) => eds.filter(e => !(e.source === params.source && e.target === params.target)));
+            }
+        },
+        [setEdges, treeId, toast]
     );
 
     const [menu, setMenu] = useState(null);

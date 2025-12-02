@@ -33,7 +33,7 @@ const CustomNode = ({ data }) => {
                                     <img
                                         src={data.profile_photo_url}
                                         alt={data.label}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover object-center"
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors flex items-center justify-center">
                                         <Maximize2 className="w-4 h-4 text-white opacity-0 group-hover/photo:opacity-100 transition-opacity" />

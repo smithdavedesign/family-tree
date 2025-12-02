@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Modal, Button } from './ui';
 
 const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
     const [pickerReady, setPickerReady] = useState(false);
@@ -90,21 +91,14 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-red-500 flex items-center justify-center z-[9999]" onClick={onClose}>
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 flex flex-col items-center border-8 border-blue-500" onClick={(e) => e.stopPropagation()}>
-                <div className="w-full flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-blue-600" />
-                        Select from Google Photos
-                    </h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
-
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Select from Google Photos"
+            size="md"
+        >
+            <div className="flex flex-col items-center p-4">
                 {error ? (
                     <div className="w-full mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                         <div className="flex items-start gap-3">
@@ -117,27 +111,30 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                     </div>
                 ) : (
                     <div className="text-center mb-6">
-                        <ImageIcon className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-4">
+                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ImageIcon className="w-8 h-8 text-blue-500" />
+                        </div>
+                        <p className="text-slate-600 mb-4">
                             Click below to open Google Photos and select a photo for this person.
                         </p>
                     </div>
                 )}
 
-                <button
+                <Button
                     onClick={openPicker}
                     disabled={!pickerReady || !!error}
-                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition flex items-center justify-center gap-2"
+                    fullWidth
+                    className="flex items-center justify-center gap-2"
                 >
                     <ImageIcon className="w-5 h-5" />
                     {pickerReady ? 'Open Google Photos' : 'Loading...'}
-                </button>
+                </Button>
 
-                <p className="text-sm text-gray-500 mt-4 text-center">
+                <p className="text-xs text-slate-500 mt-4 text-center">
                     You'll be able to browse and select photos from your Google Photos library.
                 </p>
             </div>
-        </div>
+        </Modal>
     );
 };
 

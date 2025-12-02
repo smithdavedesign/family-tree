@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
-import { Button, Input, useToast } from './ui';
+import { Button, Input, useToast, Modal } from './ui';
 import PhotoGallery from './PhotoGallery';
 import { supabase } from '../auth';
 
@@ -18,6 +18,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
     const [isAddRelationshipOpen, setIsAddRelationshipOpen] = useState(false);
     const [showPhotoSourceModal, setShowPhotoSourceModal] = useState(false);
     const [pendingRefreshGallery, setPendingRefreshGallery] = useState(null);
+    const [isUploadingProfilePhoto, setIsUploadingProfilePhoto] = useState(false);
 
     useEffect(() => {
         console.log("SidePanel received person:", person);
@@ -74,13 +75,22 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
 
     const handleGalleryPhotoAdd = (refreshGallery) => {
         // Show modal to choose between Google Photos and Local File
+        setIsUploadingProfilePhoto(false);
         setPendingRefreshGallery(() => refreshGallery);
+        setShowPhotoSourceModal(true);
+    };
+
+    const handleProfilePhotoClick = () => {
+        // Show modal to choose between Google Photos and Local File for profile picture
+        setIsUploadingProfilePhoto(true);
+        setPendingRefreshGallery(null);
         setShowPhotoSourceModal(true);
     };
 
     const handleGooglePhotosUpload = () => {
         setShowPhotoSourceModal(false);
         const refreshGallery = pendingRefreshGallery;
+        const isProfile = isUploadingProfilePhoto;
 
         onOpenPhotoPicker(async (googlePhoto) => {
             try {
@@ -102,8 +112,14 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 });
 
                 if (response.ok) {
-                    toast.success("Photo added to gallery");
-                    refreshGallery();
+                    // If uploading profile photo, also update the profile_photo_url
+                    if (isProfile) {
+                        await handleSave({ profile_photo_url: googlePhoto.baseUrl });
+                        toast.success("Profile picture updated");
+                    } else {
+                        toast.success("Photo added to gallery");
+                        if (refreshGallery) refreshGallery();
+                    }
                     if (onUpdate) onUpdate();
                 } else {
                     toast.error("Failed to add photo");
@@ -154,11 +170,20 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 });
 
                 if (response.ok) {
-                    toast.success("Photo added to gallery");
-                    if (pendingRefreshGallery) pendingRefreshGallery();
+                    // If uploading profile photo, also update the profile_photo_url
+                    if (isUploadingProfilePhoto) {
+                        await handleSave({ profile_photo_url: reader.result });
+                        toast.success("Profile picture updated");
+                        setShowPhotoSourceModal(false);
+                    } else {
+                        toast.success("Photo added to gallery");
+                        if (pendingRefreshGallery) pendingRefreshGallery();
+                    }
                     if (onUpdate) onUpdate();
+                } else if (response.status === 413) {
+                    toast.error("File is too large for the server");
                 } else {
-                    toast.error("Failed to add photo");
+                    toast.error("Failed to upload photo");
                 }
             };
             reader.readAsDataURL(file);
@@ -335,6 +360,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8">
                     {/* Profile Section */}
                     <div className="flex flex-col items-center">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profile Picture</label>
                         <div className="relative group">
                             <div className="w-32 h-32 rounded-full bg-slate-100 overflow-hidden border-4 border-white shadow-xl ring-1 ring-slate-100">
                                 {person.data.profile_photo_url ? (
@@ -350,9 +376,9 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                     <Button
                                         variant="primary"
                                         size="sm"
-                                        onClick={() => onOpenPhotoPicker(handlePhotoSelect)}
+                                        onClick={handleProfilePhotoClick}
                                         className="rounded-full w-8 h-8 p-0 flex items-center justify-center shadow-lg"
-                                        title="Change Photo"
+                                        title="Update Profile Picture"
                                     >
                                         <ImageIcon className="w-4 h-4" />
                                     </Button>
@@ -649,9 +675,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
                     {canEdit && (
                         <Button
-                            variant="ghost"
-                            size="xs"
-                            leftIcon={<Plus className="w-3 h-3" />}
+                            size="sm"
+                            leftIcon={<Plus className="w-4 h-4" />}
                             onClick={() => setIsAddRelationshipOpen(true)}
                             className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
                         >
@@ -754,52 +779,52 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             />
 
             {/* Photo Source Selection Modal */}
-            {showPhotoSourceModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-scaleIn">
-                        <h3 className="text-xl font-bold text-slate-900 mb-4">Add Photo</h3>
-                        <p className="text-sm text-slate-600 mb-6">Choose a photo source:</p>
+            <Modal
+                isOpen={showPhotoSourceModal}
+                onClose={() => setShowPhotoSourceModal(false)}
+                title="Add Photo"
+                size="sm"
+            >
+                <p className="text-sm text-slate-600 mb-6">Choose a photo source:</p>
 
-                        <div className="space-y-3">
-                            <Button
-                                variant="outline"
-                                fullWidth
-                                leftIcon={<ImageIcon className="w-5 h-5" />}
-                                onClick={() => document.getElementById('local-file-input').click()}
-                                className="justify-start text-left"
-                            >
-                                <div>
-                                    <div className="font-semibold">Upload from Device</div>
-                                    <div className="text-xs text-slate-500">Choose a photo from your computer</div>
-                                </div>
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                fullWidth
-                                leftIcon={<ImageIcon className="w-5 h-5" />}
-                                onClick={handleGooglePhotosUpload}
-                                className="justify-start text-left"
-                            >
-                                <div>
-                                    <div className="font-semibold">Google Photos</div>
-                                    <div className="text-xs text-slate-500">Import from Google Photos</div>
-                                </div>
-                            </Button>
+                <div className="space-y-3">
+                    <Button
+                        variant="outline"
+                        fullWidth
+                        leftIcon={<ImageIcon className="w-5 h-5" />}
+                        onClick={() => document.getElementById('local-file-input').click()}
+                        className="justify-start text-left"
+                    >
+                        <div>
+                            <div className="font-semibold">Upload from Device</div>
+                            <div className="text-xs text-slate-500">Choose a photo from your computer</div>
                         </div>
+                    </Button>
 
-                        <div className="mt-6">
-                            <Button
-                                variant="ghost"
-                                fullWidth
-                                onClick={() => setShowPhotoSourceModal(false)}
-                            >
-                                Cancel
-                            </Button>
+                    <Button
+                        variant="outline"
+                        fullWidth
+                        leftIcon={<ImageIcon className="w-5 h-5" />}
+                        onClick={handleGooglePhotosUpload}
+                        className="justify-start text-left"
+                    >
+                        <div>
+                            <div className="font-semibold">Google Photos</div>
+                            <div className="text-xs text-slate-500">Import from Google Photos</div>
                         </div>
-                    </div>
+                    </Button>
                 </div>
-            )}
+
+                <div className="mt-6">
+                    <Button
+                        variant="ghost"
+                        fullWidth
+                        onClick={() => setShowPhotoSourceModal(false)}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </Modal>
 
             {/* Hidden file input for local uploads */}
             <input

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const Modal = ({
@@ -39,70 +40,34 @@ const Modal = ({
         return () => document.removeEventListener('keydown', handleEsc);
     }, [isOpen, closeOnEsc, onClose]);
 
-    // Handle body scroll lock
-    useEffect(() => {
-        if (isOpen) {
-            // Save current active element
-            previousActiveElement.current = document.activeElement;
-
-            // Lock body scroll
-            document.body.style.overflow = 'hidden';
-
-            // Focus modal
-            modalRef.current?.focus();
-        } else {
-            // Unlock body scroll
-            document.body.style.overflow = '';
-
-            // Restore focus
-            previousActiveElement.current?.focus();
-        }
-
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [isOpen]);
-
-    // Focus trap
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const modal = modalRef.current;
-        if (!modal) return;
-
-        const focusableElements = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        const handleTab = (e) => {
-            if (e.key !== 'Tab') return;
-
-            if (e.shiftKey) {
-                if (document.activeElement === firstElement) {
-                    e.preventDefault();
-                    lastElement?.focus();
-                }
-            } else {
-                if (document.activeElement === lastElement) {
-                    e.preventDefault();
-                    firstElement?.focus();
-                }
-            }
-        };
-
-        modal.addEventListener('keydown', handleTab);
-        return () => modal.removeEventListener('keydown', handleTab);
-    }, [isOpen]);
-
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    return createPortal(
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem'
+            }}
+        >
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fadeIn"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)', // slate-900/50
+                    backdropFilter: 'blur(4px)'
+                }}
                 onClick={closeOnOverlayClick ? onClose : undefined}
                 aria-hidden="true"
             />
@@ -114,11 +79,11 @@ const Modal = ({
                 aria-modal="true"
                 aria-labelledby="modal-title"
                 tabIndex={-1}
-                className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeStyles[size]} max-h-[90vh] flex flex-col animate-scaleIn ${className}`}
+                className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeStyles[size]} max-h-[90vh] flex flex-col ${className}`}
             >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                    <div className="flex items-center justify-between p-6 border-b border-slate-200">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-200 shrink-0">
                         {title && (
                             <h2
                                 id="modal-title"
@@ -146,12 +111,13 @@ const Modal = ({
 
                 {/* Footer */}
                 {footer && (
-                    <div className="p-6 border-t border-slate-200 bg-slate-50">
+                    <div className="p-6 border-t border-slate-200 bg-slate-50 shrink-0">
                         {footer}
                     </div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

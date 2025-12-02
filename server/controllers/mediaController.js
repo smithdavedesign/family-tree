@@ -1,4 +1,4 @@
-const { supabase } = require('../middleware/auth');
+const { supabaseAdmin } = require('../middleware/auth');
 
 exports.addMedia = async (req, res) => {
     const { person_id, url, type, google_media_id } = req.body;
@@ -23,7 +23,7 @@ exports.addMedia = async (req, res) => {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('media')
             .insert([
                 { person_id, url, type, google_media_id }
@@ -34,14 +34,14 @@ exports.addMedia = async (req, res) => {
         if (error) throw error;
 
         // Also update the person's profile photo if they don't have one
-        const { data: person } = await supabase
+        const { data: person } = await supabaseAdmin
             .from('persons')
             .select('profile_photo_url')
             .eq('id', person_id)
             .single();
 
         if (person && !person.profile_photo_url) {
-            await supabase
+            await supabaseAdmin
                 .from('persons')
                 .update({ profile_photo_url: url })
                 .eq('id', person_id);
@@ -65,7 +65,7 @@ exports.getMediaForPerson = async (req, res) => {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('media')
             .select('*')
             .eq('person_id', id);
@@ -87,13 +87,13 @@ exports.addPhoto = async (req, res) => {
     try {
         // If setting as primary, unset others first
         if (is_primary) {
-            await supabase
+            await supabaseAdmin
                 .from('photos')
                 .update({ is_primary: false })
                 .eq('person_id', person_id);
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('photos')
             .insert([{ person_id, url, caption, taken_date, location, is_primary }])
             .select()
@@ -103,7 +103,7 @@ exports.addPhoto = async (req, res) => {
 
         // If primary, also update person's profile_photo_url
         if (is_primary) {
-            await supabase
+            await supabaseAdmin
                 .from('persons')
                 .update({ profile_photo_url: url })
                 .eq('id', person_id);
@@ -117,10 +117,10 @@ exports.addPhoto = async (req, res) => {
 };
 
 exports.getPhotos = async (req, res) => {
-    const { personId } = req.params;
+    const { id: personId } = req.params;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('photos')
             .select('*')
             .eq('person_id', personId)
@@ -144,27 +144,27 @@ exports.updatePhoto = async (req, res) => {
         // If setting as primary, unset others first
         if (updates.is_primary) {
             // Get person_id for this photo
-            const { data: photo } = await supabase
+            const { data: photo } = await supabaseAdmin
                 .from('photos')
                 .select('person_id, url')
                 .eq('id', id)
                 .single();
 
             if (photo) {
-                await supabase
+                await supabaseAdmin
                     .from('photos')
                     .update({ is_primary: false })
                     .eq('person_id', photo.person_id);
 
                 // Update person profile photo
-                await supabase
+                await supabaseAdmin
                     .from('persons')
                     .update({ profile_photo_url: photo.url })
                     .eq('id', photo.person_id);
             }
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('photos')
             .update(updates)
             .eq('id', id)
@@ -184,7 +184,7 @@ exports.deletePhoto = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('photos')
             .delete()
             .eq('id', id);

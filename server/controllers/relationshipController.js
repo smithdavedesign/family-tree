@@ -1,4 +1,4 @@
-const { supabase } = require('../middleware/auth');
+const { supabaseAdmin } = require('../middleware/auth');
 
 exports.createRelationship = async (req, res) => {
     const { id, tree_id, person_1_id, person_2_id, type } = req.body;
@@ -18,7 +18,7 @@ exports.createRelationship = async (req, res) => {
         const payload = { tree_id, person_1_id, person_2_id, type };
         if (id) payload.id = id;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('relationships')
             .insert([payload])
             .select()
@@ -48,7 +48,7 @@ exports.deleteRelationship = async (req, res) => {
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('relationships')
             .delete()
             .eq('id', id);
