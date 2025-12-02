@@ -98,7 +98,6 @@ const AccountSettings = ({ user, onClose }) => {
                             fullWidth
                             onClick={() => setShowDeleteConfirm(true)}
                             leftIcon={<Trash2 className="w-4 h-4" />}
-                            className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
                         >
                             Delete Account
                         </Button>
