@@ -673,26 +673,15 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
-                    {!showDeleteConfirm ? (
+                    {canEdit && (
                         <Button
-                            variant="danger"
-                            fullWidth
-                            onClick={() => setShowDeleteConfirm(true)}
-                            leftIcon={<Trash2 className="w-4 h-4" />}
+                            size="sm"
+                            leftIcon={<Plus className="w-4 h-4" />}
+                            onClick={() => setIsAddRelationshipOpen(true)}
+                            className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
                         >
-                            Delete Account
+                            Add
                         </Button>
-                    ) : (
-                        canEdit && (
-                            <Button
-                                size="sm"
-                                leftIcon={<Plus className="w-4 h-4" />}
-                                onClick={() => setIsAddRelationshipOpen(true)}
-                                className="text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100"
-                            >
-                                Add
-                            </Button>
-                        )
                     )}
                 </div>
                 {loadingRelationships ? (
