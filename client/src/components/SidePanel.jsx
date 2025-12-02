@@ -668,91 +668,91 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     </div>
                 </div>
 
-                {/* Relationships Section */}
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
-                        {canEdit && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                leftIcon={<Plus className="w-4 h-4" />}
-                                onClick={() => setIsAddRelationshipOpen(true)}
-                            >
-                                Add
-                            </Button>
+                    {/* Relationships Section */}
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Relationships</h4>
+                            {canEdit && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    leftIcon={<Plus className="w-4 h-4" />}
+                                    onClick={() => setIsAddRelationshipOpen(true)}
+                                >
+                                    Add
+                                </Button>
+                            )}
+                        </div>
+                        {loadingRelationships ? (
+                            <div className="flex justify-center py-4">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
+                            </div>
+                        ) : relationships.length === 0 ? (
+                            <div className="bg-slate-50 rounded-xl p-4 text-center border-2 border-dashed border-slate-200">
+                                <p className="text-sm text-slate-500">No relationships found</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {relationships.map((rel) => {
+                                    const typeLabel = rel.type === 'spouse' ? 'Spouse' :
+                                        rel.type === 'adoptive_parent_child' ? 'Adoptive' :
+                                            rel.type === 'step_parent_child' ? 'Step' :
+                                                rel.direction === 'from' ? 'Parent of' : 'Child of';
+
+                                    return (
+                                        <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
+                                            <div className="flex-1">
+                                                <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
+                                                <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
+                                            </div>
+                                            {canEdit && (
+                                                <Button
+                                                    variant="danger"
+                                                    size="xs"
+                                                    onClick={() => handleDeleteRelationship(rel.id)}
+                                                    className="px-2 py-1"
+                                                >
+                                                    Remove
+                                                </Button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
-                    {loadingRelationships ? (
-                        <div className="flex justify-center py-4">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
-                        </div>
-                    ) : relationships.length === 0 ? (
-                        <div className="bg-slate-50 rounded-xl p-4 text-center border-2 border-dashed border-slate-200">
-                            <p className="text-sm text-slate-500">No relationships found</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {relationships.map((rel) => {
-                                const typeLabel = rel.type === 'spouse' ? 'Spouse' :
-                                    rel.type === 'adoptive_parent_child' ? 'Adoptive' :
-                                        rel.type === 'step_parent_child' ? 'Step' :
-                                            rel.direction === 'from' ? 'Parent of' : 'Child of';
 
-                                return (
-                                    <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
-                                        <div className="flex-1">
-                                            <div className="text-sm font-semibold text-slate-800">{rel.otherPerson}</div>
-                                            <div className="text-xs text-slate-500 font-medium">{typeLabel}</div>
-                                        </div>
-                                        {canEdit && (
-                                            <Button
-                                                variant="danger"
-                                                size="xs"
-                                                onClick={() => handleDeleteRelationship(rel.id)}
-                                                className="px-2 py-1"
-                                            >
-                                                Remove
-                                            </Button>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Bio Section */}
-                <div>
-                    <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
-                    {isEditing ? (
-                        <Input
-                            type="textarea"
-                            name="bio"
-                            value={formData.bio}
-                            onChange={handleChange}
-                            rows={4}
-                            placeholder="Write something about this person..."
-                        />
-                    ) : (
-                        <div className="text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">
-                            {person.data.bio || "No biography available."}
-                        </div>
-                    )}
-                </div>
-
-                {/* Danger Zone */}
-                {canEdit && (
-                    <div className="pt-6 border-t border-slate-100">
-                        <Button
-                            variant="danger"
-                            fullWidth
-                            onClick={() => setIsMergeModalOpen(true)}
-                        >
-                            Merge Duplicate Person
-                        </Button>
+                    {/* Bio Section */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">Biography</label>
+                        {isEditing ? (
+                            <Input
+                                type="textarea"
+                                name="bio"
+                                value={formData.bio}
+                                onChange={handleChange}
+                                rows={4}
+                                placeholder="Write something about this person..."
+                            />
+                        ) : (
+                            <div className="text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">
+                                {person.data.bio || "No biography available."}
+                            </div>
+                        )}
                     </div>
-                )}
+
+                    {/* Danger Zone */}
+                    {canEdit && (
+                        <div className="pt-6 border-t border-slate-100">
+                            <Button
+                                variant="danger"
+                                fullWidth
+                                onClick={() => setIsMergeModalOpen(true)}
+                            >
+                                Merge Duplicate Person
+                            </Button>
+                        </div>
+                    )}
             </div>
 
             <MergeModal
