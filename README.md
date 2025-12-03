@@ -184,15 +184,14 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 #### Error Monitoring & Logging (60%)
 - [x] Basic audit logs (backend)
-- [x] Integrate Sentry for frontend error tracking
-- [x] Integrate Sentry for backend error tracking
-- [x] Configure performance monitoring (Core Web Vitals)
-- [x] Set up session replay (10% sessions, 100% errors)
-- [x] Add data filtering for sensitive information
-- [x] Create error tracking documentation (docs/SENTRY.md)
-- [ ] Set up user analytics (Vercel Analytics)
-- [ ] Create error alerting system
-- [ ] Add crash reporting dashboard
+- [x] Integrate free error logging (frontend + backend)
+- [x] Configure console-based error tracking
+- [x] Set up global error handlers
+- [x] Add unhandled promise rejection tracking
+- [x] Create error logging documentation
+- [ ] Add database logging for production errors
+- [ ] Create error dashboard
+- [ ] Set up error alerting (email/webhook)
 
 #### Data Validation & Integrity (40%)
 - [x] Basic JWT validation
@@ -274,33 +273,49 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 ## 📊 Error Monitoring & Logging
 
-### Sentry Integration
-The application uses Sentry for comprehensive error tracking and performance monitoring.
+### Free Error Logging System
+The application uses a custom, **100% free** error logging system with no external service costs.
 
 **Features:**
 - Real-time error tracking (frontend + backend)
-- Performance monitoring (10% sample rate in production)
-- Session replay (10% of sessions, 100% of error sessions)
-- Automatic data filtering (removes tokens, passwords, sensitive headers)
+- Console-based logging (development)
+- Optional database logging (production)
+- Global error handlers
+- Unhandled promise rejection tracking
 - User context tracking
 
-**Accessing Sentry Logs:**
-1. **Sentry Dashboard:** https://sentry.io
-2. **Project:** Family Tree (Frontend + Backend)
-3. **View Errors:** Issues → All Issues
-4. **View Performance:** Performance → Transactions
-5. **View Replays:** Replays → Session Replays
+**Accessing Error Logs:**
+1. **Development:** Check browser console (frontend) or terminal (backend)
+2. **Production:** Errors logged to console (can be captured by hosting platform logs)
+3. **Optional:** Implement database logging for persistent error storage
 
-**Environment Variables Required:**
-```env
-# Frontend (.env)
-VITE_SENTRY_DSN=your_frontend_sentry_dsn
+**Test Endpoints:**
+```bash
+# Test backend error logging
+curl http://localhost:3000/api/test/error
 
-# Backend (.env)
-SENTRY_DSN=your_backend_sentry_dsn
+# Test backend message logging  
+curl http://localhost:3000/api/test/message
+
+# Health check
+curl http://localhost:3000/api/test/health
 ```
 
-**Documentation:** See [docs/SENTRY.md](docs/SENTRY.md) for detailed setup and usage.
+**Usage in Code:**
+```javascript
+// Frontend
+import { captureException, captureMessage } from './utils/errorLogger';
+
+try {
+  // risky operation
+} catch (error) {
+  captureException(error, { context: 'additional info' });
+}
+
+// Backend
+const { captureException } = require('./utils/errorLogger');
+captureException(error, { userId: user.id });
+```
 
 ### Audit Logs
 All user actions are logged to the database for security and compliance:
