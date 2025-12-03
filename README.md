@@ -20,11 +20,14 @@ Roots & Branches is a modern, interactive family tree application that allows us
 
 ### Advanced Features
 - ✅ **Role-Based Access Control** - Owner, Editor, and Viewer permissions
-- ✅ **Search & Filter** - Find family members by name or year range
+- ✅ **Search & Filter** - Find family members by name or year range with collapsible interface
 - ✅ **Multiple Relationship Types** - Support for biological, adoptive, and step relationships
 - ✅ **Merge Duplicates** - Consolidate duplicate person entries
 - ✅ **Rate Limiting** - Protection against API abuse
 - ✅ **Audit Logging** - Track all user actions for security and compliance
+- ✅ **Interactive MiniMap** - Click and drag to navigate large trees
+- ✅ **View Lock** - Prevent accidental panning/zooming
+- ✅ **Timeline Visualization** - Chronological event view with color-coded dots and density heatmap
 
 ## 🛠 Tech Stack
 
@@ -80,7 +83,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Auto-refresh on changes
 - [x] Loading states & error handling
 - [x] Responsive design
-- [x] Search & filter
+- [x] Search & filter (collapsible interface with toggle button)
 - [x] Highlight selected lineage
 - [x] **UI/UX Enhancement (Production Ready)** (100%)
   - [x] Design system setup (Tailwind v3 config, Inter font, design tokens)
@@ -93,13 +96,17 @@ The application uses a relational database (PostgreSQL) with the following key e
   - [x] **Removed inline style workarounds** - All styling now uses Tailwind utilities
   - [x] **Accessibility Improvements** - High contrast buttons, semantic HTML
   - [x] **UI Consistency** - Uniform padding, stable transitions, no layout shifts
+  - [x] **Consistent Navigation** - Unified Navbar across all pages with clickable brand logo
+  - [x] **Interactive Controls** - View lock, collapsible search, optimized control grouping
 
 - [x] **Tree Visualization Enhancements** (100%)
-  - [x] Mini-map view
+  - [x] Interactive mini-map (click/drag to navigate)
+  - [x] View lock feature (prevent panning/zooming)
   - [x] Auto-avoid overlapping nodes
   - [x] Animated transitions
   - [x] Zoom-to-fit & Center-on-person
   - [x] Photo thumbnails in nodes
+  - [x] Keyboard navigation
 
 ### ✅ Phase F: Session, Account & Security (100%)
 - [x] Persistent login
@@ -146,10 +153,83 @@ The application uses a relational database (PostgreSQL) with the following key e
 ### ✅ Phase J: Analytics & Timeline (100%)
 - [x] Family timeline (chronological events)
 - [x] Scrollable timeline with event dots
+- [x] Event color coding (Teal=Birth, Red=Death, Purple=Marriage)
+- [x] Enhanced tooltips with age calculation
+- [x] Drag-to-pan scrolling
+- [x] Horizontal guide lines
+- [x] Decade ruler for temporal anchoring
+- [x] Density heatmap background
 - [x] Filter by family side (maternal/paternal)
 - [x] Age distribution stats
 - [x] Most common locations
 - [x] Family branches visualization
+
+### ⚠️ Phase K: Production Readiness (20%) - CRITICAL
+**Timeline:** 3-6 weeks | **Blocker for Public Launch**
+
+#### Testing & Quality Assurance (0%)
+- [ ] Set up testing framework (Vitest + React Testing Library)
+- [ ] Write unit tests for authentication flow
+- [ ] Write unit tests for tree CRUD operations
+- [ ] Write unit tests for person CRUD operations
+- [ ] Write unit tests for relationship management
+- [ ] Set up Playwright for E2E tests
+- [ ] Write E2E test for critical user journey (signup → create tree → add person)
+- [ ] Cross-browser testing (Chrome, Firefox, Safari)
+- [ ] Mobile device testing (iOS Safari, Android Chrome)
+- [ ] Performance testing for large trees (100+ nodes)
+
+#### Error Monitoring & Logging (20%)
+- [x] Basic audit logs (backend)
+- [ ] Integrate Sentry for frontend error tracking
+- [ ] Integrate Sentry for backend error tracking
+- [ ] Add performance monitoring (Core Web Vitals)
+- [ ] Set up user analytics (Vercel Analytics)
+- [ ] Create error alerting system
+- [ ] Add crash reporting
+
+#### Data Validation & Integrity (40%)
+- [x] Basic JWT validation
+- [x] RBAC permission checks
+- [ ] Input sanitization on backend (Joi/Zod)
+- [ ] Frontend form validation (Zod)
+- [ ] Impossible date detection (death before birth)
+- [ ] Duplicate person detection (auto-suggest merge)
+- [ ] Data export feature (JSON/GEDCOM)
+- [ ] GDPR compliance (data export, right to be forgotten)
+- [ ] Backup/restore functionality
+
+#### Performance Optimization (60%)
+- [x] Basic lazy loading
+- [x] React Flow optimization
+- [ ] Code splitting (route-based)
+- [ ] Image optimization (compress photos)
+- [ ] Lazy loading for large trees (virtualization)
+- [ ] Database indexing strategy
+- [ ] CDN for static assets
+- [ ] Bundle size optimization (<500KB)
+
+#### Documentation & Onboarding (30%)
+- [x] Basic README
+- [x] API endpoint documentation
+- [ ] User onboarding flow (interactive tutorial)
+- [ ] Help documentation (FAQ, guides)
+- [ ] Tooltips/hints throughout UI
+- [ ] Video tutorials
+- [ ] Terms of Service
+- [ ] Privacy Policy
+
+#### Security Hardening (70%)
+- [x] JWT authentication
+- [x] RBAC
+- [x] Rate limiting
+- [x] Audit logging
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] XSS prevention (input sanitization)
+- [ ] CSRF protection
+- [ ] Security headers (CSP, HSTS)
+- [ ] Dependency vulnerability scanning
+- [ ] Penetration testing
 
 ## 🔌 API Endpoints
 
@@ -221,4 +301,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Current Status:** Phase I Complete (Tree Visualization) | All Core Features Implemented
+**Current Status:** Phase J Complete (Timeline UI) | All Core Features Implemented | Production Readiness: 48%
