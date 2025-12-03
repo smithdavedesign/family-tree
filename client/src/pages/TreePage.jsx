@@ -153,7 +153,7 @@ const TreePage = () => {
 
                 {/* Side Panel */}
                 {selectedPerson && (
-                    <div className="w-full md:w-96 border-l bg-white shadow-xl z-20 shrink-0 overflow-y-auto">
+                    <div className="fixed md:relative inset-0 md:inset-auto md:w-96 md:border-l bg-white shadow-xl z-20 md:shrink-0 overflow-y-auto">
                         <SidePanel
                             person={selectedPerson}
                             onClose={handleClosePanel}
