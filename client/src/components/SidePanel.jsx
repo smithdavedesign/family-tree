@@ -109,13 +109,20 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         url: googlePhoto.baseUrl,
                         google_media_id: googlePhoto.id,
                         taken_date: googlePhoto.mediaMetadata?.creationTime,
+                        is_primary: isProfile // Mark as primary if it's a profile photo
                     })
                 });
 
                 if (response.ok) {
+                    const newPhoto = await response.json();
+
                     // If uploading profile photo, also update the profile_photo_url
                     if (isProfile) {
                         await handleSave({ profile_photo_url: googlePhoto.baseUrl });
+
+                        // Refresh gallery to show the new primary photo
+                        if (refreshGallery) refreshGallery();
+
                         toast.success("Profile picture updated");
                     } else {
                         toast.success("Photo added to gallery");
