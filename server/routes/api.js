@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody } = require('../middleware/rbac');
+const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody, requireDocumentEditor, requireDocumentViewer } = require('../middleware/rbac');
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const treeController = require('../controllers/treeController');
 const personController = require('../controllers/personController');
 const relationshipController = require('../controllers/relationshipController');
 const mediaController = require('../controllers/mediaController');
+const documentController = require('../controllers/documentController');
 const accountController = require('../controllers/accountController');
 const invitationController = require('../controllers/invitationController');
 
@@ -44,6 +45,12 @@ router.post('/photos', requireAuth, requirePersonEditorBody, writeLimiter, audit
 router.get('/person/:id/photos', requireAuth, requirePersonViewer, mediaController.getPhotos);
 router.put('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('UPDATE', 'photo'), mediaController.updatePhoto);
 router.delete('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('DELETE', 'photo'), mediaController.deletePhoto);
+
+// Document routes (Phase H)
+router.post('/documents', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'document'), documentController.addDocument);
+router.get('/person/:id/documents', requireAuth, requirePersonViewer, documentController.getDocuments);
+router.put('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, auditLog('UPDATE', 'document'), documentController.updateDocument);
+router.delete('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, auditLog('DELETE', 'document'), documentController.deleteDocument);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);

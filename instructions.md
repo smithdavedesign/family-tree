@@ -175,10 +175,10 @@ Available tables:
 - [ ] Mark private/sensitive profiles
 
 ### Phase H: Data Structure Enhancements 🚧
-- [ ] Expand person details (birthplace, deathplace)
+- [x] Expand person details (birthplace, deathplace, occupation, education)
 - [x] Photo gallery per person
-- [ ] Biography/notes expansion
-- [ ] Sources/documents (Google Drive integration)
+- [x] Biography/notes expansion
+- [x] Sources/documents (Google Drive integration & Local Upload)
 - [ ] Auto-infer relationships
 - [ ] Detect impossible relationships
 

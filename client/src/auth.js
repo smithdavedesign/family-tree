@@ -37,7 +37,7 @@ export const signInWithGoogle = async () => {
                 access_type: 'offline',
                 prompt: 'consent',
             },
-            scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly',
+            scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/drive.file',
         },
     });
 

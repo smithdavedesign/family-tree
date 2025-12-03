@@ -4,6 +4,7 @@ import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast, Modal } from './ui';
 import PhotoGallery from './PhotoGallery';
+import DocumentGallery from './DocumentGallery';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
@@ -663,6 +664,13 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         <PhotoGallery
                             personId={person.id}
                             onAddPhoto={handleGalleryPhotoAdd}
+                            canEdit={canEdit}
+                        />
+
+                        <div className="border-t border-slate-100 my-6"></div>
+
+                        <DocumentGallery
+                            personId={person.id}
                             canEdit={canEdit}
                         />
                     </div>

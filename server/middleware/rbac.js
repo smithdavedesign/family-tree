@@ -259,6 +259,41 @@ async function getUserTreeRole(userId, treeId) {
     return error ? null : data?.role;
 }
 
+// Document-specific middlewares
+const requireDocumentRole = (requiredRole) => {
+    return async (req, res, next) => {
+        if (process.env.USE_MOCK === 'true') return next();
+
+        const documentId = req.params.id;
+        if (!documentId) return res.status(400).json({ error: 'Document ID required' });
+
+        try {
+            // Lookup tree_id via person
+            const { data: doc, error } = await supabaseAdmin
+                .from('documents')
+                .select('person_id, persons!inner(tree_id)')
+                .eq('id', documentId)
+                .single();
+
+            if (error || !doc || !doc.persons) {
+                return res.status(404).json({ error: 'Document not found' });
+            }
+
+            // Set treeId for the generic checker
+            req.params.treeId = doc.persons.tree_id;
+
+            // Delegate to generic checker
+            return requireTreeRole(requiredRole)(req, res, next);
+        } catch (err) {
+            console.error('RBAC Document lookup error:', err);
+            return res.status(500).json({ error: 'Error checking permissions' });
+        }
+    };
+};
+
+const requireDocumentEditor = requireDocumentRole(ROLES.EDITOR);
+const requireDocumentViewer = requireDocumentRole(ROLES.VIEWER);
+
 module.exports = {
     requireOwner,
     requireEditor,
@@ -269,6 +304,8 @@ module.exports = {
     requirePhotoEditor,
     requirePhotoViewer,
     requirePersonEditorBody,
+    requireDocumentEditor,
+    requireDocumentViewer,
     requireTreeRole,
     isTreeOwner,
     getUserTreeRole,

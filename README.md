@@ -129,12 +129,12 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Connect trees between users
 - [ ] Mark private/sensitive profiles
 
-### ⚠️ Phase H: Data Structure Enhancements (40%)
+### ⚠️ Phase H: Data Structure Enhancements (80%)
 - [x] Expand person details (birthplace, deathplace, cause of death, burial place)
 - [x] Photo gallery per person (with Google Photos & local file upload)
 - [x] Extended occupation fields (occupation history, education)
-- [ ] Biography/notes expansion
-- [ ] Sources/documents (Google Drive)
+- [x] Biography/notes expansion
+- [x] Sources/documents (Google Drive & Local Upload)
 - [ ] Half-siblings support
 - [ ] Detect impossible relationships
 
