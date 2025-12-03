@@ -18,6 +18,7 @@ const TreeDashboard = (props) => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [activeView, setActiveView] = useState('all');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -135,10 +136,26 @@ const TreeDashboard = (props) => {
             <Navbar
                 user={user}
                 onOpenSettings={() => setShowSettings(true)}
+                leftContent={
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                        aria-label="Open menu"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                }
             />
 
             <div className="flex">
-                <Sidebar activeView={activeView} onViewChange={setActiveView} />
+                <Sidebar
+                    activeView={activeView}
+                    onViewChange={setActiveView}
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                />
 
                 <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
                     {/* Header */}
