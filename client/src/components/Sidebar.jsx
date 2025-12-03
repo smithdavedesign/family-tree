@@ -15,8 +15,9 @@ const Sidebar = ({ activeView = 'all', onViewChange, className = '' }) => {
     return (
         <aside
             className={`
+                hidden md:flex
                 bg-white border-r border-slate-200 h-[calc(100vh-64px)] sticky top-16 
-                transition-all duration-300 ease-in-out flex flex-col
+                transition-all duration-300 ease-in-out flex-col
                 ${isCollapsed ? 'w-16' : 'w-64'}
                 ${className}
             `}
