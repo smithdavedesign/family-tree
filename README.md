@@ -182,14 +182,17 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Mobile device testing (iOS Safari, Android Chrome)
 - [ ] Performance testing for large trees (100+ nodes)
 
-#### Error Monitoring & Logging (20%)
+#### Error Monitoring & Logging (60%)
 - [x] Basic audit logs (backend)
-- [ ] Integrate Sentry for frontend error tracking
-- [ ] Integrate Sentry for backend error tracking
-- [ ] Add performance monitoring (Core Web Vitals)
+- [x] Integrate Sentry for frontend error tracking
+- [x] Integrate Sentry for backend error tracking
+- [x] Configure performance monitoring (Core Web Vitals)
+- [x] Set up session replay (10% sessions, 100% errors)
+- [x] Add data filtering for sensitive information
+- [x] Create error tracking documentation (docs/SENTRY.md)
 - [ ] Set up user analytics (Vercel Analytics)
 - [ ] Create error alerting system
-- [ ] Add crash reporting
+- [ ] Add crash reporting dashboard
 
 #### Data Validation & Integrity (40%)
 - [x] Basic JWT validation
@@ -268,6 +271,51 @@ The application uses a relational database (PostgreSQL) with the following key e
 - **Row Level Security** - Database-level access control
 - **Magic Links** - Passwordless authentication
 - **Session Management** - Auto-refresh and persistence
+
+## 📊 Error Monitoring & Logging
+
+### Sentry Integration
+The application uses Sentry for comprehensive error tracking and performance monitoring.
+
+**Features:**
+- Real-time error tracking (frontend + backend)
+- Performance monitoring (10% sample rate in production)
+- Session replay (10% of sessions, 100% of error sessions)
+- Automatic data filtering (removes tokens, passwords, sensitive headers)
+- User context tracking
+
+**Accessing Sentry Logs:**
+1. **Sentry Dashboard:** https://sentry.io
+2. **Project:** Family Tree (Frontend + Backend)
+3. **View Errors:** Issues → All Issues
+4. **View Performance:** Performance → Transactions
+5. **View Replays:** Replays → Session Replays
+
+**Environment Variables Required:**
+```env
+# Frontend (.env)
+VITE_SENTRY_DSN=your_frontend_sentry_dsn
+
+# Backend (.env)
+SENTRY_DSN=your_backend_sentry_dsn
+```
+
+**Documentation:** See [docs/SENTRY.md](docs/SENTRY.md) for detailed setup and usage.
+
+### Audit Logs
+All user actions are logged to the database for security and compliance:
+- **Table:** `audit_logs`
+- **Tracked Actions:** CREATE, UPDATE, DELETE, VIEW
+- **Data Stored:** user_id, action, resource_type, resource_id, IP, user agent, metadata
+- **Access:** Via Supabase dashboard or SQL queries
+
+**Example Query:**
+```sql
+SELECT * FROM audit_logs 
+WHERE user_id = 'user-id' 
+ORDER BY created_at DESC 
+LIMIT 100;
+```
 
 ## 💻 Local Development
 
