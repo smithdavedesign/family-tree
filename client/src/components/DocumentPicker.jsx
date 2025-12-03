@@ -75,6 +75,7 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                 .addView(window.google.picker.ViewId.DOCS)
                 .setOAuthToken(accessToken)
                 .setDeveloperKey(apiKey)
+                .setOrigin(window.location.protocol + '//' + window.location.host)
                 .setCallback((data) => {
                     if (data.action === window.google.picker.Action.PICKED) {
                         const doc = data.docs[0];
@@ -86,10 +87,12 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                             external_id: doc.id,
                             description: doc.description || ''
                         });
-                        onClose();
                     }
                 })
                 .build();
+
+            // Close the modal before showing the picker to avoid z-index conflicts
+            onClose();
             picker.setVisible(true);
         } catch (err) {
             console.error('Error opening picker:', err);
@@ -159,8 +162,8 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                 <div className="flex border-b border-slate-200 mb-6">
                     <button
                         className={`flex-1 pb-3 text-sm font-medium transition-colors ${activeTab === 'drive'
-                                ? 'text-teal-600 border-b-2 border-teal-600'
-                                : 'text-slate-500 hover:text-slate-700'
+                            ? 'text-teal-600 border-b-2 border-teal-600'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                         onClick={() => setActiveTab('drive')}
                     >
@@ -171,8 +174,8 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                     </button>
                     <button
                         className={`flex-1 pb-3 text-sm font-medium transition-colors ${activeTab === 'upload'
-                                ? 'text-teal-600 border-b-2 border-teal-600'
-                                : 'text-slate-500 hover:text-slate-700'
+                            ? 'text-teal-600 border-b-2 border-teal-600'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                         onClick={() => setActiveTab('upload')}
                     >

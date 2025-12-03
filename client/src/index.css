@@ -48,8 +48,22 @@
   }
 
   .transition-smooth {
-    transition: all var(--transition-base);
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
+}
+
+/* Google Picker Overrides */
+/* Ensure Google Picker appears above our Modals (which are z-[9999]) */
+.picker-dialog,
+.picker-modal-dialog {
+  z-index: 10001 !important;
+}
+
+.picker-dialog-bg,
+.picker-modal-dialog-bg {
+  z-index: 10000 !important;
 }
 
 /* Animations */

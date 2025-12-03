@@ -68,6 +68,7 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                 .addView(window.google.picker.ViewId.PHOTOS)
                 .setOAuthToken(accessToken)
                 .setDeveloperKey(apiKey)
+                .setOrigin(window.location.protocol + '//' + window.location.host)
                 .setCallback((data) => {
                     if (data.action === window.google.picker.Action.PICKED) {
                         const photo = data.docs[0];
@@ -77,13 +78,14 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                             filename: photo.name,
                             mimeType: photo.mimeType
                         });
-                        onClose();
                     } else if (data.action === window.google.picker.Action.CANCEL) {
-                        onClose();
+                        // User cancelled, no action needed
                     }
                 })
                 .build();
 
+            // Close the modal before showing the picker to avoid z-index conflicts
+            onClose();
             picker.setVisible(true);
         } catch (err) {
             console.error('Error opening picker:', err);
