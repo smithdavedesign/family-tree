@@ -8,6 +8,7 @@ import ShareModal from '../components/ShareModal';
 import AccountSettings from '../components/AccountSettings';
 import PhotoPicker from '../components/PhotoPicker';
 import Breadcrumbs from '../components/Breadcrumbs';
+import Navbar from '../components/Navbar';
 import { Share2, Settings } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
@@ -25,6 +26,7 @@ const TreePage = () => {
     const [userRole, setUserRole] = useState('viewer');
     const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
     const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -77,42 +79,37 @@ const TreePage = () => {
 
     return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-teal-50 to-blue-50">
-            {/* Fixed Header */}
-            <header className="bg-white shadow-md p-4 z-10 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-bold text-teal-800 hidden md:block">Roots & Branches</h1>
+            {/* Navbar */}
+            <Navbar
+                user={user}
+                onOpenSettings={() => setShowSettings(true)}
+                leftContent={
                     <TreeSwitcher currentTreeId={id} />
-                </div>
-                <div className="flex items-center gap-2">
-                    {userRole === 'owner' && (
+                }
+                rightContent={
+                    <>
+                        {userRole === 'owner' && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                leftIcon={<Share2 className="w-4 h-4" />}
+                                onClick={() => setIsShareModalOpen(true)}
+                            >
+                                <span className="hidden sm:inline">Share</span>
+                            </Button>
+                        )}
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            leftIcon={<Share2 className="w-4 h-4" />}
-                            onClick={() => setIsShareModalOpen(true)}
+                            onClick={() => window.location.href = `/tree/${id}/timeline`}
+                            className="p-2"
+                            title="View Timeline"
                         >
-                            <span className="hidden sm:inline">Share</span>
+                            <span className="text-xl">📅</span>
                         </Button>
-                    )}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.location.href = `/tree/${id}/timeline`}
-                        className="p-2"
-                        title="View Timeline"
-                    >
-                        <span className="text-xl">📅</span>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowSettings(true)}
-                        className="p-2"
-                    >
-                        <Settings className="w-5 h-5" />
-                    </Button>
-                </div>
-            </header>
+                    </>
+                }
+            />
 
             {/* Breadcrumbs */}
             <Breadcrumbs
@@ -125,15 +122,20 @@ const TreePage = () => {
                 ]}
             />
 
-            {/* Search Bar */}
-            <SearchBar
-                persons={persons}
-                onHighlight={setHighlightedNodes}
-                onClear={() => setHighlightedNodes([])}
-            />
+            {/* Search Bar - Conditionally Rendered */}
+            {isSearchOpen && (
+                <div className="absolute top-28 left-4 z-30 w-full max-w-md animate-slideIn">
+                    <SearchBar
+                        persons={persons}
+                        onHighlight={setHighlightedNodes}
+                        onClear={() => setHighlightedNodes([])}
+                        onClose={() => setIsSearchOpen(false)}
+                    />
+                </div>
+            )}
 
             {/* Main Content Area */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden relative">
                 {/* Tree Visualizer */}
                 <div className="flex-1 relative">
                     <TreeVisualizer
@@ -142,8 +144,12 @@ const TreePage = () => {
                         highlightedNodes={highlightedNodes}
                         key={refreshTrigger}
                         userRole={userRole}
+                        onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+                        isSearchOpen={isSearchOpen}
                     />
                 </div>
+
+                {/* ... (SidePanel) */}
 
                 {/* Side Panel */}
                 {selectedPerson && (

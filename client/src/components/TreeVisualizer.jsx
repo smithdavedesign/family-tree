@@ -15,7 +15,7 @@ import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import { supabase } from '../auth';
-import { Undo, Redo, TreePine, Plus, ArrowDownUp, ArrowLeftRight, LocateFixed, Scan, X } from 'lucide-react';
+import { Undo, Redo, TreePine, Plus, ArrowDownUp, ArrowLeftRight, LocateFixed, Scan, X, Lock, Unlock, Search } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import { useToast } from './ui';
@@ -66,7 +66,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
 const nodeTypes = { custom: CustomNode };
 
-const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer' }) => {
+const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen }) => {
     const { toast } = useToast();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -77,6 +77,7 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
     // New State for Visualization Controls
     const [layoutDirection, setLayoutDirection] = useState('TB');
     const [isFocusMode, setIsFocusMode] = useState(false);
+    const [isViewLocked, setIsViewLocked] = useState(false);
     const [selectedNodeId, setSelectedNodeId] = useState(null);
     const { fitView, setCenter, getNodes, getEdges } = useReactFlow();
 
@@ -758,7 +759,13 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 nodeTypes={nodeTypes}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
-                nodesConnectable={userRole === 'owner' || userRole === 'editor'}
+                nodesConnectable={(userRole === 'owner' || userRole === 'editor') && !isViewLocked}
+                nodesDraggable={!isViewLocked}
+                panOnDrag={!isViewLocked}
+                zoomOnScroll={!isViewLocked}
+                zoomOnPinch={!isViewLocked}
+                zoomOnDoubleClick={!isViewLocked}
+                panOnScroll={!isViewLocked}
             >
                 <Panel position="top-left" className="flex flex-col gap-2">
                     {/* Edit Controls */}
@@ -801,10 +808,28 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                         >
                             {isFocusMode ? <X className="w-5 h-5" /> : <Scan className="w-5 h-5" />}
                         </button>
+                        <button
+                            onClick={() => setIsViewLocked(!isViewLocked)}
+                            className={`p-2 rounded-lg transition-colors ${isViewLocked ? 'bg-red-100 text-red-700' : 'hover:bg-slate-100 text-slate-700'}`}
+                            title={isViewLocked ? "Unlock View" : "Lock View (Prevent Panning/Zooming)"}
+                        >
+                            {isViewLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+                        </button>
+                        <button
+                            onClick={onSearchToggle}
+                            className={`p-2 rounded-lg transition-colors ${isSearchOpen ? 'bg-teal-100 text-teal-700' : 'hover:bg-slate-100 text-slate-700'}`}
+                            title={isSearchOpen ? "Close Search" : "Open Search"}
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
                     </div>
                 </Panel>
 
-                <Controls className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4" />
+                <Controls
+                    className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4"
+                    showInteractive={false}
+                    showFitView={false}
+                />
 
                 <MiniMap
                     className="bg-white border-2 border-slate-200 shadow-lg rounded-lg overflow-hidden !bottom-4 !right-4"
@@ -812,6 +837,8 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                     nodeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
                     nodeBorderRadius={8}
                     maskColor="rgb(248, 250, 252, 0.6)"
+                    pannable
+                    zoomable
                 />
 
                 <Background color="#cbd5e1" gap={16} />

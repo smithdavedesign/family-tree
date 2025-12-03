@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from '../../../auth';
+import Navbar from '../../../components/Navbar';
 import useTimelineData from '../hooks/useTimelineData';
 import TimelineScroller from './TimelineScroller';
 import '../styles/timeline.css';
@@ -8,6 +10,15 @@ import '../styles/timeline.css';
 const TimelineContainer = () => {
     const { id } = useParams();
     const { events, loading, error } = useTimelineData(id);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        fetchUser();
+    }, []);
 
     if (loading) {
         return (
@@ -31,17 +42,21 @@ const TimelineContainer = () => {
 
     return (
         <div className="timeline-container">
-            <header className="timeline-header">
-                <div className="flex items-center gap-4">
-                    <Link to={`/tree/${id}`} className="p-2 hover:bg-gray-100 rounded-full transition">
-                        <ArrowLeft className="w-6 h-6 text-gray-600" />
+            <Navbar
+                user={user}
+                title="Family Timeline"
+                leftContent={
+                    <Link to={`/tree/${id}`} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium hidden sm:inline">Back to Tree</span>
                     </Link>
-                    <h1 className="text-xl font-bold text-gray-800">Family Timeline</h1>
-                </div>
-                <div className="text-sm text-gray-500">
-                    {events.length} events found
-                </div>
-            </header>
+                }
+                rightContent={
+                    <div className="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
+                        {events.length} Events
+                    </div>
+                }
+            />
 
             <TimelineScroller events={events} />
         </div>

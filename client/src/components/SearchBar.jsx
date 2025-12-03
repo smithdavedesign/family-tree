@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, X, Calendar, Filter } from 'lucide-react';
 
-const SearchBar = ({ persons = [], onHighlight, onClear }) => {
+const SearchBar = ({ persons = [], onHighlight, onClear, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all'); // 'all', 'name', 'year', 'branch'
     const [showFilters, setShowFilters] = useState(false);
@@ -53,7 +53,7 @@ const SearchBar = ({ persons = [], onHighlight, onClear }) => {
     };
 
     return (
-        <div className="bg-white border-b shadow-sm p-3 z-10">
+        <div className="bg-white border rounded-xl shadow-lg p-3 z-30">
             <div className="max-w-4xl mx-auto">
                 <div className="flex gap-2 items-center">
                     {/* Search Input */}
@@ -65,6 +65,7 @@ const SearchBar = ({ persons = [], onHighlight, onClear }) => {
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search family members..."
                             className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            autoFocus
                         />
                         {searchTerm && (
                             <button
@@ -85,6 +86,17 @@ const SearchBar = ({ persons = [], onHighlight, onClear }) => {
                     >
                         <Filter className="w-5 h-5" />
                     </button>
+
+                    {/* Close Button */}
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                            title="Close Search"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Filter Options */}
