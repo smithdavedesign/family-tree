@@ -16,8 +16,5 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1"
-  },
-  "devDependencies": {
-    "@sentry/node": "^10.28.0"
   }
 }

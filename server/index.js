@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { initSentry, sentryErrorHandler } = require('./utils/sentry');
+const { initErrorLogging, errorHandler } = require('./utils/errorLogger');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Initialize Sentry (must be before other middleware)
-initSentry(app);
+// Initialize error logging (must be before other middleware)
+initErrorLogging(app);
 
 // Trust proxy for rate limiting behind load balancers (Render/Vercel)
 app.set('trust proxy', 1);
@@ -25,8 +25,8 @@ app.get('/', (req, res) => {
     res.send('Family Tree API is running');
 });
 
-// Sentry error handler (must be after routes)
-app.use(sentryErrorHandler());
+// Error handler (must be after routes)
+app.use(errorHandler());
 
 // General error handler
 app.use((err, req, res, next) => {
