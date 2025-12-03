@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireViewer } = require('../middleware/rbac');
-const { supabase } = require('../config/supabase');
+const { supabase } = require('../middleware/auth');
 
 /**
  * Export tree data as JSON
