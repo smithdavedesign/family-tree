@@ -221,9 +221,13 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Implement data export (JSON/GEDCOM)
 - [ ] Add GDPR data export endpoint
 - [ ] Create backup/restore functionalityh)
-- [ ] Duplicate person detection (auto-suggest merge)
+- ✅ **Timeline Visualization** - Chronological event view with color-coded dots and density heatmap
 - ✅ **Data Export** - Export trees as JSON or GEDCOM format
-- ✅ **Testing** - 36 tests with 94% pass rate (Vitest + Playwright)
+- ✅ **Testing** - 36 tests with 100% pass rate (Vitest + Playwright)
+- ✅ **Error Logging** - Free error tracking system (no external costs)
+- ✅ **Input Validation** - Comprehensive validation (impossible dates, age limits)
+- ✅ **Code Splitting** - Route-based lazy loading for optimal performance
+- ✅ **Image Lazy Loading** - Optimized photo gallery loading
 
 ## 📚 Documentation
 

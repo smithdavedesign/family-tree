@@ -116,10 +116,13 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit }) => {
                 <div className="grid grid-cols-2 gap-3">
                     {photos.map(photo => (
                         <div key={photo.id} className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                            {/* Lazy load images for better performance */}
                             <img
                                 src={photo.url}
                                 alt={photo.caption || "Family photo"}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                             />
 
                             {/* Overlay */}
