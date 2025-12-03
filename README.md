@@ -332,6 +332,140 @@ ORDER BY created_at DESC
 LIMIT 100;
 ```
 
+## 🧪 Testing
+
+The project includes comprehensive testing infrastructure with **36 tests** covering unit, integration, component, and E2E testing.
+
+### Test Suite Overview
+- **Unit Tests:** Session management, utilities
+- **Component Tests:** Button, SearchBar, UI components
+- **Integration Tests:** Tree CRUD, Person CRUD, Relationships
+- **E2E Tests:** Critical user journeys (Playwright)
+
+**Current Status:** 34/36 tests passing (94% pass rate)
+
+### Running Tests
+
+```bash
+cd client
+
+# Run all tests in watch mode
+npm test
+
+# Run tests once (CI mode)
+npm test -- --run
+
+# Run tests with UI
+npm test:ui
+
+# Generate coverage report
+npm test:coverage
+
+# Run E2E tests
+npm test:e2e
+
+# Run E2E tests with UI
+npm test:e2e:ui
+```
+
+### Test Structure
+
+```
+client/src/test/
+├── setup.js                        # Global test setup
+├── utils/
+│   ├── testUtils.jsx              # Custom render with providers
+│   └── mockData.js                # Mock data for tests
+├── components/
+│   ├── Button.test.jsx            # Component tests
+│   └── SearchBar.test.jsx
+├── unit/
+│   └── sessionManager.test.js     # Unit tests
+├── integration/
+│   ├── tree-crud.test.js          # Integration tests
+│   ├── person-crud.test.js
+│   └── relationship.test.js
+└── e2e/
+    └── critical-journey.spec.js   # E2E tests (Playwright)
+```
+
+### Writing Tests
+
+**Component Test Example:**
+```javascript
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '../utils/testUtils';
+import { Button } from '../../components/ui';
+
+describe('Button Component', () => {
+  it('should render button with text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+});
+```
+
+**Integration Test Example:**
+```javascript
+import { describe, it, expect, vi } from 'vitest';
+
+global.fetch = vi.fn();
+
+describe('Tree CRUD', () => {
+  it('should create a new tree', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 'tree-1', name: 'My Tree' })
+    });
+    
+    const response = await fetch('/api/trees', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'My Tree' })
+    });
+    
+    expect(response.ok).toBe(true);
+  });
+});
+```
+
+### Test Configuration
+
+**Vitest Config:** `client/config/vitest.config.js`
+- Environment: jsdom
+- Coverage: v8 provider
+- Setup: Automatic cleanup
+
+**Playwright Config:** `client/config/playwright.config.js`
+- Browsers: Chrome, Firefox, Safari
+- Base URL: http://localhost:5173
+- Auto web server startup
+
+### Best Practices
+
+1. **Use test utilities:** Import from `../utils/testUtils` for consistent setup
+2. **Mock external dependencies:** Use `vi.fn()` for API calls
+3. **Test user behavior:** Focus on what users see and do
+4. **Keep tests isolated:** Each test should be independent
+5. **Use descriptive names:** Test names should explain what they verify
+
+### CI/CD Integration
+
+Tests can be run in GitHub Actions or other CI/CD pipelines:
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: cd client && npm install
+      - run: cd client && npm test -- --run
+```
+
 ## 💻 Local Development
 
 1. **Clone the repository:**
