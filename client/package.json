@@ -8,7 +8,12 @@
     "build": "vite build",
     "prod": "vite build && vite preview",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest --config config/vitest.config.js",
+    "test:ui": "vitest --ui --config config/vitest.config.js",
+    "test:coverage": "vitest --coverage --config config/vitest.config.js",
+    "test:e2e": "playwright test --config config/playwright.config.js",
+    "test:e2e:ui": "playwright test --ui --config config/playwright.config.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
@@ -25,13 +30,22 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/ui": "^4.0.15",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "vite": "^7.2.4"
+    "jsdom": "^27.2.0",
+    "playwright": "^1.57.0",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.15"
   }
 }
