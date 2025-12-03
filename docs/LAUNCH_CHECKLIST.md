@@ -89,8 +89,8 @@
 cd server && npm audit
 cd client && npm audit
 ```
-- [ ] Fix any critical vulnerabilities
-- [ ] Update dependencies if needed
+- [x] Fix any critical vulnerabilities
+- [x] Update dependencies if needed
 
 ### 3. Database Preparation
 - [ ] Run final migrations
@@ -99,12 +99,12 @@ cd client && npm audit
 - [ ] Backup database
 
 ### 4. Deploy to Staging
-- [ ] Deploy backend to Render staging
-- [ ] Deploy frontend to Vercel preview
-- [ ] Test all features in staging
+- [x] Deploy backend to Render staging
+- [x] Deploy frontend to Vercel preview
+- [x] Test all features in staging
 - [ ] Run Lighthouse audit
 - [ ] Test on multiple browsers
-- [ ] Test on mobile devices
+- [x] Test on mobile devices
 
 ### 5. Production Deployment
 - [ ] Merge `phase-k-testing` to `main`
