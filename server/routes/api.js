@@ -5,7 +5,7 @@ const { requireOwner, requireEditor, requireViewer, requirePersonEditor, require
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const { validate } = require('../middleware/validation');
-const { personSchema, treeSchema, relationshipSchema, invitationSchema, photoSchema } = require('../validation/schemas');
+const { personSchema, personUpdateSchema, treeSchema, relationshipSchema, invitationSchema, photoSchema } = require('../validation/schemas');
 const treeController = require('../controllers/treeController');
 const personController = require('../controllers/personController');
 const relationshipController = require('../controllers/relationshipController');
@@ -30,7 +30,7 @@ router.put('/tree/:treeId/member/:userId', requireAuth, requireOwner, auditLog('
 
 // Person routes (require editor role to modify)
 router.post('/person', requireAuth, requireEditor, validate(personSchema), writeLimiter, auditLog('CREATE', 'person'), personController.createPerson);
-router.put('/person/:id', requireAuth, requirePersonEditor, validate(personSchema), writeLimiter, auditLog('UPDATE', 'person'), personController.updatePerson);
+router.put('/person/:id', requireAuth, requirePersonEditor, validate(personUpdateSchema), writeLimiter, auditLog('UPDATE', 'person'), personController.updatePerson);
 router.delete('/person/:id', requireAuth, requirePersonEditor, writeLimiter, auditLog('DELETE', 'person'), personController.deletePerson);
 router.post('/person/merge', requireAuth, requireEditor, writeLimiter, auditLog('UPDATE', 'person'), personController.mergePersons);
 router.get('/person/:id/media', requireAuth, requirePersonViewer, mediaController.getMediaForPerson);

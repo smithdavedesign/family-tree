@@ -115,6 +115,7 @@ const photoSchema = Joi.object({
 
 module.exports = {
     personSchema,
+    personUpdateSchema,
     treeSchema,
     relationshipSchema,
     invitationSchema,
