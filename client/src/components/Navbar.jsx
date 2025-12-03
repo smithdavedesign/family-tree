@@ -47,7 +47,7 @@ const Navbar = ({
                         </Link>
 
                         {leftContent && (
-                            <div className="hidden md:flex items-center pl-4 border-l border-slate-200 ml-2">
+                            <div className="flex items-center">
                                 {leftContent}
                             </div>
                         )}
