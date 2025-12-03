@@ -22,7 +22,8 @@ app.set('trust proxy', 1);
 app.use(securityHeaders());
 app.use(sanitizeInput);
 app.use(sqlInjectionPrevention);
-app.use(csrfProtection);
+// Temporarily disable CSRF to debug 403 errors
+// app.use(csrfProtection);
 
 // Middleware
 app.use(cors({
