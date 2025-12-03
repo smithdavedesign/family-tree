@@ -23,7 +23,7 @@ app.use(securityHeaders());
 app.use(sanitizeInput);
 app.use(sqlInjectionPrevention);
 // Temporarily disable CSRF to debug 403 errors
-// app.use(csrfProtection);
+app.use(csrfProtection);
 
 // Middleware
 app.use(cors({
