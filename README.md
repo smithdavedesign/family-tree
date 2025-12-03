@@ -174,31 +174,40 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Create test utilities (custom render, mock data)
 - [x] Write component tests (Button - 6 tests, SearchBar - 6 tests)
 - [x] Write unit tests (Session Manager - 5 tests)
-- [x] Write integration tests (Tree CRUD - 7 tests, Person CRUD - 8 tests, Relationships - 6 tests)
+- [x] Write integration tests (Tree CRUD - 7, Person CRUD - 8, Relationships - 6)
 - [x] Write E2E critical journey test (Playwright)
+- [x] Add comprehensive testing documentation to README
 - [ ] Fix 2 minor SearchBar test issues
 - [ ] Achieve 60%+ code coverage
 - [ ] Cross-browser testing (Chrome, Firefox, Safari)
 - [ ] Mobile device testing (iOS Safari, Android Chrome)
 - [ ] Performance testing for large trees (100+ nodes)
 
-#### Error Monitoring & Logging (60%)
+#### Error Monitoring & Logging (80%)
 - [x] Basic audit logs (backend)
 - [x] Integrate free error logging (frontend + backend)
 - [x] Configure console-based error tracking
 - [x] Set up global error handlers
 - [x] Add unhandled promise rejection tracking
 - [x] Create error logging documentation
+- [x] Create test endpoints for error verification
 - [ ] Add database logging for production errors
 - [ ] Create error dashboard
 - [ ] Set up error alerting (email/webhook)
 
-#### Data Validation & Integrity (40%)
+#### Data Validation & Integrity (80%)
 - [x] Basic JWT validation
-- [x] RBAC permission checks
-- [ ] Input sanitization on backend (Joi/Zod)
-- [ ] Frontend form validation (Zod)
-- [ ] Impossible date detection (death before birth)
+- [x] Implement input validation (Joi backend, Zod frontend)
+- [x] Add impossible date detection (death before birth)
+- [x] Add age validation (max 150 years)
+- [x] Prevent self-relationships
+- [x] Email validation for invitations
+- [x] String length limits enforced
+- [x] Integrate validation into all API routes
+- [ ] Add duplicate person detection
+- [ ] Implement data export (JSON/GEDCOM)
+- [ ] Add GDPR data export endpoint
+- [ ] Create backup/restore functionalityh)
 - [ ] Duplicate person detection (auto-suggest merge)
 - [ ] Data export feature (JSON/GEDCOM)
 - [ ] GDPR compliance (data export, right to be forgotten)
