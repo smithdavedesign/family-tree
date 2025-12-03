@@ -178,14 +178,17 @@ exports.createTree = async (req, res) => {
 
         if (treeError) throw treeError;
 
-        // Add owner to tree_members
+        // Add owner to tree_members (use upsert to handle duplicates)
         const { error: memberError } = await supabaseAdmin
             .from('tree_members')
-            .insert([{
+            .upsert([{
                 tree_id: tree.id,
                 user_id: userId,
                 role: 'owner'
-            }]);
+            }], {
+                onConflict: 'tree_id,user_id',
+                ignoreDuplicates: false
+            });
 
         if (memberError) {
             console.error('Error adding owner to tree_members:', memberError);
