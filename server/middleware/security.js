@@ -49,9 +49,15 @@ function securityHeaders() {
 
 /**
  * Sanitize input to prevent XSS attacks
- * Note: This is a basic sanitizer. For production, consider using a library like DOMPurify
+ * Skips URL fields and other safe fields
  */
 function sanitizeInput(req, res, next) {
+    // Skip sanitization for certain routes that handle URLs
+    const skipRoutes = ['/api/photos', '/api/media'];
+    if (skipRoutes.some(route => req.path.startsWith(route))) {
+        return next();
+    }
+
     if (req.body) {
         req.body = sanitizeObject(req.body);
     }
@@ -66,6 +72,7 @@ function sanitizeInput(req, res, next) {
 
 /**
  * Recursively sanitize an object
+ * Skips URL fields
  */
 function sanitizeObject(obj) {
     if (typeof obj !== 'object' || obj === null) {
@@ -77,27 +84,33 @@ function sanitizeObject(obj) {
     }
 
     const sanitized = {};
+    // Fields that should not be sanitized (URLs, etc.)
+    const skipFields = ['url', 'profile_photo_url', 'photo_url', 'baseUrl', 'href', 'src'];
+
     for (const [key, value] of Object.entries(obj)) {
-        sanitized[key] = sanitizeObject(value);
+        // Skip sanitization for URL fields
+        if (skipFields.includes(key)) {
+            sanitized[key] = value;
+        } else {
+            sanitized[key] = sanitizeObject(value);
+        }
     }
     return sanitized;
 }
 
 /**
  * Sanitize a string to prevent XSS
+ * Less aggressive - only escapes HTML tags
  */
 function sanitizeString(value) {
     if (typeof value !== 'string') {
         return value;
     }
 
-    // Remove potentially dangerous characters
+    // Only escape HTML tags, not slashes (to preserve URLs)
     return value
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
+        .replace(/>/g, '&gt;');
 }
 
 /**
