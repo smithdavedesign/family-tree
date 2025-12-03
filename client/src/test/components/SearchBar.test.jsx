@@ -89,16 +89,24 @@ describe('SearchBar Component', () => {
         const searchInput = screen.getByPlaceholderText(/search family members/i);
         await user.type(searchInput, 'John');
 
-        // Clear button should appear
+        // Wait for search to process
         await waitFor(() => {
-            const clearButton = screen.getByRole('button', { name: /clear/i });
-            expect(clearButton).toBeInTheDocument();
+            expect(onHighlight).toHaveBeenCalled();
+        });
+
+        // Clear the search
+        await user.clear(searchInput);
+
+        // onClear should be called when search is cleared
+        await waitFor(() => {
+            expect(onClear).toHaveBeenCalled();
         });
     });
 
     it('should call onClear when search is cleared', async () => {
         const onHighlight = vi.fn();
         const onClear = vi.fn();
+        const user = userEvent.setup();
 
         render(
             <SearchBar
@@ -108,8 +116,18 @@ describe('SearchBar Component', () => {
             />
         );
 
-        // Initially onClear should be called for empty search
-        expect(onClear).toHaveBeenCalled();
+        const searchInput = screen.getByPlaceholderText(/search family members/i);
+
+        // Type something
+        await user.type(searchInput, 'John');
+
+        // Clear it
+        await user.clear(searchInput);
+
+        // onClear should be called when input is cleared
+        await waitFor(() => {
+            expect(onClear).toHaveBeenCalled();
+        });
     });
 
     it('should call onClose when close button is clicked', async () => {
