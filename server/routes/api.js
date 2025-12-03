@@ -48,7 +48,8 @@ router.delete('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, audi
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
 
+// Test routes (for Sentry and other testing)
+const testRoutes = require('./test');
+router.use('/test', testRoutes);
+
 module.exports = router;
-
-
-
