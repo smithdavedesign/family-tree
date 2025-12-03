@@ -123,20 +123,31 @@ function csrfProtection(req, res, next) {
         return next();
     }
 
+    // Skip CSRF in development if no origin/referer (e.g., Postman, local testing)
+    const isDevelopment = process.env.NODE_ENV !== 'production';
     const origin = req.get('origin');
     const referer = req.get('referer');
+
+    if (isDevelopment && !origin && !referer) {
+        return next();
+    }
+
     const allowedOrigins = [
         process.env.CLIENT_URL || 'http://localhost:5173',
+        'http://localhost:5173',
+        'http://localhost:3000',
         'https://family-tree-blue-kappa.vercel.app'
     ];
 
     // Check if origin is allowed
     if (origin && !allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+        console.error('CSRF validation failed - Origin:', origin);
         return res.status(403).json({ error: 'CSRF validation failed' });
     }
 
     // Check referer as fallback
     if (!origin && referer && !allowedOrigins.some(allowed => referer.startsWith(allowed))) {
+        console.error('CSRF validation failed - Referer:', referer);
         return res.status(403).json({ error: 'CSRF validation failed' });
     }
 
