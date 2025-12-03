@@ -91,9 +91,11 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                 })
                 .build();
 
-            // Close the modal before showing the picker to avoid z-index conflicts
-            onClose();
+            // Show the picker first
             picker.setVisible(true);
+
+            // Then close the modal after a brief delay to ensure picker is rendered
+            setTimeout(() => onClose(), 100);
         } catch (err) {
             console.error('Error opening picker:', err);
             setError('Failed to open picker: ' + err.message);
