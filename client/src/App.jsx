@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import TreePage from './pages/TreePage';
-import TreeDashboard from './pages/TreeDashboard';
-import TimelinePage from './pages/TimelinePage';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import AuthError from './pages/AuthError';
-import PhotoPickerTest from './pages/PhotoPickerTest';
-import TermsOfService from './pages/TermsOfService';
-import MagicLinkAuth from './pages/MagicLinkAuth';
-import ResetPassword from './pages/ResetPassword';
-import InviteAcceptPage from './pages/InviteAcceptPage';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 import { ToastProvider } from './components/ui';
+
+// Lazy load page components for code splitting
+const TreePage = lazy(() => import('./pages/TreePage'));
+const TreeDashboard = lazy(() => import('./pages/TreeDashboard'));
+const TimelinePage = lazy(() => import('./pages/TimelinePage'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const AuthError = lazy(() => import('./pages/AuthError'));
+const PhotoPickerTest = lazy(() => import('./pages/PhotoPickerTest'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const MagicLinkAuth = lazy(() => import('./pages/MagicLinkAuth'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (session) {
@@ -114,19 +126,21 @@ function App() {
     <ToastProvider>
       <Router>
         <ToastContainer />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/trees" element={<TreeDashboard />} />
-          <Route path="/tree/:id" element={<TreePage />} />
-          <Route path="/tree/:id/timeline" element={<TimelinePage />} />
-          <Route path="/invite/:token" element={<InviteAcceptPage />} />
-          <Route path="/magic-link" element={<MagicLinkAuth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/auth-error" element={<AuthError />} />
-          <Route path="/test-picker" element={<PhotoPickerTest />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/trees" element={<TreeDashboard />} />
+            <Route path="/tree/:id" element={<TreePage />} />
+            <Route path="/tree/:id/timeline" element={<TimelinePage />} />
+            <Route path="/invite/:token" element={<InviteAcceptPage />} />
+            <Route path="/magic-link" element={<MagicLinkAuth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth-error" element={<AuthError />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
+          </Routes>
+        </Suspense>
       </Router>
     </ToastProvider>
   );
