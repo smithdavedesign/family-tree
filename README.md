@@ -167,22 +167,20 @@ The application uses a relational database (PostgreSQL) with the following key e
 ### ⚠️ Phase K: Production Readiness (20%) - CRITICAL
 **Timeline:** 3-6 weeks | **Blocker for Public Launch**
 
-#### Testing & Quality Assurance (30%)
+#### Testing & Quality Assurance (70%)
 - [x] Set up testing framework (Vitest + React Testing Library)
 - [x] Set up Playwright for E2E tests
 - [x] Create test directory structure (organized in /config folder)
 - [x] Create test utilities (custom render, mock data)
-- [x] Write initial component tests (Button - 6 tests passing)
-- [x] Write initial unit tests (Session Manager - 5 tests passing)
-- [ ] Write unit tests for authentication flow
-- [ ] Write unit tests for tree CRUD operations
-- [ ] Write unit tests for person CRUD operations
-- [ ] Write unit tests for relationship management
-- [ ] Write E2E test for critical user journey (signup → create tree → add person)
+- [x] Write component tests (Button - 6 tests, SearchBar - 6 tests)
+- [x] Write unit tests (Session Manager - 5 tests)
+- [x] Write integration tests (Tree CRUD - 7 tests, Person CRUD - 8 tests, Relationships - 6 tests)
+- [x] Write E2E critical journey test (Playwright)
+- [ ] Fix 2 minor SearchBar test issues
+- [ ] Achieve 60%+ code coverage
 - [ ] Cross-browser testing (Chrome, Firefox, Safari)
 - [ ] Mobile device testing (iOS Safari, Android Chrome)
 - [ ] Performance testing for large trees (100+ nodes)
-- [ ] Achieve 60%+ code coverage
 
 #### Error Monitoring & Logging (20%)
 - [x] Basic audit logs (backend)
