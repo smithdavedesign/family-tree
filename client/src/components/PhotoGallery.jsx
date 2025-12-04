@@ -3,7 +3,7 @@ import { Plus, Trash2, Star, Image as ImageIcon } from 'lucide-react';
 import { Button, useToast } from './ui';
 import { supabase } from '../auth';
 
-const PhotoGallery = ({ personId, onAddPhoto, canEdit }) => {
+const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
     const { toast } = useToast();
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit }) => {
         if (personId) {
             fetchPhotos();
         }
-    }, [personId]);
+    }, [personId, refreshTrigger]);
 
     const fetchPhotos = async () => {
         setLoading(true);

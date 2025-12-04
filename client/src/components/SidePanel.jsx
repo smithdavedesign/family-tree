@@ -20,12 +20,15 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
     const [showPhotoSourceModal, setShowPhotoSourceModal] = useState(false);
     const [pendingRefreshGallery, setPendingRefreshGallery] = useState(null);
     const [isUploadingProfilePhoto, setIsUploadingProfilePhoto] = useState(false);
+    const [profilePhotoUrl, setProfilePhotoUrl] = useState(person?.data?.profile_photo_url);
+    const [galleryRefreshTrigger, setGalleryRefreshTrigger] = useState(0);
 
     useEffect(() => {
         console.log("SidePanel received person:", person);
         if (person) {
             fetchMedia();
             fetchRelationships();
+            setProfilePhotoUrl(person.data.profile_photo_url);
             // Initialize form data from person data
             // Note: person.data contains the visual label/subline, but we need the raw fields.
             // Ideally, the parent component should pass the full person object, or we fetch it here.
@@ -119,9 +122,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     // If uploading profile photo, also update the profile_photo_url
                     if (isProfile) {
                         await handleSave({ profile_photo_url: googlePhoto.baseUrl });
-
-                        // Refresh gallery to show the new primary photo
-                        if (refreshGallery) refreshGallery();
+                        setProfilePhotoUrl(googlePhoto.baseUrl); // Update local state immediately
+                        setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
 
                         toast.success("Profile picture updated");
                     } else {
@@ -173,7 +175,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     body: JSON.stringify({
                         person_id: person.id,
                         url: reader.result, // base64 data URL
-                        caption: file.name
+                        caption: file.name,
+                        is_primary: isUploadingProfilePhoto // Mark as primary if it's a profile photo
                     })
                 });
 
@@ -181,6 +184,9 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     // If uploading profile photo, also update the profile_photo_url
                     if (isUploadingProfilePhoto) {
                         await handleSave({ profile_photo_url: reader.result });
+                        setProfilePhotoUrl(reader.result); // Update local state immediately
+                        setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
+
                         toast.success("Profile picture updated");
                         setShowPhotoSourceModal(false);
                     } else {
@@ -371,8 +377,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profile Picture</label>
                         <div className="relative group">
                             <div className="w-32 h-32 rounded-full bg-slate-100 overflow-hidden border-4 border-white shadow-xl ring-1 ring-slate-100">
-                                {person.data.profile_photo_url ? (
-                                    <img src={person.data.profile_photo_url} alt={person.data.label} className="w-full h-full object-cover" />
+                                {profilePhotoUrl ? (
+                                    <img src={profilePhotoUrl} alt={person.data.label} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-4xl text-slate-300">
                                         <ImageIcon className="w-12 h-12" />
@@ -672,6 +678,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                             personId={person.id}
                             onAddPhoto={handleGalleryPhotoAdd}
                             canEdit={canEdit}
+                            refreshTrigger={galleryRefreshTrigger}
                         />
 
                         <div className="border-t border-slate-100 my-6"></div>
