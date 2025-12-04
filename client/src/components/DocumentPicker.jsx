@@ -53,32 +53,35 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
         }
     }, [isOpen]);
 
-    const openDrivePicker = () => {
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY?.trim();
-
-        console.log('DocumentPicker Config Check:', {
-            hasClientId: !!clientId,
-            clientIdLength: clientId?.length,
-            hasApiKey: !!apiKey,
-            apiKeyLength: apiKey?.length
-        });
-
-        if (!clientId || !apiKey) {
-            console.error('Google configuration missing. ClientID:', !!clientId, 'APIKey:', !!apiKey);
-            setError('Google configuration missing');
-            return;
-        }
-
-        const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
-        const accessToken = storedSession.provider_token;
-
-        if (!accessToken) {
-            setError('Please sign in with Google first');
-            return;
-        }
-
+    const openDrivePicker = async () => {
         try {
+            // Fetch config from backend (Runtime Configuration)
+            const response = await fetch('/api/config');
+            if (!response.ok) throw new Error('Failed to load configuration');
+
+            const config = await response.json();
+            const clientId = config.googleClientId;
+            const apiKey = config.googleApiKey;
+
+            console.log('DocumentPicker Runtime Config:', {
+                hasClientId: !!clientId,
+                hasApiKey: !!apiKey
+            });
+
+            if (!clientId || !apiKey) {
+                console.error('Google configuration missing from backend');
+                setError('Google configuration missing');
+                return;
+            }
+
+            const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
+            const accessToken = storedSession.provider_token;
+
+            if (!accessToken) {
+                setError('Please sign in with Google first');
+                return;
+            }
+
             const picker = new window.google.picker.PickerBuilder()
                 .addView(window.google.picker.ViewId.DOCS)
                 .setOAuthToken(accessToken)
@@ -105,6 +108,7 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
             // TEMPORARILY DISABLED FOR DEBUGGING - Don't close modal yet
             // setTimeout(() => onClose(), 100);
             console.log('Document Picker should be visible now. Check for iframe in DOM.');
+
         } catch (err) {
             console.error('Error opening picker:', err);
             setError('Failed to open picker: ' + err.message);

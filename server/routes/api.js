@@ -57,6 +57,14 @@ router.delete('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
 
+// Config route (Runtime configuration)
+router.get('/config', (req, res) => {
+    res.json({
+        googleClientId: process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID,
+        googleApiKey: process.env.GOOGLE_API_KEY || process.env.VITE_GOOGLE_API_KEY
+    });
+});
+
 // Export routes
 const exportRoutes = require('./export');
 router.use('/export', exportRoutes);

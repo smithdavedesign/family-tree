@@ -45,25 +45,30 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
         }
     }, [isOpen]);
 
-    const openPicker = () => {
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-
-        if (!clientId || !apiKey) {
-            setError('Google configuration is missing. Please check your environment variables.');
-            return;
-        }
-
-        // Get access token from localStorage
-        const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
-        const accessToken = storedSession.provider_token;
-
-        if (!accessToken) {
-            setError('Please sign in with Google first to access your photos.');
-            return;
-        }
-
+    const openPicker = async () => {
         try {
+            // Fetch config from backend (Runtime Configuration)
+            const response = await fetch('/api/config');
+            if (!response.ok) throw new Error('Failed to load configuration');
+
+            const config = await response.json();
+            const clientId = config.googleClientId;
+            const apiKey = config.googleApiKey;
+
+            if (!clientId || !apiKey) {
+                setError('Google configuration is missing from backend.');
+                return;
+            }
+
+            // Get access token from localStorage
+            const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
+            const accessToken = storedSession.provider_token;
+
+            if (!accessToken) {
+                setError('Please sign in with Google first to access your photos.');
+                return;
+            }
+
             const picker = new window.google.picker.PickerBuilder()
                 .addView(window.google.picker.ViewId.PHOTOS)
                 .setOAuthToken(accessToken)
