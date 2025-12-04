@@ -54,10 +54,18 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
     }, [isOpen]);
 
     const openDrivePicker = () => {
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
+        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY?.trim();
+
+        console.log('DocumentPicker Config Check:', {
+            hasClientId: !!clientId,
+            clientIdLength: clientId?.length,
+            hasApiKey: !!apiKey,
+            apiKeyLength: apiKey?.length
+        });
 
         if (!clientId || !apiKey) {
+            console.error('Google configuration missing. ClientID:', !!clientId, 'APIKey:', !!apiKey);
             setError('Google configuration missing');
             return;
         }
