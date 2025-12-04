@@ -130,10 +130,6 @@ const relationshipSchema = Joi.object({
 
 // Invitation validation schema
 const invitationSchema = Joi.object({
-    tree_id: Joi.string().uuid().required(),
-    email: Joi.string().email().required().messages({
-        'string.email': 'Please provide a valid email address'
-    }),
     role: Joi.string().valid('editor', 'viewer').required()
 });
 
