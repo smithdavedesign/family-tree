@@ -65,6 +65,10 @@ router.get('/config', (req, res) => {
     });
 });
 
+// Google OAuth routes
+const googleOAuthRoutes = require('./googleOAuth');
+router.use('/google', googleOAuthRoutes);
+
 // Export routes
 const exportRoutes = require('./export');
 router.use('/export', exportRoutes);

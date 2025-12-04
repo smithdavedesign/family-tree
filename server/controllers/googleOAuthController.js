@@ -1,0 +1,253 @@
+const { google } = require('googleapis');
+const { supabase, supabaseAdmin } = require('../middleware/auth');
+
+// Initialize OAuth2 Client
+const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_API_KEY, // Note: API Key is not used here, but keeping for consistency
+    process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/auth/google/callback` : 'http://localhost:3000/api/google/callback'
+);
+
+// Required scopes for Drive and Photos
+const SCOPES = [
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/photoslibrary.readonly'
+];
+
+/**
+ * Initiate Google OAuth connection
+ * Generates OAuth URL and redirects user to Google consent screen
+ */
+exports.initiateConnection = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Generate OAuth URL with custom scopes
+        const authUrl = oauth2Client.generateAuthUrl({
+            access_type: 'offline', // Request refresh token
+            scope: SCOPES,
+            state: userId, // Pass user ID for security
+            prompt: 'consent' // Force consent screen to get refresh token
+        });
+
+        res.redirect(authUrl);
+    } catch (error) {
+        console.error('Error initiating Google connection:', error);
+        res.status(500).json({ error: 'Failed to initiate Google connection' });
+    }
+};
+
+/**
+ * Handle OAuth callback from Google
+ * Exchange authorization code for tokens and store in database
+ */
+exports.handleCallback = async (req, res) => {
+    try {
+        const { code, state: userId } = req.query;
+
+        if (!code || !userId) {
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=missing_params`);
+        }
+
+        // Exchange code for tokens
+        const { tokens } = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(tokens);
+
+        // Calculate expiration time
+        const expiresAt = new Date(tokens.expiry_date);
+
+        // Store connection in database
+        const { error } = await supabaseAdmin
+            .from('google_connections')
+            .upsert({
+                user_id: userId,
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token,
+                expires_at: expiresAt.toISOString(),
+                scopes: tokens.scope.split(' ')
+            }, {
+                onConflict: 'user_id'
+            });
+
+        if (error) {
+            console.error('Error storing Google connection:', error);
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=storage_failed`);
+        }
+
+        // Redirect back to settings with success message
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?connected=true`);
+    } catch (error) {
+        console.error('Error handling Google callback:', error);
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=callback_failed`);
+    }
+};
+
+/**
+ * Get connection status for current user
+ * Returns connection details if exists, null otherwise
+ */
+exports.getConnectionStatus = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const { data, error } = await supabase
+            .from('google_connections')
+            .select('id, expires_at, scopes, created_at')
+            .eq('user_id', userId)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+            console.error('Error fetching connection status:', error);
+            return res.status(500).json({ error: 'Failed to fetch connection status' });
+        }
+
+        if (!data) {
+            return res.json({ connected: false });
+        }
+
+        // Check if token is expired
+        const isExpired = new Date(data.expires_at) < new Date();
+
+        res.json({
+            connected: true,
+            expires_at: data.expires_at,
+            scopes: data.scopes,
+            created_at: data.created_at,
+            needs_refresh: isExpired
+        });
+    } catch (error) {
+        console.error('Error in getConnectionStatus:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Refresh access token using refresh token
+ * Automatically called when token is expired
+ */
+exports.refreshToken = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get current connection
+        const { data: connection, error: fetchError } = await supabaseAdmin
+            .from('google_connections')
+            .select('refresh_token')
+            .eq('user_id', userId)
+            .single();
+
+        if (fetchError || !connection || !connection.refresh_token) {
+            return res.status(404).json({ error: 'No connection found or refresh token missing' });
+        }
+
+        // Set refresh token and get new access token
+        oauth2Client.setCredentials({
+            refresh_token: connection.refresh_token
+        });
+
+        const { credentials } = await oauth2Client.refreshAccessToken();
+        const expiresAt = new Date(credentials.expiry_date);
+
+        // Update connection with new access token
+        const { error: updateError } = await supabaseAdmin
+            .from('google_connections')
+            .update({
+                access_token: credentials.access_token,
+                expires_at: expiresAt.toISOString()
+            })
+            .eq('user_id', userId);
+
+        if (updateError) {
+            console.error('Error updating refreshed token:', updateError);
+            return res.status(500).json({ error: 'Failed to update token' });
+        }
+
+        res.json({
+            success: true,
+            expires_at: expiresAt.toISOString()
+        });
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        res.status(500).json({ error: 'Failed to refresh token' });
+    }
+};
+
+/**
+ * Disconnect Google account
+ * Deletes connection from database
+ */
+exports.disconnect = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const { error } = await supabase
+            .from('google_connections')
+            .delete()
+            .eq('user_id', userId);
+
+        if (error) {
+            console.error('Error disconnecting Google account:', error);
+            return res.status(500).json({ error: 'Failed to disconnect' });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error in disconnect:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Get valid access token for current user
+ * Automatically refreshes if expired
+ * Used internally by pickers
+ */
+exports.getValidToken = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get connection
+        const { data: connection, error } = await supabaseAdmin
+            .from('google_connections')
+            .select('access_token, refresh_token, expires_at')
+            .eq('user_id', userId)
+            .single();
+
+        if (error || !connection) {
+            return res.status(404).json({ error: 'No Google connection found' });
+        }
+
+        // Check if token is expired
+        const isExpired = new Date(connection.expires_at) < new Date();
+
+        if (!isExpired) {
+            return res.json({ access_token: connection.access_token });
+        }
+
+        // Token is expired, refresh it
+        if (!connection.refresh_token) {
+            return res.status(401).json({ error: 'Token expired and no refresh token available' });
+        }
+
+        oauth2Client.setCredentials({
+            refresh_token: connection.refresh_token
+        });
+
+        const { credentials } = await oauth2Client.refreshAccessToken();
+        const expiresAt = new Date(credentials.expiry_date);
+
+        // Update connection
+        await supabaseAdmin
+            .from('google_connections')
+            .update({
+                access_token: credentials.access_token,
+                expires_at: expiresAt.toISOString()
+            })
+            .eq('user_id', userId);
+
+        res.json({ access_token: credentials.access_token });
+    } catch (error) {
+        console.error('Error getting valid token:', error);
+        res.status(500).json({ error: 'Failed to get valid token' });
+    }
+};
