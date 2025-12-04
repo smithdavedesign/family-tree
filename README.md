@@ -544,26 +544,39 @@ jobs:
    node index.js
    ```
 
-## 🔐 Google OAuth Verification Status
+## 🔐 Google OAuth & Runtime Configuration
+
+### Architecture
+This app uses **Runtime Configuration** to serve Google API keys from the backend, eliminating build-time environment variable issues:
+- **Frontend**: Fetches config from `/api/config` at runtime
+- **Backend** (Render): Serves `GOOGLE_CLIENT_ID` and `GOOGLE_API_KEY` via API endpoint
+- **Vercel**: No Google API keys needed in frontend environment variables
 
 ### Current Status
 - ✅ **Google Drive Integration**: Fully functional
-- 🚧 **Google Photos Integration**: Pending Google verification (2-4 weeks)
+- ⚠️ **Google Photos Integration**: May show 403 errors until Google verification completes
 
-### Why Google Photos Requires Verification
-Google classifies the `photoslibrary.readonly` scope as **sensitive**, requiring all apps to undergo a verification process before production use. This is a security measure to protect user photo libraries.
+### Setup Requirements
 
-### What Works Now
-- ✅ Google Drive document picker (select PDFs, images, documents)
-- ✅ Local photo uploads
-- ✅ Local document uploads
-- ✅ All other features
+#### Backend (Render)
+Set these environment variables:
+```
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_API_KEY=your-api-key
+```
 
-### Coming Soon
-Once Google approves our verification request:
-- 📸 Direct Google Photos integration
-- 🖼️ Browse and select from Google Photos library
-- 🔄 Seamless photo management
+#### Frontend (Vercel)
+Only Supabase variables needed:
+```
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### Google Photos Verification Status
+Google Photos scope (`photoslibrary.readonly`) requires verification. Until approved:
+- Photos picker may return 403 errors
+- Document picker works fully (Drive scope doesn't require verification)
+- Users can still upload photos locally
 
 For more details, see:
 - `google-verification-justification.md` - Detailed scope justification

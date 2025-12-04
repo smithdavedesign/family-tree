@@ -108,52 +108,40 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             title="Select from Google Photos"
             size="md"
         >
-            <div className="flex flex-col items-center p-6">
-                {/* Coming Soon Banner */}
-                <div className="w-full mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                        <div className="p-2 bg-white rounded-lg">
-                            <ImageIcon className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-base font-bold text-blue-900 mb-2">
-                                🚀 Coming Soon: Google Photos Integration
-                            </h3>
-                            <p className="text-sm text-blue-800 mb-3">
-                                We're currently awaiting Google's verification to enable direct access to your Google Photos library.
-                            </p>
-                            <div className="bg-white/60 rounded-lg p-3 mb-3">
-                                <p className="text-xs font-medium text-blue-900 mb-2">What you can do now:</p>
-                                <ul className="text-xs text-blue-800 space-y-1.5">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-600 mt-0.5">✓</span>
-                                        <span>Upload photos directly from your device</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-600 mt-0.5">✓</span>
-                                        <span>Save photos to Google Drive and select them via Documents</span>
-                                    </li>
-                                </ul>
+            <div className="flex flex-col items-center p-4">
+                {error ? (
+                    <div className="w-full mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-sm font-medium text-red-900">Error</p>
+                                <p className="text-sm text-red-700 mt-1">{error}</p>
                             </div>
-                            <p className="text-xs text-blue-700">
-                                <strong>Expected availability:</strong> 2-4 weeks after verification approval
-                            </p>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="text-center mb-6">
+                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ImageIcon className="w-8 h-8 text-blue-500" />
+                        </div>
+                        <p className="text-slate-600 mb-4">
+                            Click below to open Google Photos and select a photo for this person.
+                        </p>
+                    </div>
+                )}
 
-                {/* Disabled Button */}
                 <Button
-                    disabled
+                    onClick={openPicker}
+                    disabled={!pickerReady || !!error}
                     fullWidth
-                    className="flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                    className="flex items-center justify-center gap-2"
                 >
                     <ImageIcon className="w-5 h-5" />
-                    Google Photos (Pending Verification)
+                    {pickerReady ? 'Open Google Photos' : 'Loading...'}
                 </Button>
 
                 <p className="text-xs text-slate-500 mt-4 text-center">
-                    Thank you for your patience as we work to bring you this feature!
+                    You'll be able to browse and select photos from your Google Photos library.
                 </p>
             </div>
         </Modal>

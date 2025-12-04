@@ -37,9 +37,7 @@ export const signInWithGoogle = async () => {
                 access_type: 'offline',
                 prompt: 'consent',
             },
-            scopes: 'https://www.googleapis.com/auth/drive.file',
-            // TEMPORARILY REMOVED FOR TESTING - Google Photos requires verification
-            // scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/drive.file',
+            scopes: 'https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/drive.file',
         },
     });
 
