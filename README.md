@@ -169,6 +169,36 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Most common locations
 - [x] Family branches visualization
 
+### ⚙️ Phase L: Dual OAuth Architecture (0%) - IN PROGRESS
+**Timeline:** 2-3 weeks | **Critical for Google Integration Reliability**
+
+**Goal:** Separate authentication from API integrations using industry-standard dual OAuth pattern.
+
+#### Current Issue
+- Supabase Google OAuth doesn't support custom scopes
+- Document/Photo pickers fail in fresh sessions (incognito)
+- Can't request `drive.file` or `photoslibrary.readonly` scopes
+
+#### Solution: Dual OAuth Pattern
+**OAuth 1: Authentication (Login)**
+- Supabase handles user identity
+- Google (basic profile), Email Magic Links, Email/Password
+- Scopes: `openid email profile`
+
+**OAuth 2: API Integration (Google Services)**
+- Custom Google OAuth for Drive/Photos access
+- Scopes: `drive.file` + `photoslibrary.readonly`
+- Stored in `google_connections` table
+- User-triggered via "Connect Google Drive" button
+
+#### Implementation Tasks
+- [ ] Database schema (`google_connections` table)
+- [ ] Backend OAuth endpoints (`/api/google/connect`, `/callback`, `/disconnect`)
+- [ ] Token refresh logic
+- [ ] Settings page UI for connection management
+- [ ] Update pickers to use connection tokens
+- [ ] Handle disconnected state gracefully
+
 ### ⚠️ Phase K: Production Readiness (85%) - CRITICAL
 **Timeline:** 3-6 weeks | **Blocker for Public Launch**
 
