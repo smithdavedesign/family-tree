@@ -8,7 +8,7 @@ const Joi = require('joi');
 const personSchema = Joi.object({
     tree_id: Joi.string().uuid().required(),
     first_name: Joi.string().min(1).max(100).required(),
-    last_name: Joi.string().min(1).max(100).allow('', null),
+    last_name: Joi.string().min(1).max(100).empty('').allow(null),
     dob: Joi.date().iso().max('now').empty('').allow(null).messages({
         'date.max': 'Date of birth cannot be in the future',
         'date.format': 'Date of birth must be a valid date'
@@ -18,14 +18,14 @@ const personSchema = Joi.object({
         'date.format': 'Date of death must be a valid date'
     }),
     gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
-    bio: Joi.string().max(5000).allow('', null),
-    occupation: Joi.string().max(200).allow('', null),
+    bio: Joi.string().max(5000).empty('').allow(null),
+    occupation: Joi.string().max(200).empty('').allow(null),
     occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
-    education: Joi.string().max(500).allow('', null),
-    pob: Joi.string().max(200).allow('', null),
-    place_of_death: Joi.string().max(200).allow('', null),
-    cause_of_death: Joi.string().max(500).allow('', null),
-    burial_place: Joi.string().max(200).allow('', null),
+    education: Joi.string().max(500).empty('').allow(null),
+    pob: Joi.string().max(200).empty('').allow(null),
+    place_of_death: Joi.string().max(200).empty('').allow(null),
+    cause_of_death: Joi.string().max(500).empty('').allow(null),
+    burial_place: Joi.string().max(200).empty('').allow(null),
     profile_photo_url: Joi.string().uri().empty('').allow(null),
 }).custom((value, helpers) => {
     // Impossible date validation: death before birth
@@ -70,18 +70,18 @@ const personSchema = Joi.object({
 const personUpdateSchema = Joi.object({
     tree_id: Joi.string().uuid(),
     first_name: Joi.string().min(1).max(100),
-    last_name: Joi.string().min(1).max(100).allow('', null),
+    last_name: Joi.string().min(1).max(100).empty('').allow(null),
     dob: Joi.date().iso().max('now').empty('').allow(null),
     dod: Joi.date().iso().max('now').empty('').allow(null),
     gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
-    bio: Joi.string().max(5000).allow('', null),
-    occupation: Joi.string().max(200).allow('', null),
+    bio: Joi.string().max(5000).empty('').allow(null),
+    occupation: Joi.string().max(200).empty('').allow(null),
     occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
-    education: Joi.string().max(500).allow('', null),
-    pob: Joi.string().max(200).allow('', null),
-    place_of_death: Joi.string().max(200).allow('', null),
-    cause_of_death: Joi.string().max(500).allow('', null),
-    burial_place: Joi.string().max(200).allow('', null),
+    education: Joi.string().max(500).empty('').allow(null),
+    pob: Joi.string().max(200).empty('').allow(null),
+    place_of_death: Joi.string().max(200).empty('').allow(null),
+    cause_of_death: Joi.string().max(500).empty('').allow(null),
+    burial_place: Joi.string().max(200).empty('').allow(null),
     profile_photo_url: Joi.string().uri().empty('').allow(null),
 }).min(1); // At least one field must be provided
 
@@ -91,7 +91,7 @@ const treeSchema = Joi.object({
         'string.empty': 'Tree name is required',
         'string.max': 'Tree name must be less than 200 characters'
     }),
-    description: Joi.string().max(1000).allow('', null)
+    description: Joi.string().max(1000).empty('').allow(null)
 });
 
 // Relationship validation schema
@@ -105,7 +105,7 @@ const relationshipSchema = Joi.object({
         'adoptive_parent_child',
         'sibling'
     ).required(),
-    status: Joi.string().valid('current', 'divorced', 'widowed', 'separated').allow(null)
+    status: Joi.string().valid('current', 'divorced', 'widowed', 'separated').empty('').allow(null)
 }).custom((value, helpers) => {
     // Prevent self-relationships
     if (value.person_1_id === value.person_2_id) {
@@ -129,8 +129,8 @@ const invitationSchema = Joi.object({
 const photoSchema = Joi.object({
     person_id: Joi.string().uuid().required(),
     url: Joi.string().uri().required(),
-    caption: Joi.string().max(500).allow('', null),
-    date_taken: Joi.date().iso().max('now').allow(null),
+    caption: Joi.string().max(500).empty('').allow(null),
+    date_taken: Joi.date().iso().max('now').empty('').allow(null),
     is_primary: Joi.boolean().default(false)
 });
 
