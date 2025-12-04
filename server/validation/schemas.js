@@ -20,7 +20,13 @@ const personSchema = Joi.object({
     gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
     bio: Joi.string().max(5000).empty('').allow(null),
     occupation: Joi.string().max(200).empty('').allow(null),
-    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
+    occupation_history: Joi.alternatives().try(
+        Joi.array().items(Joi.string().max(200)).max(20),
+        Joi.string().max(2000).custom((value, helpers) => {
+            if (!value) return null;
+            return value.split(',').map(s => s.trim()).filter(s => s);
+        })
+    ).empty('').allow(null),
     education: Joi.string().max(500).empty('').allow(null),
     pob: Joi.string().max(200).empty('').allow(null),
     place_of_death: Joi.string().max(200).empty('').allow(null),
@@ -76,7 +82,13 @@ const personUpdateSchema = Joi.object({
     gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
     bio: Joi.string().max(5000).empty('').allow(null),
     occupation: Joi.string().max(200).empty('').allow(null),
-    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
+    occupation_history: Joi.alternatives().try(
+        Joi.array().items(Joi.string().max(200)).max(20),
+        Joi.string().max(2000).custom((value, helpers) => {
+            if (!value) return null;
+            return value.split(',').map(s => s.trim()).filter(s => s);
+        })
+    ).empty('').allow(null),
     education: Joi.string().max(500).empty('').allow(null),
     pob: Joi.string().max(200).empty('').allow(null),
     place_of_death: Joi.string().max(200).empty('').allow(null),
