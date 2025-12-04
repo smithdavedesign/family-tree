@@ -5,9 +5,13 @@ import { Modal, Button, Input, useToast } from './ui';
 
 const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => {
     const { toast } = useToast();
-    const [step, setStep] = useState(1); // 1: Choose type, 2: Choose person
+    const [step, setStep] = useState(1); // 1: Choose type, 2: Choose person, 3: Create new person
     const [relationshipType, setRelationshipType] = useState('');
     const [isParentRelationship, setIsParentRelationship] = useState(false);
+    const [availablePersons, setAvailablePersons] = useState([]);
+    const [filteredPersons, setFilteredPersons] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
     const [newPersonData, setNewPersonData] = useState({
         first_name: '',
         last_name: '',
