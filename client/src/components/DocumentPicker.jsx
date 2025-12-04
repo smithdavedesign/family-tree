@@ -94,8 +94,9 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
             // Show the picker first
             picker.setVisible(true);
 
-            // Then close the modal after a brief delay to ensure picker is rendered
-            setTimeout(() => onClose(), 100);
+            // TEMPORARILY DISABLED FOR DEBUGGING - Don't close modal yet
+            // setTimeout(() => onClose(), 100);
+            console.log('Document Picker should be visible now. Check for iframe in DOM.');
         } catch (err) {
             console.error('Error opening picker:', err);
             setError('Failed to open picker: ' + err.message);

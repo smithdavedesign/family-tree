@@ -135,6 +135,7 @@ function csrfProtection(req, res, next) {
     const allowedOrigins = [
         process.env.CLIENT_URL || 'http://localhost:5173',
         'http://localhost:5173',
+        'http://localhost:4173', // Vite preview server
         'http://localhost:3000',
         'https://family-tree-blue-kappa.vercel.app'
     ];
