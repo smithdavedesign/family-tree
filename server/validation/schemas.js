@@ -9,22 +9,24 @@ const personSchema = Joi.object({
     tree_id: Joi.string().uuid().required(),
     first_name: Joi.string().min(1).max(100).required(),
     last_name: Joi.string().min(1).max(100).allow('', null),
-    dob: Joi.date().iso().max('now').allow(null).messages({
-        'date.max': 'Date of birth cannot be in the future'
+    dob: Joi.date().iso().max('now').empty('').allow(null).messages({
+        'date.max': 'Date of birth cannot be in the future',
+        'date.format': 'Date of birth must be a valid date'
     }),
-    dod: Joi.date().iso().max('now').allow(null).messages({
-        'date.max': 'Date of death cannot be in the future'
+    dod: Joi.date().iso().max('now').empty('').allow(null).messages({
+        'date.max': 'Date of death cannot be in the future',
+        'date.format': 'Date of death must be a valid date'
     }),
-    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').allow(null),
+    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
     bio: Joi.string().max(5000).allow('', null),
     occupation: Joi.string().max(200).allow('', null),
-    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).allow(null),
+    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
     education: Joi.string().max(500).allow('', null),
     pob: Joi.string().max(200).allow('', null),
     place_of_death: Joi.string().max(200).allow('', null),
     cause_of_death: Joi.string().max(500).allow('', null),
     burial_place: Joi.string().max(200).allow('', null),
-    profile_photo_url: Joi.string().uri().allow('', null),
+    profile_photo_url: Joi.string().uri().empty('').allow(null),
 }).custom((value, helpers) => {
     // Impossible date validation: death before birth
     if (value.dob && value.dod) {
@@ -69,18 +71,18 @@ const personUpdateSchema = Joi.object({
     tree_id: Joi.string().uuid(),
     first_name: Joi.string().min(1).max(100),
     last_name: Joi.string().min(1).max(100).allow('', null),
-    dob: Joi.date().iso().max('now').allow(null),
-    dod: Joi.date().iso().max('now').allow(null),
-    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').allow(null),
+    dob: Joi.date().iso().max('now').empty('').allow(null),
+    dod: Joi.date().iso().max('now').empty('').allow(null),
+    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
     bio: Joi.string().max(5000).allow('', null),
     occupation: Joi.string().max(200).allow('', null),
-    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).allow(null),
+    occupation_history: Joi.array().items(Joi.string().max(200)).max(20).empty('').allow(null),
     education: Joi.string().max(500).allow('', null),
     pob: Joi.string().max(200).allow('', null),
     place_of_death: Joi.string().max(200).allow('', null),
     cause_of_death: Joi.string().max(500).allow('', null),
     burial_place: Joi.string().max(200).allow('', null),
-    profile_photo_url: Joi.string().uri().allow('', null),
+    profile_photo_url: Joi.string().uri().empty('').allow(null),
 }).min(1); // At least one field must be provided
 
 // Tree validation schema
