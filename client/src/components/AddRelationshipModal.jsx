@@ -8,10 +8,11 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
     const [step, setStep] = useState(1); // 1: Choose type, 2: Choose person
     const [relationshipType, setRelationshipType] = useState('');
     const [isParentRelationship, setIsParentRelationship] = useState(false);
-    const [availablePersons, setAvailablePersons] = useState([]);
-    const [filteredPersons, setFilteredPersons] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [newPersonData, setNewPersonData] = useState({
+        first_name: '',
+        last_name: '',
+        gender: ''
+    });
 
     useEffect(() => {
         if (isOpen && step === 2) {
@@ -63,6 +64,10 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
     };
 
     const handlePersonSelect = async (selectedPerson) => {
+        await createRelationship(selectedPerson.id);
+    };
+
+    const createRelationship = async (otherPersonId) => {
         setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -74,14 +79,14 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
             if (relationshipType === 'spouse') {
                 // For spouse, order doesn't matter
                 person_1_id = currentPerson.id;
-                person_2_id = selectedPerson.id;
+                person_2_id = otherPersonId;
             } else if (isParentRelationship) {
                 // Selected person is the child, current person is the parent
                 person_1_id = currentPerson.id;
-                person_2_id = selectedPerson.id;
+                person_2_id = otherPersonId;
             } else {
                 // Selected person is the parent, current person is the child
-                person_1_id = selectedPerson.id;
+                person_1_id = otherPersonId;
                 person_2_id = currentPerson.id;
             }
 
@@ -118,11 +123,52 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
         }
     };
 
+    const handleCreateAndConnect = async () => {
+        if (!newPersonData.first_name || !newPersonData.gender) {
+            toast.error("First Name and Gender are required");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            // 1. Create the new person
+            const createResponse = await fetch('/api/person', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    tree_id: currentPerson.data.tree_id,
+                    ...newPersonData
+                })
+            });
+
+            if (!createResponse.ok) {
+                throw new Error("Failed to create person");
+            }
+
+            const newPerson = await createResponse.json();
+
+            // 2. Create the relationship
+            await createRelationship(newPerson.id);
+
+        } catch (error) {
+            console.error("Error creating person and relationship:", error);
+            toast.error("Failed to create person and connect");
+            setLoading(false);
+        }
+    };
+
     const handleClose = () => {
         setStep(1);
         setRelationshipType('');
         setIsParentRelationship(false);
         setSearchQuery('');
+        setNewPersonData({ first_name: '', last_name: '', gender: '' });
         onClose();
     };
 
@@ -136,11 +182,17 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
         { value: 'step_parent_child', label: 'Step Parent', description: 'Add a step parent', isParent: true },
     ];
 
+    const getTitle = () => {
+        if (step === 1) return 'Add Relationship';
+        if (step === 3) return 'Create New Person';
+        return `Select ${relationshipType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
+    };
+
     return (
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title={step === 1 ? 'Add Relationship' : `Select ${relationshipType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`}
+            title={getTitle()}
             size="md"
         >
             {step === 1 ? (
@@ -161,7 +213,7 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                         ))}
                     </div>
                 </div>
-            ) : (
+            ) : step === 2 ? (
                 <div className="flex flex-col h-full space-y-4">
                     <Input
                         leftIcon={<Search className="w-4 h-4 text-slate-400" />}
@@ -176,10 +228,29 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
                         </div>
                     ) : filteredPersons.length === 0 ? (
-                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center space-y-3">
                             <p className="text-slate-500 text-sm font-medium">
                                 {searchQuery ? 'No matching persons found' : 'No other persons in this tree'}
                             </p>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => {
+                                    // Pre-fill first name if search query looks like a name
+                                    if (searchQuery) {
+                                        const parts = searchQuery.split(' ');
+                                        setNewPersonData(prev => ({
+                                            ...prev,
+                                            first_name: parts[0] || '',
+                                            last_name: parts.slice(1).join(' ') || ''
+                                        }));
+                                    }
+                                    setStep(3);
+                                }}
+                                leftIcon={<Plus className="w-4 h-4" />}
+                            >
+                                Create New Person
+                            </Button>
                         </div>
                     ) : (
                         <div className="space-y-2 overflow-y-auto max-h-[400px] pr-1">
@@ -202,6 +273,17 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                                     </div>
                                 </button>
                             ))}
+                            <div className="pt-2 border-t border-slate-100 mt-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    fullWidth
+                                    onClick={() => setStep(3)}
+                                    leftIcon={<Plus className="w-4 h-4" />}
+                                >
+                                    Create New Person Instead
+                                </Button>
+                            </div>
                         </div>
                     )}
 
@@ -212,6 +294,60 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                     >
                         ← Back to relationship types
                     </Button>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 mb-4">
+                        Creating a new person to be the <strong>{relationshipType.replace(/_/g, ' ')}</strong> of <strong>{currentPerson?.data?.label}</strong>.
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="First Name"
+                            value={newPersonData.first_name}
+                            onChange={(e) => setNewPersonData({ ...newPersonData, first_name: e.target.value })}
+                            placeholder="e.g. John"
+                            autoFocus
+                        />
+                        <Input
+                            label="Last Name"
+                            value={newPersonData.last_name}
+                            onChange={(e) => setNewPersonData({ ...newPersonData, last_name: e.target.value })}
+                            placeholder="e.g. Doe"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
+                        <select
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            value={newPersonData.gender}
+                            onChange={(e) => setNewPersonData({ ...newPersonData, gender: e.target.value })}
+                        >
+                            <option value="">Select Gender...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                        <Button
+                            variant="ghost"
+                            fullWidth
+                            onClick={() => setStep(2)}
+                        >
+                            Back
+                        </Button>
+                        <Button
+                            variant="primary"
+                            fullWidth
+                            onClick={handleCreateAndConnect}
+                            disabled={loading || !newPersonData.first_name || !newPersonData.gender}
+                        >
+                            {loading ? 'Creating...' : 'Create & Connect'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </Modal>
