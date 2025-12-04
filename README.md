@@ -13,7 +13,8 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - ✅ **Interactive Graph Visualization** - Dynamic family tree layout using React Flow and Dagre
 - ✅ **Google Authentication** - Secure sign-in with Google OAuth
 - ✅ **Email Authentication** - Passwordless magic link sign-in
-- ✅ **Google Photos Integration** - Attach photos directly from your Google Photos library
+- ✅ **Google Drive Integration** - Attach documents directly from your Google Drive
+- 🚧 **Google Photos Integration** - Coming soon (pending Google verification)
 - ✅ **Real-time Editing** - Add, edit, and link family members instantly
 - ✅ **Multi-Tree Support** - Create and manage multiple family trees
 - ✅ **Responsive Design** - Works seamlessly on desktop and mobile devices
@@ -64,11 +65,13 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Tree layout (Dagre)
 - [x] Interactive controls
 
-### ✅ Phase C: Google Integration (100%)
-- [x] Media picker
-- [x] Google Photos API
-- [x] Media storage
+### ✅ Phase C: Google Integration (90%)
+- [x] Google OAuth authentication
+- [x] Google Drive document picker (fully functional)
+- [x] Google Picker API integration
+- [x] Media storage (Supabase)
 - [x] Mock data layer
+- 🚧 Google Photos API (pending verification - 2-4 weeks)
 
 ### ⚠️ Phase D: Editing & Management (90%)
 - [x] Tree creation flow
@@ -131,10 +134,12 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 ### ✅ Phase H: Data Structure Enhancements (95%)
 - [x] Expand person details (birthplace, deathplace, cause of death, burial place)
-- [x] Photo gallery per person (with Google Photos & local file upload)
+- [x] Photo gallery per person (local file upload)
 - [x] Extended occupation fields (occupation history, education)
 - [x] Biography/notes expansion
 - [x] Sources/documents (Google Drive & Local Upload)
+- [x] Document management with Google Drive integration
+- 🚧 Google Photos integration (pending Google verification)
 - [ ] Half-siblings support
 - [x] Detect impossible relationships (Validation)
 
@@ -538,6 +543,31 @@ jobs:
    npm install
    node index.js
    ```
+
+## 🔐 Google OAuth Verification Status
+
+### Current Status
+- ✅ **Google Drive Integration**: Fully functional
+- 🚧 **Google Photos Integration**: Pending Google verification (2-4 weeks)
+
+### Why Google Photos Requires Verification
+Google classifies the `photoslibrary.readonly` scope as **sensitive**, requiring all apps to undergo a verification process before production use. This is a security measure to protect user photo libraries.
+
+### What Works Now
+- ✅ Google Drive document picker (select PDFs, images, documents)
+- ✅ Local photo uploads
+- ✅ Local document uploads
+- ✅ All other features
+
+### Coming Soon
+Once Google approves our verification request:
+- 📸 Direct Google Photos integration
+- 🖼️ Browse and select from Google Photos library
+- 🔄 Seamless photo management
+
+For more details, see:
+- `google-verification-justification.md` - Detailed scope justification
+- `youtube-demo-script.md` - Demo video production guide
 
 ## 📝 License
 
