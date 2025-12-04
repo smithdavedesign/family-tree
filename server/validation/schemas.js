@@ -115,6 +115,7 @@ const relationshipSchema = Joi.object({
         'parent_child',
         'spouse',
         'adoptive_parent_child',
+        'step_parent_child',
         'sibling'
     ).required(),
     status: Joi.string().valid('current', 'divorced', 'widowed', 'separated').empty('').allow(null)
