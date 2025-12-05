@@ -105,7 +105,7 @@ export const signInWithPassword = async (email, password) => {
 };
 
 // Get Current Session
-export const getCurrentSession = async () => {
+export const getCurrentUser = async () => {
     // Try to get from session manager first
     const storedSession = sessionManager.getSession();
     if (storedSession && storedSession.user) {
