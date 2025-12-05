@@ -147,8 +147,11 @@ export const useGoogleConnection = () => {
                 // If we just came back from a successful connection, force a check immediately
                 await checkConnection();
 
-                // Then clean up the URL
-                const newUrl = window.location.pathname;
+                // Then clean up the URL, but preserve other params (like returnUrl)
+                const currentParams = new URLSearchParams(window.location.search);
+                currentParams.delete('google_connected');
+                const newSearch = currentParams.toString();
+                const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
                 window.history.replaceState({}, '', newUrl);
 
                 // Clear the return URL from sessionStorage
