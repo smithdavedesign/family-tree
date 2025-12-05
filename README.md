@@ -169,17 +169,12 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Most common locations
 - [x] Family branches visualization
 
-### ⚙️ Phase L: Dual OAuth Architecture (0%) - IN PROGRESS
-**Timeline:** 2-3 weeks | **Critical for Google Integration Reliability**
+### ✅ Phase L: Dual OAuth Architecture (100%) - **COMPLETE**
+**Timeline:** Completed Dec 2024 | **Critical for Google Integration Reliability**
 
 **Goal:** Separate authentication from API integrations using industry-standard dual OAuth pattern.
 
-#### Current Issue
-- Supabase Google OAuth doesn't support custom scopes
-- Document/Photo pickers fail in fresh sessions (incognito)
-- Can't request `drive.file` or `photoslibrary.readonly` scopes
-
-#### Solution: Dual OAuth Pattern
+#### Solution Implemented
 **OAuth 1: Authentication (Login)**
 - Supabase handles user identity
 - Google (basic profile), Email Magic Links, Email/Password
@@ -189,15 +184,44 @@ The application uses a relational database (PostgreSQL) with the following key e
 - Custom Google OAuth for Drive/Photos access
 - Scopes: `drive.file` + `photoslibrary.readonly`
 - Stored in `google_connections` table
-- User-triggered via "Connect Google Drive" button
+- User-triggered via "Connect Google Drive & Photos" in Settings or inline prompts
 
-#### Implementation Tasks
-- [ ] Database schema (`google_connections` table)
-- [ ] Backend OAuth endpoints (`/api/google/connect`, `/callback`, `/disconnect`)
-- [ ] Token refresh logic
-- [ ] Settings page UI for connection management
-- [ ] Update pickers to use connection tokens
-- [ ] Handle disconnected state gracefully
+#### Completed Features
+- [x] Database schema (`google_connections` table with RLS)
+- [x] Backend OAuth endpoints (`/api/google/*`)
+- [x] Automatic token refresh logic
+- [x] Settings page UI for connection management
+- [x] Inline "Connect Google" prompts in pickers
+- [x] Redirect back to origin page after OAuth
+- [x] Updated pickers to use connection tokens
+
+**Result:** Google Drive picker works reliably in all sessions. Photos pending Google verification.
+
+---
+
+### 🚧 Phase M: User Registration & Login (0%) - **NEXT**
+**Timeline:** 1-2 weeks | **Industry-Standard Authentication**
+
+**Goal:** Add traditional email/password registration to complement Google OAuth and Magic Links.
+
+#### Planned Features
+- [ ] Registration page with email/password
+- [ ] Unified login page (email/password, magic link, Google)
+- [ ] Email verification flow
+- [ ] Password reset/forgot password
+- [ ] Password strength requirements & validation
+- [ ] "Remember Me" functionality
+- [ ] Enhanced onboarding (welcome → create tree → tour)
+- [ ] Email verification banner
+- [ ] Session management improvements
+
+#### Three Authentication Methods
+1. **Google OAuth** - Quick social login
+2. **Magic Link** - Passwordless email login
+3. **Email/Password** - Traditional registration (**NEW**)
+
+**See:** [implementation_plan.md](file:///Users/davidsmith/.gemini/antigravity/brain/cfc51602-8fad-4677-b01d-7cae0eec3106/implementation_plan.md) for detailed design
+
 
 ### ⚠️ Phase K: Production Readiness (85%) - CRITICAL
 **Timeline:** 3-6 weeks | **Blocker for Public Launch**
