@@ -124,7 +124,9 @@ exports.getConnectionStatus = async (req, res) => {
         res.set('Cache-Control', 'no-store');
         const userId = req.user.id;
 
-        const { data, error } = await supabase
+        // Use supabaseAdmin to bypass RLS since we've already authenticated the user via middleware
+        // The standard 'supabase' client is anonymous and won't pass RLS checks
+        const { data, error } = await supabaseAdmin
             .from('google_connections')
             .select('id, expires_at, scopes, created_at')
             .eq('user_id', userId)
@@ -214,7 +216,7 @@ exports.disconnect = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('google_connections')
             .delete()
             .eq('user_id', userId);
