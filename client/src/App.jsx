@@ -17,6 +17,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings'));
 const Register = lazy(() => import('./pages/Register'));
+const Login = lazy(() => import('./pages/Login'));
 const EmailConfirm = lazy(() => import('./pages/EmailConfirm'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
@@ -139,6 +140,7 @@ function App() {
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
             <Route path="/magic-link" element={<MagicLinkAuth />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/auth/confirm" element={<EmailConfirm />} />
             <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
