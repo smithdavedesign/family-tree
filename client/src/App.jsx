@@ -15,6 +15,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const MagicLinkAuth = lazy(() => import('./pages/MagicLinkAuth'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
+const AccountSettings = lazy(() => import('./pages/AccountSettings'));
 
 // Loading component
 const PageLoader = () => (
@@ -138,6 +139,7 @@ function App() {
             <Route path="/auth-error" element={<AuthError />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/settings" element={<AccountSettings />} />
             <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
           </Routes>
         </Suspense>

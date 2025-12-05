@@ -56,17 +56,12 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
     const openDrivePicker = async () => {
         try {
             // Fetch config from backend (Runtime Configuration)
-            const response = await fetch('/api/config');
-            if (!response.ok) throw new Error('Failed to load configuration');
+            const configResponse = await fetch('/api/config');
+            if (!configResponse.ok) throw new Error('Failed to load configuration');
 
-            const config = await response.json();
+            const config = await configResponse.json();
             const clientId = config.googleClientId;
             const apiKey = config.googleApiKey;
-
-            console.log('DocumentPicker Runtime Config:', {
-                hasClientId: !!clientId,
-                hasApiKey: !!apiKey
-            });
 
             if (!clientId || !apiKey) {
                 console.error('Google configuration missing from backend');
@@ -74,17 +69,29 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                 return;
             }
 
-            const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
-            const accessToken = storedSession.provider_token;
+            // Fetch Google connection token
+            const tokenResponse = await fetch('/api/google/token', {
+                credentials: 'include'
+            });
 
-            if (!accessToken) {
-                setError('Please sign in with Google first');
+            if (!tokenResponse.ok) {
+                if (tokenResponse.status === 404) {
+                    setError('Please connect your Google account in Settings to use this feature');
+                    return;
+                }
+                throw new Error('Failed to get access token');
+            }
+
+            const { access_token } = await tokenResponse.json();
+
+            if (!access_token) {
+                setError('Please connect your Google account in Settings');
                 return;
             }
 
             const picker = new window.google.picker.PickerBuilder()
                 .addView(window.google.picker.ViewId.DOCS)
-                .setOAuthToken(accessToken)
+                .setOAuthToken(access_token)
                 .setDeveloperKey(apiKey)
                 .setOrigin(window.location.protocol + '//' + window.location.host)
                 .setCallback((data) => {
