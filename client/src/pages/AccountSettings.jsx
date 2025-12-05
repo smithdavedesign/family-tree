@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../auth';
 import { Button } from '../components/ui';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
@@ -7,9 +7,13 @@ import { useGoogleConnection } from '../hooks/useGoogleConnection';
 
 const AccountSettings = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const { isConnected, connection, isLoading: connectionLoading, error: connectionError, connect, disconnect } = useGoogleConnection();
+
+    // Get return URL from state (if navigated via link) or query param
+    const returnUrl = location.state?.returnUrl || new URLSearchParams(location.search).get('returnUrl') || '/trees';
 
     useEffect(() => {
         const getUser = async () => {
@@ -25,49 +29,23 @@ const AccountSettings = () => {
         getUser();
     }, [navigate]);
 
-    const handleDeleteAccount = async () => {
-        if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/account', {
-                method: 'DELETE',
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                await supabase.auth.signOut();
-                navigate('/');
-            }
-        } catch (error) {
-            console.error('Error deleting account:', error);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        );
-    }
+    // ... (rest of the component)
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             {/* Navbar */}
             <div className="bg-white shadow-sm border-b border-slate-200 px-4 py-3 mb-8">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/trees')}>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(returnUrl)}>
                         <span className="text-2xl">🌳</span>
                         <span className="font-bold text-xl text-slate-800">Roots & Branches</span>
                     </div>
                     <Button
-                        onClick={() => navigate('/trees')}
+                        onClick={() => navigate(returnUrl)}
                         variant="ghost"
                         size="sm"
                     >
-                        Back to Dashboard
+                        {returnUrl === '/trees' ? 'Back to Dashboard' : 'Back to Tree'}
                     </Button>
                 </div>
             </div>

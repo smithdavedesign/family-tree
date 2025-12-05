@@ -79,7 +79,7 @@ const AccountSettings = ({ user, onClose }) => {
                 <Button
                     variant="outline"
                     fullWidth
-                    onClick={() => navigate('/settings')}
+                    onClick={() => navigate('/settings', { state: { returnUrl: window.location.pathname } })}
                     className="border-slate-300 text-slate-700 hover:bg-slate-50"
                 >
                     Manage Integrations & Full Settings
