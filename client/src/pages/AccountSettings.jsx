@@ -29,7 +29,33 @@ const AccountSettings = () => {
         getUser();
     }, [navigate]);
 
-    // ... (rest of the component)
+    const handleDeleteAccount = async () => {
+        if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/account', {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                await supabase.auth.signOut();
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error deleting account:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
