@@ -196,7 +196,17 @@ const AccountSettings = () => {
 
                             {/* Connect Button */}
                             <Button
-                                onClick={() => connect(window.location.pathname + window.location.search)}
+                                onClick={() => {
+                                    // Construct the full return URL for the OAuth callback
+                                    // We explicitly build this to ensure the returnUrl param is included
+                                    // even if the current window.location hasn't updated yet
+                                    const params = new URLSearchParams();
+                                    if (returnUrl !== '/trees') {
+                                        params.set('returnUrl', returnUrl);
+                                    }
+                                    const connectUrl = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+                                    connect(connectUrl);
+                                }}
                                 className="w-full"
                             >
                                 🔗 Connect Google Drive & Photos
