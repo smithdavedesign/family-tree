@@ -4,8 +4,8 @@ const { supabase, supabaseAdmin } = require('../middleware/auth');
 // Initialize OAuth2 Client
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_API_KEY, // Note: API Key is not used here, but keeping for consistency
-    process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/auth/google/callback` : 'http://localhost:3000/api/google/callback'
+    process.env.GOOGLE_CLIENT_SECRET,
+    'http://localhost:5173/api/google/callback' // Dev server with proxy
 );
 
 // Required scopes for Drive and Photos
@@ -20,13 +20,23 @@ const SCOPES = [
  */
 exports.initiateConnection = async (req, res) => {
     try {
-        const userId = req.user.id;
+        // Get user from token in query parameter (sent by frontend redirect)
+        const token = req.query.token;
+        if (!token) {
+            return res.status(401).json({ error: 'No auth token provided' });
+        }
+
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+
+        if (error || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
 
         // Generate OAuth URL with custom scopes
         const authUrl = oauth2Client.generateAuthUrl({
             access_type: 'offline', // Request refresh token
             scope: SCOPES,
-            state: userId, // Pass user ID for security
+            state: user.id, // Pass user ID for security
             prompt: 'consent' // Force consent screen to get refresh token
         });
 
@@ -46,7 +56,7 @@ exports.handleCallback = async (req, res) => {
         const { code, state: userId } = req.query;
 
         if (!code || !userId) {
-            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=missing_params`);
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=missing_params`);
         }
 
         // Exchange code for tokens
@@ -71,14 +81,14 @@ exports.handleCallback = async (req, res) => {
 
         if (error) {
             console.error('Error storing Google connection:', error);
-            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=storage_failed`);
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=storage_failed`);
         }
 
         // Redirect back to settings with success message
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?connected=true`);
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?connected=true`);
     } catch (error) {
         console.error('Error handling Google callback:', error);
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:4173'}/settings?error=callback_failed`);
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);
     }
 };
 

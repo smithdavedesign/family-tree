@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../auth';
 
 /**
  * Custom hook to manage Google OAuth connection state
@@ -11,6 +12,20 @@ export const useGoogleConnection = () => {
     const [error, setError] = useState(null);
 
     /**
+     * Get auth headers for API requests
+     */
+    const getAuthHeaders = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+            throw new Error('No active session');
+        }
+        return {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+        };
+    };
+
+    /**
      * Check current connection status
      */
     const checkConnection = async () => {
@@ -18,7 +33,9 @@ export const useGoogleConnection = () => {
             setIsLoading(true);
             setError(null);
 
+            const headers = await getAuthHeaders();
             const response = await fetch('/api/google/status', {
+                headers,
                 credentials: 'include'
             });
 
@@ -42,10 +59,21 @@ export const useGoogleConnection = () => {
 
     /**
      * Initiate Google OAuth connection
-     * Redirects to /api/google/connect
+     * Redirects to /api/google/connect with auth token
      */
-    const connect = () => {
-        window.location.href = '/api/google/connect';
+    const connect = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                setError('Please sign in first');
+                return;
+            }
+            // Include token as URL parameter for the redirect
+            window.location.href = `/api/google/connect?token=${session.access_token}`;
+        } catch (err) {
+            console.error('Error connecting:', err);
+            setError(err.message);
+        }
     };
 
     /**
@@ -56,8 +84,10 @@ export const useGoogleConnection = () => {
         try {
             setError(null);
 
+            const headers = await getAuthHeaders();
             const response = await fetch('/api/google/disconnect', {
                 method: 'POST',
+                headers,
                 credentials: 'include'
             });
 
@@ -79,7 +109,9 @@ export const useGoogleConnection = () => {
      */
     const getToken = async () => {
         try {
+            const headers = await getAuthHeaders();
             const response = await fetch('/api/google/token', {
+                headers,
                 credentials: 'include'
             });
 

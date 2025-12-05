@@ -5,7 +5,9 @@ const googleOAuthController = require('../controllers/googleOAuthController');
 
 // Initiate Google OAuth connection
 // Redirects user to Google consent screen
-router.get('/connect', requireAuth, googleOAuthController.initiateConnection);
+// Note: No requireAuth here because browser redirects can't send headers
+// User ID is captured from their session in the controller
+router.get('/connect', googleOAuthController.initiateConnection);
 
 // OAuth callback from Google
 // No auth required (handled by state parameter)

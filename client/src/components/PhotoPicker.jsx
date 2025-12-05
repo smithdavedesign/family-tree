@@ -60,8 +60,21 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
                 return;
             }
 
-            // Fetch Google connection token
+            // Get Supabase session for auth
+            const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
+            const supabaseToken = storedSession.access_token;
+
+            if (!supabaseToken) {
+                setError('Please sign in first');
+                return;
+            }
+
+            // Fetch Google connection token with auth header
             const tokenResponse = await fetch('/api/google/token', {
+                headers: {
+                    'Authorization': `Bearer ${supabaseToken}`,
+                    'Content-Type': 'application/json'
+                },
                 credentials: 'include'
             });
 
