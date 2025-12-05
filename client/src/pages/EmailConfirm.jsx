@@ -11,11 +11,22 @@ const EmailConfirm = () => {
     const location = useLocation();
 
     useEffect(() => {
-        // Check if URL has verification params
-        const params = new URLSearchParams(location.search);
-        const type = params.get('type');
+        // Check if URL has verification params (can be in search or hash)
+        const searchParams = new URLSearchParams(location.search);
+        const hashParams = new URLSearchParams(location.hash.substring(1));
 
-        if (type === 'signup' || type === 'recovery') {
+        const type = searchParams.get('type') || hashParams.get('type');
+        const error = searchParams.get('error_description') || hashParams.get('error_description');
+
+        if (error) {
+            // If there's an error, we shouldn't redirect automatically
+            console.error('Email confirmation error:', error);
+            return;
+        }
+
+        // If we have a type, or if we just landed here (implicit success), we should redirect
+        // But let's be specific to avoid redirecting on random visits
+        if (type === 'signup' || type === 'recovery' || type === 'magiclink') {
             // Supabase automatically handles token verification
             // After a short delay, redirect to trees dashboard
             const timer = setTimeout(() => {
