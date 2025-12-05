@@ -131,17 +131,28 @@ export const useGoogleConnection = () => {
 
     // Check connection on mount and when URL params change
     useEffect(() => {
-        checkConnection();
+        const checkAndClean = async () => {
+            // First check if we have the success param
+            const params = new URLSearchParams(window.location.search);
+            const isConnectedRedirect = params.get('google_connected') === 'true';
 
-        // Listen for connection success from redirect
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('google_connected') === 'true') {
-            // Remove param from URL
-            window.history.replaceState({}, '', window.location.pathname);
-            // Clear the return URL from sessionStorage
-            sessionStorage.removeItem('google_oauth_return_url');
-            checkConnection();
-        }
+            if (isConnectedRedirect) {
+                // If we just came back from a successful connection, force a check immediately
+                await checkConnection();
+
+                // Then clean up the URL
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+
+                // Clear the return URL from sessionStorage
+                sessionStorage.removeItem('google_oauth_return_url');
+            } else {
+                // Normal load, just check status
+                checkConnection();
+            }
+        };
+
+        checkAndClean();
     }, []);
 
     return {
