@@ -134,7 +134,7 @@ function App() {
         <ToastContainer />
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Login />} />
             <Route path="/trees" element={<TreeDashboard />} />
             <Route path="/tree/:id" element={<TreePage />} />
             <Route path="/tree/:id/timeline" element={<TimelinePage />} />
