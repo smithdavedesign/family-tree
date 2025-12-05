@@ -19,12 +19,22 @@ const ResetPassword = () => {
 
     useEffect(() => {
         // Check if user came from password reset email
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // Supabase sends token in URL hash: #access_token=xxx&type=recovery
+        const hash = window.location.hash.substring(1);
+
+        // If there's no hash at all, we might be waiting for it
+        if (!hash) {
+            // Don't show error immediately - user might have just landed here
+            return;
+        }
+
+        const hashParams = new URLSearchParams(hash);
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
 
-        if (type !== 'recovery' || !accessToken) {
-            setError('Invalid or expired reset link');
+        // Only show error if hash exists but is invalid
+        if (hash && (type !== 'recovery' || !accessToken)) {
+            setError('Invalid or expired reset link. Please request a new password reset.');
         }
     }, []);
 
