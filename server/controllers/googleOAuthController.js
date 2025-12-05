@@ -101,11 +101,13 @@ exports.handleCallback = async (req, res) => {
 
         if (error) {
             console.error('Error storing Google connection:', error);
-            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}?error=storage_failed`);
+            const separator = returnUrl.includes('?') ? '&' : '?';
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}error=storage_failed`);
         }
 
         // Redirect back to where they came from with success message
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}?google_connected=true`);
+        const separator = returnUrl.includes('?') ? '&' : '?';
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}google_connected=true`);
     } catch (error) {
         console.error('Error handling Google callback:', error);
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);
