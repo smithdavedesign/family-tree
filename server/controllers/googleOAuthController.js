@@ -87,6 +87,7 @@ exports.handleCallback = async (req, res) => {
         const expiresAt = new Date(tokens.expiry_date);
 
         // Store connection in database
+        console.log(`[GoogleOAuth] Storing connection for user: ${userId}`);
         const { error } = await supabaseAdmin
             .from('google_connections')
             .upsert({
@@ -100,16 +101,18 @@ exports.handleCallback = async (req, res) => {
             });
 
         if (error) {
-            console.error('Error storing Google connection:', error);
+            console.error('[GoogleOAuth] Error storing Google connection:', error);
             const separator = returnUrl.includes('?') ? '&' : '?';
             return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}error=storage_failed`);
         }
+
+        console.log('[GoogleOAuth] Connection stored successfully');
 
         // Redirect back to where they came from with success message
         const separator = returnUrl.includes('?') ? '&' : '?';
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}google_connected=true`);
     } catch (error) {
-        console.error('Error handling Google callback:', error);
+        console.error('[GoogleOAuth] Error handling Google callback:', error);
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);
     }
 };
@@ -123,6 +126,7 @@ exports.getConnectionStatus = async (req, res) => {
         // Prevent caching
         res.set('Cache-Control', 'no-store');
         const userId = req.user.id;
+        console.log(`[GoogleOAuth] Checking status for user: ${userId}`);
 
         // Use supabaseAdmin to bypass RLS since we've already authenticated the user via middleware
         // The standard 'supabase' client is anonymous and won't pass RLS checks
@@ -132,11 +136,16 @@ exports.getConnectionStatus = async (req, res) => {
             .eq('user_id', userId)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-            console.error('Error fetching connection status:', error);
+        if (error) {
+            if (error.code === 'PGRST116') {
+                console.log(`[GoogleOAuth] No connection found for user: ${userId}`);
+                return res.json({ connected: false });
+            }
+            console.error('[GoogleOAuth] Error fetching connection status:', error);
             return res.status(500).json({ error: 'Failed to fetch connection status' });
         }
 
+        console.log(`[GoogleOAuth] Connection found for user: ${userId}`);
         if (!data) {
             return res.json({ connected: false });
         }
