@@ -144,8 +144,10 @@ export const useGoogleConnection = () => {
             const isConnectedRedirect = params.get('google_connected') === 'true';
 
             if (isConnectedRedirect) {
+                console.log('Google connected redirect detected. Checking status...');
                 // If we just came back from a successful connection, force a check immediately
                 await checkConnection();
+                console.log('Connection check complete.');
 
                 // Then clean up the URL, but preserve other params (like returnUrl)
                 const currentParams = new URLSearchParams(window.location.search);
@@ -153,9 +155,11 @@ export const useGoogleConnection = () => {
                 const newSearch = currentParams.toString();
                 const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
                 window.history.replaceState({}, '', newUrl);
+                console.log('URL cleaned up:', newUrl);
 
                 // Clear the return URL from sessionStorage
                 sessionStorage.removeItem('google_oauth_return_url');
+                console.log('Cleared google_oauth_return_url from sessionStorage.');
             } else {
                 // Normal load, just check status
                 checkConnection();
