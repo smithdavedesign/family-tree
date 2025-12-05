@@ -61,15 +61,22 @@ export const useGoogleConnection = () => {
      * Initiate Google OAuth connection
      * Redirects to /api/google/connect with auth token
      */
-    const connect = async () => {
+    const connect = async (returnUrlOverride) => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.access_token) {
                 setError('Please sign in first');
                 return;
             }
-            // Get return URL from sessionStorage or default to /settings
-            const returnUrl = sessionStorage.getItem('google_oauth_return_url') || '/settings';
+
+            // Determine return URL:
+            // 1. Explicit override passed to function
+            // 2. Stored in sessionStorage (legacy/picker support)
+            // 3. Current full URL (to preserve query params like ?returnUrl=...)
+            const returnUrl = returnUrlOverride ||
+                sessionStorage.getItem('google_oauth_return_url') ||
+                (window.location.pathname + window.location.search);
+
             // Include token and return URL as URL parameters for the redirect
             window.location.href = `/api/google/connect?token=${session.access_token}&return_url=${encodeURIComponent(returnUrl)}`;
         } catch (err) {

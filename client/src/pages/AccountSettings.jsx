@@ -15,6 +15,15 @@ const AccountSettings = () => {
     // Get return URL from state (if navigated via link) or query param
     const returnUrl = location.state?.returnUrl || new URLSearchParams(location.search).get('returnUrl') || '/trees';
 
+    // Ensure the returnUrl is in the query params so it persists if we reload or redirect
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (!params.get('returnUrl') && returnUrl !== '/trees') {
+            params.set('returnUrl', returnUrl);
+            navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+        }
+    }, [location.search, returnUrl, navigate, location.pathname]);
+
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -177,7 +186,7 @@ const AccountSettings = () => {
 
                             {/* Connect Button */}
                             <Button
-                                onClick={connect}
+                                onClick={() => connect(window.location.pathname + window.location.search)}
                                 className="w-full"
                             >
                                 🔗 Connect Google Drive & Photos
