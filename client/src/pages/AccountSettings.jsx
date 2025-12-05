@@ -136,7 +136,33 @@ const AccountSettings = () => {
                                 <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
                                     <p className="font-medium text-green-900">Connected to Google</p>
-                                    <p className="text-sm text-green-700 mt-1">
+
+                                    {/* Google Account Info */}
+                                    {(connection?.google_email || connection?.google_name) && (
+                                        <div className="flex items-center gap-3 mt-3 bg-white/50 p-2 rounded-md border border-green-100">
+                                            {connection.google_picture ? (
+                                                <img
+                                                    src={connection.google_picture}
+                                                    alt="Google Profile"
+                                                    className="w-8 h-8 rounded-full border border-slate-200"
+                                                />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">
+                                                    {(connection.google_name?.[0] || connection.google_email?.[0] || 'G').toUpperCase()}
+                                                </div>
+                                            )}
+                                            <div className="overflow-hidden">
+                                                {connection.google_name && (
+                                                    <p className="text-sm font-medium text-slate-900 truncate">{connection.google_name}</p>
+                                                )}
+                                                {connection.google_email && (
+                                                    <p className="text-xs text-slate-600 truncate">{connection.google_email}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <p className="text-sm text-green-700 mt-2">
                                         You can now use Google Drive and Photos pickers
                                     </p>
                                 </div>

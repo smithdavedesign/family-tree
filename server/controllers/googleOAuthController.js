@@ -8,10 +8,12 @@ const oauth2Client = new google.auth.OAuth2(
     'http://localhost:5173/api/google/callback' // Dev server with proxy
 );
 
-// Required scopes for Drive and Photos
+// Required scopes for Drive, Photos, and User Info
 const SCOPES = [
     'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/photoslibrary.readonly'
+    'https://www.googleapis.com/auth/photoslibrary.readonly',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email'
 ];
 
 /**
@@ -83,6 +85,14 @@ exports.handleCallback = async (req, res) => {
         const { tokens } = await oauth2Client.getToken(code);
         oauth2Client.setCredentials(tokens);
 
+        // Fetch user profile info
+        const oauth2 = google.oauth2({
+            auth: oauth2Client,
+            version: 'v2'
+        });
+
+        const { data: userProfile } = await oauth2.userinfo.get();
+
         // Calculate expiration time
         const expiresAt = new Date(tokens.expiry_date);
 
@@ -94,7 +104,10 @@ exports.handleCallback = async (req, res) => {
                 access_token: tokens.access_token,
                 refresh_token: tokens.refresh_token,
                 expires_at: expiresAt.toISOString(),
-                scopes: tokens.scope.split(' ')
+                scopes: tokens.scope.split(' '),
+                google_email: userProfile.email,
+                google_name: userProfile.name,
+                google_picture: userProfile.picture
             }, {
                 onConflict: 'user_id'
             });
@@ -128,7 +141,7 @@ exports.getConnectionStatus = async (req, res) => {
         // The standard 'supabase' client is anonymous and won't pass RLS checks
         const { data, error } = await supabaseAdmin
             .from('google_connections')
-            .select('id, expires_at, scopes, created_at')
+            .select('id, expires_at, scopes, created_at, google_email, google_name, google_picture')
             .eq('user_id', userId)
             .single();
 
@@ -149,6 +162,9 @@ exports.getConnectionStatus = async (req, res) => {
             expires_at: data.expires_at,
             scopes: data.scopes,
             created_at: data.created_at,
+            google_email: data.google_email,
+            google_name: data.google_name,
+            google_picture: data.google_picture,
             needs_refresh: isExpired
         });
     } catch (error) {
