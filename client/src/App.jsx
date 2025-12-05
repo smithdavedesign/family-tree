@@ -16,6 +16,9 @@ const MagicLinkAuth = lazy(() => import('./pages/MagicLinkAuth'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings'));
+const Register = lazy(() => import('./pages/Register'));
+const EmailConfirm = lazy(() => import('./pages/EmailConfirm'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
 // Loading component
 const PageLoader = () => (
@@ -135,6 +138,9 @@ function App() {
             <Route path="/tree/:id/timeline" element={<TimelinePage />} />
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
             <Route path="/magic-link" element={<MagicLinkAuth />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/auth/confirm" element={<EmailConfirm />} />
+            <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth-error" element={<AuthError />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
