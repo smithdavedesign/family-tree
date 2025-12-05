@@ -120,6 +120,8 @@ exports.handleCallback = async (req, res) => {
  */
 exports.getConnectionStatus = async (req, res) => {
     try {
+        // Prevent caching
+        res.set('Cache-Control', 'no-store');
         const userId = req.user.id;
 
         const { data, error } = await supabase
