@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../auth';
 import { Button } from '../components/ui';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { useGoogleConnection } from '../hooks/useGoogleConnection';
 
@@ -85,7 +86,16 @@ const AccountSettings = () => {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto px-4 pb-8">
+            {/* Breadcrumbs */}
+            <Breadcrumbs
+                items={[
+                    { label: 'My Trees', href: '/trees' },
+                    ...(returnUrl !== '/trees' ? [{ label: 'Tree', href: returnUrl }] : []),
+                    { label: 'Account Settings' }
+                ]}
+            />
+
+            <div className="max-w-4xl mx-auto px-4 pb-8 mt-8">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">Account Settings</h1>
