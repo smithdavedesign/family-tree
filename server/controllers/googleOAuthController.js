@@ -22,6 +22,8 @@ exports.initiateConnection = async (req, res) => {
     try {
         // Get user from token in query parameter (sent by frontend redirect)
         const token = req.query.token;
+        const returnUrl = req.query.return_url || '/settings';
+
         if (!token) {
             return res.status(401).json({ error: 'No auth token provided' });
         }
@@ -32,11 +34,17 @@ exports.initiateConnection = async (req, res) => {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
 
+        // Encode state with user ID and return URL
+        const state = Buffer.from(JSON.stringify({
+            userId: user.id,
+            returnUrl
+        })).toString('base64');
+
         // Generate OAuth URL with custom scopes
         const authUrl = oauth2Client.generateAuthUrl({
             access_type: 'offline', // Request refresh token
             scope: SCOPES,
-            state: user.id, // Pass user ID for security
+            state, // Pass encoded state for security and return navigation
             prompt: 'consent' // Force consent screen to get refresh token
         });
 
@@ -53,10 +61,22 @@ exports.initiateConnection = async (req, res) => {
  */
 exports.handleCallback = async (req, res) => {
     try {
-        const { code, state: userId } = req.query;
+        const { code, state } = req.query;
 
-        if (!code || !userId) {
+        if (!code || !state) {
             return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=missing_params`);
+        }
+
+        // Decode state to get user ID and return URL
+        let userId, returnUrl;
+        try {
+            const decoded = JSON.parse(Buffer.from(state, 'base64').toString());
+            userId = decoded.userId;
+            returnUrl = decoded.returnUrl || '/settings';
+        } catch (err) {
+            // Fallback for old state format (just user ID)
+            userId = state;
+            returnUrl = '/settings';
         }
 
         // Exchange code for tokens
@@ -81,11 +101,11 @@ exports.handleCallback = async (req, res) => {
 
         if (error) {
             console.error('Error storing Google connection:', error);
-            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=storage_failed`);
+            return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}?error=storage_failed`);
         }
 
-        // Redirect back to settings with success message
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?connected=true`);
+        // Redirect back to where they came from with success message
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}?google_connected=true`);
     } catch (error) {
         console.error('Error handling Google callback:', error);
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);

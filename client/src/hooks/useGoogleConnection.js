@@ -68,8 +68,10 @@ export const useGoogleConnection = () => {
                 setError('Please sign in first');
                 return;
             }
-            // Include token as URL parameter for the redirect
-            window.location.href = `/api/google/connect?token=${session.access_token}`;
+            // Get return URL from sessionStorage or default to /settings
+            const returnUrl = sessionStorage.getItem('google_oauth_return_url') || '/settings';
+            // Include token and return URL as URL parameters for the redirect
+            window.location.href = `/api/google/connect?token=${session.access_token}&return_url=${encodeURIComponent(returnUrl)}`;
         } catch (err) {
             console.error('Error connecting:', err);
             setError(err.message);
@@ -133,9 +135,11 @@ export const useGoogleConnection = () => {
 
         // Listen for connection success from redirect
         const params = new URLSearchParams(window.location.search);
-        if (params.get('connected') === 'true') {
+        if (params.get('google_connected') === 'true') {
             // Remove param from URL
             window.history.replaceState({}, '', window.location.pathname);
+            // Clear the return URL from sessionStorage
+            sessionStorage.removeItem('google_oauth_return_url');
             checkConnection();
         }
     }, []);

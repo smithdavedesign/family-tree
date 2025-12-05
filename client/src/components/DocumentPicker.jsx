@@ -237,6 +237,8 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                             onClick={async () => {
                                 const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
                                 if (storedSession.access_token) {
+                                    // Store current URL to return here after OAuth
+                                    sessionStorage.setItem('google_oauth_return_url', window.location.pathname);
                                     window.location.href = `/api/google/connect?token=${storedSession.access_token}`;
                                 }
                             }}
