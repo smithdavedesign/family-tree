@@ -80,7 +80,7 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
 
             if (!tokenResponse.ok) {
                 if (tokenResponse.status === 404) {
-                    setError('Please connect your Google account in Settings to use this feature');
+                    setError('not_connected'); // Special flag for UI to show connect button
                     return;
                 }
                 throw new Error('Failed to get access token');
@@ -89,7 +89,7 @@ const PhotoPicker = ({ isOpen, onClose, onSelect }) => {
             const { access_token } = await tokenResponse.json();
 
             if (!access_token) {
-                setError('Please connect your Google account in Settings');
+                setError('not_connected');
                 return;
             }
 

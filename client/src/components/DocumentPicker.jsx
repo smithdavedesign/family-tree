@@ -89,7 +89,7 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
 
             if (!tokenResponse.ok) {
                 if (tokenResponse.status === 404) {
-                    setError('Please connect your Google account in Settings to use this feature');
+                    setError('not_connected'); // Special flag for UI to show connect button
                     return;
                 }
                 throw new Error('Failed to get access token');
@@ -98,7 +98,7 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
             const { access_token } = await tokenResponse.json();
 
             if (!access_token) {
-                setError('Please connect your Google account in Settings');
+                setError('not_connected');
                 return;
             }
 
@@ -221,12 +221,39 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                     </button>
                 </div>
 
-                {error && (
+
+                {error && error === 'not_connected' ? (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-3 mb-3">
+                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                                <p className="font-medium text-blue-900 mb-1">Google Drive Not Connected</p>
+                                <p className="text-sm text-blue-700">
+                                    Connect your Google account to access documents from Drive.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            onClick={async () => {
+                                const storedSession = JSON.parse(localStorage.getItem('roots_branches_session') || '{}');
+                                if (storedSession.access_token) {
+                                    window.location.href = `/api/google/connect?token=${storedSession.access_token}`;
+                                }
+                            }}
+                            fullWidth
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            🔗 Connect Google Drive & Photos
+                        </Button>
+                    </div>
+                ) : error ? (
                     <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-sm text-red-700">
                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         <span>{error}</span>
                     </div>
-                )}
+                ) : null}
+
 
                 {activeTab === 'drive' ? (
                     <div className="text-center py-4">
