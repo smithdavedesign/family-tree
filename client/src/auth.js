@@ -62,8 +62,50 @@ export const signOut = async () => {
     sessionManager.clearSession();
 };
 
-// 3. Get Current User
-export const getCurrentUser = async () => {
+// Email/Password Signup
+export const signUpWithPassword = async (email, password, fullName = '') => {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            emailRedirectTo: `${window.location.origin}/auth/confirm`,
+            data: {
+                full_name: fullName,
+                onboarding_completed: false,
+            }
+        }
+    });
+
+    if (error) {
+        console.error('Error signing up:', error);
+        throw error;
+    }
+
+    return data;
+};
+
+// Email/Password Sign In
+export const signInWithPassword = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    });
+
+    if (error) {
+        console.error('Error signing in:', error);
+        throw error;
+    }
+
+    // Save session
+    if (data.session) {
+        sessionManager.saveSession(data.session);
+    }
+
+    return data;
+};
+
+// Get Current Session
+export const getCurrentSession = async () => {
     // Try to get from session manager first
     const storedSession = sessionManager.getSession();
     if (storedSession && storedSession.user) {
