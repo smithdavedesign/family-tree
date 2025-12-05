@@ -36,14 +36,10 @@ const Login = () => {
 
         try {
             setLoading(true);
-            const { user } = await signInWithPassword(formData.email, formData.password);
+            await signInWithPassword(formData.email, formData.password);
 
-            // Check onboarding status
-            if (user?.user_metadata?.onboarding_completed === false) {
-                navigate('/onboarding/welcome');
-            } else {
-                navigate('/trees');
-            }
+            // Redirect to trees dashboard (onboarding not built yet)
+            navigate('/trees');
         } catch (err) {
             console.error('Login error:', err);
 
@@ -92,8 +88,8 @@ const Login = () => {
                         <button
                             onClick={() => setActiveTab('password')}
                             className={`flex-1 pb-3 text-sm font-medium transition-colors ${activeTab === 'password'
-                                    ? 'text-teal-600 border-b-2 border-teal-600'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                ? 'text-teal-600 border-b-2 border-teal-600'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             Email & Password
@@ -101,8 +97,8 @@ const Login = () => {
                         <button
                             onClick={() => setActiveTab('magic-link')}
                             className={`flex-1 pb-3 text-sm font-medium transition-colors ${activeTab === 'magic-link'
-                                    ? 'text-teal-600 border-b-2 border-teal-600'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                ? 'text-teal-600 border-b-2 border-teal-600'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             Magic Link

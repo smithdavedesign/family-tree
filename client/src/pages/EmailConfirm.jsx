@@ -17,9 +17,9 @@ const EmailConfirm = () => {
 
         if (type === 'signup' || type === 'recovery') {
             // Supabase automatically handles token verification
-            // After a short delay, redirect to onboarding
+            // After a short delay, redirect to trees dashboard
             const timer = setTimeout(() => {
-                navigate('/onboarding/welcome');
+                navigate('/trees');
             }, 2000);
 
             return () => clearTimeout(timer);
@@ -54,7 +54,7 @@ const EmailConfirm = () => {
                     {/* Manual Continue */}
                     <div className="mt-8">
                         <Button
-                            onClick={() => navigate('/onboarding/welcome')}
+                            onClick={() => navigate('/trees')}
                             fullWidth
                             className="bg-teal-600 hover:bg-teal-700"
                         >
