@@ -55,7 +55,24 @@ const AccountSettings = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="max-w-4xl mx-auto px-4 py-8">
+            {/* Navbar */}
+            <div className="bg-white shadow-sm border-b border-slate-200 px-4 py-3 mb-8">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/trees')}>
+                        <span className="text-2xl">🌳</span>
+                        <span className="font-bold text-xl text-slate-800">Roots & Branches</span>
+                    </div>
+                    <Button
+                        onClick={() => navigate('/trees')}
+                        variant="ghost"
+                        size="sm"
+                    >
+                        Back to Dashboard
+                    </Button>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 pb-8">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">Account Settings</h1>
@@ -177,16 +194,6 @@ const AccountSettings = () => {
                         className="border-red-300 text-red-700 hover:bg-red-50"
                     >
                         Delete Account
-                    </Button>
-                </div>
-
-                {/* Back Button */}
-                <div className="mt-6">
-                    <Button
-                        onClick={() => navigate('/')}
-                        variant="outline"
-                    >
-                        ← Back to Dashboard
                     </Button>
                 </div>
             </div>

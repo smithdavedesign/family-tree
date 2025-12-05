@@ -75,6 +75,16 @@ const AccountSettings = ({ user, onClose }) => {
                     </div>
                 </div>
 
+                {/* Full Settings Link */}
+                <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => navigate('/settings')}
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                    Manage Integrations & Full Settings
+                </Button>
+
                 {/* Sign Out */}
                 <Button
                     variant="secondary"

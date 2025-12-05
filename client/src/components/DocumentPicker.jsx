@@ -239,7 +239,7 @@ const DocumentPicker = ({ isOpen, onClose, onSelect }) => {
                                 if (storedSession.access_token) {
                                     // Store current URL to return here after OAuth
                                     sessionStorage.setItem('google_oauth_return_url', window.location.pathname);
-                                    window.location.href = `/api/google/connect?token=${storedSession.access_token}`;
+                                    window.location.href = `/api/google/connect?token=${storedSession.access_token}&return_url=${encodeURIComponent(window.location.pathname)}`;
                                 }
                             }}
                             fullWidth
