@@ -328,6 +328,41 @@ const requireEventRole = (requiredRole) => {
 
 const requireEventEditor = requireEventRole(ROLES.EDITOR);
 
+// Story-specific middlewares
+const requireStoryRole = (requiredRole) => {
+    return async (req, res, next) => {
+        if (process.env.USE_MOCK === 'true') return next();
+
+        const storyId = req.params.id;
+        if (!storyId) return res.status(400).json({ error: 'Story ID required' });
+
+        try {
+            // Lookup tree_id from story
+            const { data: story, error } = await supabaseAdmin
+                .from('stories')
+                .select('tree_id')
+                .eq('id', storyId)
+                .single();
+
+            if (error || !story) {
+                return res.status(404).json({ error: 'Story not found' });
+            }
+
+            // Set treeId for the generic checker
+            req.params.treeId = story.tree_id;
+
+            // Delegate to generic checker
+            return requireTreeRole(requiredRole)(req, res, next);
+        } catch (err) {
+            console.error('RBAC Story lookup error:', err);
+            return res.status(500).json({ error: 'Error checking permissions' });
+        }
+    };
+};
+
+const requireStoryEditor = requireStoryRole(ROLES.EDITOR);
+const requireTreeEditor = requireTreeRole(ROLES.EDITOR);
+
 module.exports = {
     requireOwner,
     requireEditor,
@@ -341,6 +376,8 @@ module.exports = {
     requireDocumentEditor,
     requireDocumentViewer,
     requireEventEditor,
+    requireStoryEditor,
+    requireTreeEditor,
     requireTreeRole,
     isTreeOwner,
     getUserTreeRole,

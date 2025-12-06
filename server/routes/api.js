@@ -15,6 +15,7 @@ const accountController = require('../controllers/accountController');
 const invitationController = require('../controllers/invitationController');
 const lifeEventController = require('../controllers/lifeEventController');
 const reminderController = require('../controllers/reminderController');
+const storyController = require('../controllers/storyController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -68,6 +69,13 @@ router.delete('/events/:id', requireAuth, requireEventEditor, writeLimiter, audi
 
 // Reminder routes (Phase 2 Roadmap)
 router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEvents);
+
+// Story routes (Phase 4 Roadmap)
+router.post('/stories', requireAuth, requireTreeEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
+router.get('/stories', requireAuth, storyController.getStories);
+router.get('/stories/:id', requireAuth, storyController.getStory);
+router.put('/stories/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('UPDATE', 'story'), storyController.updateStory);
+router.delete('/stories/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('DELETE', 'story'), storyController.deleteStory);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);

@@ -268,8 +268,8 @@ Available tables:
 ## 4. Future Roadmap (Planned)
 - [x] **F.13 Life Events Model**: Rich timeline events (birth, death, work, education) with date ranges and locations.
 - [x] **H.15 Events & Reminders**: Dashboard widget for upcoming birthdays, anniversaries, and life events.
-- [ ] **F.14 Photo Map View**: Interactive map showing photos clustered by location.
-- [ ] **F.11 Storytelling / Blog**: "Stories" feature to write rich text articles about ancestors.
+- [x] **F.14 Photo Map View**: Interactive map showing photos clustered by location.
+- [x] **F.11 Storytelling / Blog**: "Stories" feature to write rich text articles about ancestors.
 - [ ] **F.12 Visualization Enhancements**: Fan charts, descendant charts, and timeline views.
 - [ ] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
 - [ ] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.

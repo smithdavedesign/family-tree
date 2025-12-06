@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, GraduationCap, Heart, Users, FileText, Upload, Check, Camera, Phone, Mail, Home, BookOpen } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast, Modal } from './ui';
 import PhotoGallery from './PhotoGallery';
 import DocumentGallery from './DocumentGallery';
 import LifeEventsList from './LifeEventsList';
+import StoryList from './StoryList';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
@@ -61,7 +62,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`/api/person/${person.id}/media`, {
+            const response = await fetch(`/ api / person / ${person.id}/media`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -748,10 +749,16 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         )}
                     </div>
 
-                    {/* Life Events Section */}
+                    {/* Timeline Section */}
                     <div>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Timeline</h4>
                         <LifeEventsList personId={person.id} isEditor={canEdit} />
+                    </div>
+
+                    {/* Stories Section */}
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Stories</h4>
+                        <StoryList personId={person.id} treeId={person.data.tree_id} isEditor={canEdit} />
                     </div>
 
                     {/* Bio Section */}
