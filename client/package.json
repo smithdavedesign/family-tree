@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-virtual": "^3.13.12",
     "autoprefixer": "^10.4.22",
     "dagre": "^0.8.5",
     "date-fns": "^4.1.0",

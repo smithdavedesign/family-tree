@@ -82,10 +82,22 @@ exports.getMediaForPerson = async (req, res) => {
 // --- Photos (Phase H) ---
 
 exports.addPhoto = async (req, res) => {
-    const { person_id, url, caption, taken_date, location, is_primary } = req.body;
+    const { person_id, url, caption, taken_date, location, is_primary, width, height, orientation } = req.body;
 
     try {
         let shouldBePrimary = is_primary;
+
+        // Calculate derived date fields
+        let year = null;
+        let month_year = null;
+
+        if (taken_date) {
+            const date = new Date(taken_date);
+            if (!isNaN(date.getTime())) {
+                year = date.getFullYear();
+                month_year = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            }
+        }
 
         // If not explicitly set as primary, check if person has a profile photo
         if (!shouldBePrimary) {
@@ -110,7 +122,19 @@ exports.addPhoto = async (req, res) => {
 
         const { data, error } = await supabaseAdmin
             .from('photos')
-            .insert([{ person_id, url, caption, taken_date, location, is_primary: shouldBePrimary }])
+            .insert([{
+                person_id,
+                url,
+                caption,
+                taken_date,
+                location,
+                is_primary: shouldBePrimary,
+                width,
+                height,
+                orientation,
+                year,
+                month_year
+            }])
             .select()
             .single();
 
