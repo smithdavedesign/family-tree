@@ -8,10 +8,13 @@ import { useTreePhotos, useTreeDetails } from '../hooks/useTreePhotos';
 import { groupPhotosByDate, groupPhotosByPerson, filterPhotos, getUniquePersons } from '../utils/photoUtils';
 import VirtualGallery from '../components/VirtualGallery';
 
+import AccountSettings from '../components/AccountSettings';
+
 const TreeGalleryPage = () => {
     const { id: treeId } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [showSettings, setShowSettings] = useState(false);
 
     // Fetch Data using React Query
     const { data: photos = [], isLoading: photosLoading, error: photosError } = useTreePhotos(treeId);
@@ -72,7 +75,10 @@ const TreeGalleryPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 h-screen flex flex-col">
-            <Navbar user={user} />
+            <Navbar
+                user={user}
+                onOpenSettings={() => setShowSettings(true)}
+            />
 
             {/* Breadcrumbs */}
             <Breadcrumbs
@@ -159,6 +165,15 @@ const TreeGalleryPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Account Settings Modal */}
+            {showSettings && (
+                <AccountSettings
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    user={user}
+                />
+            )}
         </div>
     );
 };

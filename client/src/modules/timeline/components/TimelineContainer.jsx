@@ -7,10 +7,13 @@ import useTimelineData from '../hooks/useTimelineData';
 import TimelineScroller from './TimelineScroller';
 import '../styles/timeline.css';
 
+import AccountSettings from '../../../components/AccountSettings';
+
 const TimelineContainer = () => {
     const { id } = useParams();
     const { events, loading, error } = useTimelineData(id);
     const [user, setUser] = useState(null);
+    const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -45,6 +48,7 @@ const TimelineContainer = () => {
             <Navbar
                 user={user}
                 title="Family Timeline"
+                onOpenSettings={() => setShowSettings(true)}
                 leftContent={
                     <Link to={`/tree/${id}`} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
@@ -59,6 +63,14 @@ const TimelineContainer = () => {
             />
 
             <TimelineScroller events={events} />
+
+            {showSettings && (
+                <AccountSettings
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    user={user}
+                />
+            )}
         </div>
     );
 };
