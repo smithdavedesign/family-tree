@@ -351,17 +351,17 @@ ompliance (data export, right to be forgotten)
 - [ ] Dependency vulnerability scanning
 - [ ] Penetration testing
 
-## 🔮 Future Roadmap (Planned)
-
-### A. Storytelling & Narrative Features
-- **AI “Life Book” Generator (PDF Export)**: One-click exported books with photos, timeline, and stories.
-- **“Story Builder”**: Auto-generated narratives for any person (childhood, milestones, etc.).
-
-### B. Visualization & Insight Features
-- **Relationship Heatmap**: 2D matrix showing who appears together most.
-- **Family Migration Map**: Animated map showing family movement across generations.
-- **Photo Map View**: World map with GPS pins for all photos.
-- **Relationship Tree Overlays**: Toggle between Genetic, Emotional, and Location-based trees.
+### 🔮 Future Roadmap (Planned)
+- [x] **F.13 Life Events Model**: Rich timeline events (birth, death, work, education) with date ranges and locations.
+- [x] **H.15 Events & Reminders**: Dashboard widget for upcoming birthdays, anniversaries, and life events.
+- [ ] **F.14 Photo Map View**: Interactive map showing photos clustered by location.
+- [ ] **F.11 Storytelling / Blog**: "Stories" feature to write rich text articles about ancestors.
+- [ ] **F.12 Visualization Enhancements**: Fan charts, descendant charts, and timeline views.
+- [ ] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
+- [ ] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.
+- [ ] **G.17 Collaboration**: Activity feed, comments, and granular permissions.
+- [ ] **F.18 Sensitive Data**: Privacy controls for living people and sensitive facts.
+- [ ] **F.19 Family Utility**: Recipe book, family calendar, and address book.etween Genetic, Emotional, and Location-based trees.
 
 ### C. Photo Organization Enhancements
 - **Auto-Create Albums**: AI detection for vacations, holidays, and events.

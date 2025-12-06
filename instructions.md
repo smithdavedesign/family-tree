@@ -266,15 +266,16 @@ Available tables:
 - [ ] Load testing completed (100+ concurrent users)
 
 ## 4. Future Roadmap (Planned)
-
-### A. Storytelling & Narrative Features
-1. **AI “Life Book” Generator (PDF Export)**
-   - One-click exported books: Person Life Book, Family Book, Year-in-Review Book
-   - Includes: Photos, Timeline, Locations, Stories, Family tree diagrams
-
-2. **“Story Builder” — Auto-Generated Narratives**
-   - For any person, generate: Childhood photo story, Major life changes, Best friends, Places lived, Family events, Milestones
-   - Outputs: Short biography (editable), Slideshow version, Optional AI voice narration
+- [x] **F.13 Life Events Model**: Rich timeline events (birth, death, work, education) with date ranges and locations.
+- [x] **H.15 Events & Reminders**: Dashboard widget for upcoming birthdays, anniversaries, and life events.
+- [ ] **F.14 Photo Map View**: Interactive map showing photos clustered by location.
+- [ ] **F.11 Storytelling / Blog**: "Stories" feature to write rich text articles about ancestors.
+- [ ] **F.12 Visualization Enhancements**: Fan charts, descendant charts, and timeline views.
+- [ ] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
+- [ ] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.
+- [ ] **G.17 Collaboration**: Activity feed, comments, and granular permissions.
+- [ ] **F.18 Sensitive Data**: Privacy controls for living people and sensitive facts.
+- [ ] **F.19 Family Utility**: Recipe book, family calendar, and address book.Slideshow version, Optional AI voice narration
 
 ### B. Visualization & Insight Features
 3. **Relationship Heatmap (Who Appears Together?)**
