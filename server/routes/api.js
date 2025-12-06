@@ -14,6 +14,7 @@ const documentController = require('../controllers/documentController');
 const accountController = require('../controllers/accountController');
 const invitationController = require('../controllers/invitationController');
 const lifeEventController = require('../controllers/lifeEventController');
+const reminderController = require('../controllers/reminderController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -64,6 +65,9 @@ router.post('/person/:id/events', requireAuth, requirePersonEditor, writeLimiter
 router.get('/person/:id/events', requireAuth, requirePersonViewer, lifeEventController.getPersonEvents);
 router.put('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('UPDATE', 'life_event'), lifeEventController.updateEvent);
 router.delete('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('DELETE', 'life_event'), lifeEventController.deleteEvent);
+
+// Reminder routes (Phase 2 Roadmap)
+router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEvents);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
