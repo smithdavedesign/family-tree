@@ -8,6 +8,7 @@ const MagicLinkAuth = () => {
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
     const [error, setError] = useState('');
+    const [showRegisterButton, setShowRegisterButton] = useState(false);
     const [mode, setMode] = useState('signin'); // 'signin' or 'reset'
     const navigate = useNavigate();
 
@@ -15,6 +16,7 @@ const MagicLinkAuth = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setShowRegisterButton(false);
 
         try {
             if (mode === 'signin') {
@@ -22,7 +24,8 @@ const MagicLinkAuth = () => {
                 const { error } = await supabase.auth.signInWithOtp({
                     email: email,
                     options: {
-                        emailRedirectTo: `${window.location.origin}/trees`
+                        emailRedirectTo: `${window.location.origin}/trees`,
+                        shouldCreateUser: false // STRICT MODE: Prevent auto-registration
                     }
                 });
 
@@ -39,7 +42,14 @@ const MagicLinkAuth = () => {
             setSent(true);
         } catch (err) {
             console.error('Magic link error:', err);
-            setError(err.message || 'Failed to send email');
+
+            // Handle "Signups not allowed" error specifically
+            if (err.message?.includes('Signups not allowed') || err.message?.includes('User not found')) {
+                setError('No account found with this email. Please create an account first.');
+                setShowRegisterButton(true);
+            } else {
+                setError(err.message || 'Failed to send email');
+            }
         } finally {
             setLoading(false);
         }
@@ -113,7 +123,15 @@ const MagicLinkAuth = () => {
 
                     {error && (
                         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                            {error}
+                            <p>{error}</p>
+                            {showRegisterButton && (
+                                <button
+                                    onClick={() => navigate('/register')}
+                                    className="mt-2 text-sm font-semibold text-teal-700 hover:text-teal-800 underline"
+                                >
+                                    Create an account now &rarr;
+                                </button>
+                            )}
                         </div>
                     )}
 

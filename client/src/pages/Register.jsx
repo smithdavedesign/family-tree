@@ -262,14 +262,7 @@ const Register = () => {
                             Sign up with Google
                         </Button>
 
-                        <Button
-                            onClick={() => navigate('/magic-link')}
-                            fullWidth
-                            variant="outline"
-                            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                        >
-                            📧 Sign in with Email (No Password)
-                        </Button>
+
                     </div>
 
                     {/* Sign In Link */}
