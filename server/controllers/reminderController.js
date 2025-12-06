@@ -51,6 +51,10 @@ exports.getUpcomingEvents = async (req, res) => {
         if (personsError) throw personsError;
 
         // Fetch relationships (Marriages)
+        // Note: marriage_date column needs to be added via migration
+        // Commenting out for now until schema is updated
+        const relationships = [];
+        /*
         const { data: relationships, error: relsError } = await supabaseAdmin
             .from('relationships')
             .select('id, person_1_id, person_2_id, marriage_date, type')
@@ -59,6 +63,7 @@ exports.getUpcomingEvents = async (req, res) => {
             .not('marriage_date', 'is', null);
 
         if (relsError) throw relsError;
+        */
 
         // Fetch life events
         // Note: life_events doesn't have tree_id directly, need to join or filter by person_ids

@@ -45,7 +45,7 @@ exports.getStories = async (req, res) => {
     try {
         let query = supabaseAdmin
             .from('stories')
-            .select('*, author:author_id(email)');
+            .select('*');
 
         if (tree_id) {
             query = query.eq('tree_id', tree_id);
@@ -83,7 +83,7 @@ exports.getStory = async (req, res) => {
     try {
         const { data: story, error: storyError } = await supabaseAdmin
             .from('stories')
-            .select('*, author:author_id(email)')
+            .select('*')
             .eq('id', id)
             .single();
 
