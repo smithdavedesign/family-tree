@@ -90,7 +90,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
                 positionToasts.length > 0 && (
                     <div
                         key={position}
-                        className={`fixed z-50 flex flex-col gap-2 ${positionStyles[position]}`}
+                        className={`fixed z-[10000] flex flex-col gap-2 ${positionStyles[position]}`}
                     >
                         {positionToasts.map((toast) => (
                             <Toast

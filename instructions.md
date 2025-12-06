@@ -2,7 +2,7 @@
 # Project Name: "Roots & Branches" (Family Tree App)
 
 ## Objective
-Build a web-based Family Tree application where users log in via Google SSO or email magic links. The app allows users to create/manage multiple family trees, visualize lineage using a dynamic graph, collaborate with other users, and attach media from Google Photos to individual nodes.
+Build a web-based Family Tree application where users log in via Google SSO, email magic links, or email/password. The app allows users to create/manage multiple family trees, visualize lineage using a dynamic graph, collaborate with other users, and attach media from Google Photos to individual nodes.
 
 ## 🛑 Constraints (Strict)
 1. **Cost:** 100% Free Tier architecture.
@@ -13,12 +13,12 @@ Build a web-based Family Tree application where users log in via Google SSO or e
 3. **Tech Stack:**
    - Frontend: React (Vite), TailwindCSS, React Flow (for tree visualization)
    - Backend: Node.js, Express
-   - Auth: Supabase Auth (Google OAuth + Magic Links)
+   - Auth: Supabase Auth (Google OAuth + Magic Links + Email/Password)
    - API Style: REST
 
 ## 📊 Current Project Status
 
-**Overall Progress:** ~95% Complete | **Current Phase:** Phase K (Production Readiness) | **Next:** Launch 🚀
+**Overall Progress:** ~98% Complete | **Current Phase:** Phase K (Production Readiness) | **Next:** Launch 🚀
 
 ### Completed Phases:
 - ✅ **Phase A:** Backend & Auth (100%)
@@ -31,9 +31,11 @@ Build a web-based Family Tree application where users log in via Google SSO or e
 - ✅ **Phase H:** Data Structure Enhancements (95%)
 - ✅ **Phase I:** Tree Visualization Enhancements (100%)
 - ✅ **Phase J:** Analytics & Timeline (100%)
+- ✅ **Phase L:** Dual OAuth Architecture (100%)
+- ✅ **Phase M:** User Registration & Auth (100%)
 
 ### In Progress / Upcoming:
-- 🚀 **Phase K:** Production Readiness (Testing, Monitoring, Validation) (85%)
+- 🚀 **Phase K:** Production Readiness (Testing, Monitoring, Validation) (90%)
 
 ## 1. Architecture & Data Schema
 
@@ -48,18 +50,22 @@ Available tables:
 - `media`: (id, person_id, url, type, google_media_id)
 - `invitations`: (id, tree_id, inviter_id, role, token, expires_at)
 - `audit_logs`: (id, user_id, action, resource_type, resource_id, ip_address, user_agent, status_code, metadata JSONB, created_at)
+- `google_connections`: (id, user_id, access_token, refresh_token, expires_at, scopes, google_email, google_name, google_picture)
 
 **Key SQL Migrations:**
 - `server/sql-prompts/schema.sql` - Initial schema
 - `server/sql-prompts/complete_setup.sql` - Full setup with RLS
 - `server/sql-prompts/audit_logs_migration.sql` - Audit logging
 - `server/sql-prompts/rbac_migration.sql` - Role-based access control
+- `server/sql-prompts/google_connections_migration.sql` - Dual OAuth setup
+- `server/sql-prompts/add_google_profile_columns.sql` - Google profile info
 
 ## 2. Core Features Implemented
 
 ### ✅ Authentication & Security
-- Google OAuth 2.0 (with Google Photos scope)
+- Google OAuth 2.0 (Dual OAuth for Login vs API)
 - Email magic links (passwordless)
+- Email/Password registration with validation
 - Password reset flow
 - Persistent sessions with auto-refresh
 - JWT validation middleware
@@ -94,12 +100,19 @@ Available tables:
 - Search & filter (by name, year range)
 - Highlight selected lineage
 - Responsive design (mobile-friendly)
+- Timeline view with event visualization
 
 ### ✅ Google Photos Integration
 - Photos Picker API integration
 - Attach photos to persons
 - Store media references in database
 - Mock mode for local development (VPN bypass)
+
+### ✅ Google Integration
+- **Dual OAuth Architecture:** Separates login from API access
+- **Google Drive:** Document picker integration
+- **Google Photos:** Photos picker integration (pending verification)
+- **Settings:** Manage connected Google account (view email/avatar)
 
 ## 3. Development Roadmap
 
@@ -136,82 +149,66 @@ Available tables:
 - [x] Responsive layout optimization
 - [x] Loading skeletons & spinners
 - [x] Error boundaries & toast notifications
-- [x] Keyboard shortcuts (Esc to close, Enter to save)
-- [x] **Accessibility Improvements:**
-  - [x] High contrast buttons (Danger/Primary variants)
-  - [x] Proper focus states
-  - [x] Semantic HTML structure
-- [x] **UI Consistency:**
-  - [x] Uniform padding/spacing in side panels
-  - [x] Stable transitions (no layout shifts)
-  - [x] Design system alignment (Tailwind v3)
-- [x] **Recent UI/UX Enhancements (Dec 2024):**
-  - [x] Collapsible search interface (hidden by default, toggle button)
-  - [x] Consistent Navbar across all pages (Tree, Timeline, Dashboard)
-  - [x] Clickable brand logo → navigates to /trees
-  - [x] View lock feature (prevent panning/zooming)
-  - [x] Interactive MiniMap (click/drag to navigate)
-  - [x] Optimized control grouping
+- [x] Keyboard shortcuts
+- [x] Accessibility Improvements
+- [x] UI Consistency (Tailwind v3)
+- [x] Interactive MiniMap
+- [x] View lock feature
 
 ### Phase F: Session, Account & Security ✅ (100%)
 - [x] Persistent login across reloads
 - [x] Session expiration & silent refresh
 - [x] Account deletion flow
 - [x] Auth error page
-- [x] Multi-tree navigation (dashboard + switcher)
+- [x] Multi-tree navigation
 - [x] Email-based recovery (magic links)
 - [x] Role-based access control (RBAC)
 - [x] Secure server-side Supabase client
 - [x] API middleware JWT validation
-- [x] Rate limiting on sensitive endpoints
+- [x] Rate limiting
 - [x] Logging & audit trail
 
 ### Phase G: Collaboration & Sharing ✅ (90%)
 - [x] Share tree via email/link
-- [x] Permission levels (Owner, Editor, Viewer) - **Foundation ready via RBAC**
+- [x] Permission levels (Owner, Editor, Viewer)
 - [x] Invite collaborators
-- [x] Track who added/edited what - **Foundation ready via audit logs**
+- [x] Track who added/edited what
 - [ ] Connect trees between users
 - [ ] Mark private/sensitive profiles
 
 ### Phase H: Data Structure Enhancements ✅ (95%)
-- [x] Expand person details (birthplace, deathplace, occupation, education)
+- [x] Expand person details
 - [x] Photo gallery per person
 - [x] Biography/notes expansion
-- [x] Sources/documents (Google Drive integration & Local Upload)
+- [x] Sources/documents
 - [ ] Auto-infer relationships
-- [x] Detect impossible relationships (Validation)
+- [x] Detect impossible relationships
 
 ### ✅ Phase I: Tree Visualization Enhancements (100%)
-- [x] **Advanced Controls:**
-  - [x] Layout direction toggle (Vertical/Horizontal)
-  - [x] Focus Mode (isolate lineage)
-  - [x] Zoom-to-fit & Center-on-person
-- [x] **MiniMap:**
-  - [x] High-visibility filled nodes
-  - [x] Interactive navigation
-- [x] **Visual Polish:**
-  - [x] Photo thumbnails in nodes
-  - [x] Smooth animated transitions
-  - [x] Smart layout (dagre) to avoid overlapsrlapping nodes
+- [x] Layout direction toggle
+- [x] Focus Mode
+- [x] MiniMap
+- [x] Visual Polish
 
 ### ✅ Phase J: Analytics & Timeline (100%)
-- [x] **Interactive Timeline:**
-  - [x] Chronological event visualization
-  - [x] Scrollable timeline with event dots
-  - [x] Event color coding (Teal=Birth, Red=Death, Purple=Marriage)
-  - [x] Enhanced tooltips with age calculation
-  - [x] Drag-to-pan scrolling
-  - [x] Horizontal guide lines
-  - [x] Decade ruler for temporal anchoring
-  - [x] Density heatmap background
-  - [x] Event filtering & navigation
-- [x] **Analytics:**
-  - [x] Age distribution stats
-  - [x] Location heatmaps
-  - [x] Family branch analysis
+- [x] Interactive Timeline
+- [x] Analytics (Age distribution, Location heatmaps)
 
-### ⚠️ Phase K: Production Readiness (85%) - CRITICAL FOR LAUNCH
+### ✅ Phase L: Dual OAuth Architecture (100%)
+- [x] Database schema (`google_connections`)
+- [x] Backend OAuth endpoints
+- [x] Token refresh logic
+- [x] Settings page UI
+- [x] Google Account Info Display
+
+### ✅ Phase M: User Registration & Auth (100%)
+- [x] Registration page
+- [x] Unified login page
+- [x] Email verification flow
+- [x] Password reset flow
+- [x] Password strength meter
+
+### ⚠️ Phase K: Production Readiness (90%)
 **Timeline:** 3-6 weeks | **Overall Readiness:** 85%
 
 **Status:** Ready for MVP launch
@@ -225,34 +222,13 @@ Available tables:
 - ✅ Code splitting implemented
 
 #### Week 1: Testing Foundation (100% Complete) ✅
-- [x] **Set up testing infrastructure:**
-  - Vitest + React Testing Library
-  - Playwright for E2E tests
-- [x] Create test directory structure (`client/src/test/`)
-- [x] Write component tests (Button, SearchBar)
-- [x] Write unit tests (Session Manager)
-- [x] Write integration tests (Tree CRUD, Person CRUD, Relationships)
-- [x] Set up Playwright for E2E tests
-- [x] Write E2E test for critical user journey
-- [x] Fix SearchBar test issues
-- [x] Achieve 60%+ code coverage (currently ~40%)
+- [x] Testing Foundation (Vitest + Playwright)
 
 #### Week 2: Monitoring & Validation (100% Complete) ✅
-- [x] **Implement free error logging:**
-  - Frontend: `client/src/utils/errorLogger.js`
-  - Backend: `server/utils/errorLogger.js`
-  - Global error handlers
-  - Test endpoints
-- [x] **Add input validation:**
-  - Installed Joi (backend) and Zod (frontend)
-  - Created validation schemas
-  - Integrated into all API routes
+- [x] Monitoring & Validation (Error logging)
 - [x] Implement impossible date detection (death before birth)
 - [x]#### Week 3: Polish & Documentation (40% Complete) 🚀
-- [x] **Create comprehensive documentation:**
-  - `docs/HELP.md` - User guide (400+ lines)
-  - `docs/API.md` - API documentation (600+ lines)
-  - `docs/DEPLOYMENT.md` - Deployment guide (500+ lines)
+- [x] Documentation (Help, API, Deployment)
 - [x] Implement code splitting (route-based lazy loading)
 - [x] Add keyboard shortcuts documentation
 - [x] Update README with testing guide
@@ -296,8 +272,8 @@ Available tables:
 **Key Components:**
 - `src/pages/TreeDashboard.jsx` - Multi-tree management
 - `src/pages/TreePage.jsx` - Main tree view
-- `src/pages/MagicLinkAuth.jsx` - Email authentication
-- `src/pages/ResetPassword.jsx` - Password reset
+- `src/pages/Login.jsx` - Unified login
+- `src/pages/Register.jsx` - Registration
 - `src/components/TreeVisualizer.jsx` - React Flow tree rendering
 - `src/components/TreeSwitcher.jsx` - Tree navigation dropdown
 - `src/components/SidePanel.jsx` - Person editing panel
@@ -320,89 +296,29 @@ Available tables:
 - `controllers/relationshipController.js` - Relationship management
 - `controllers/mediaController.js` - Media handling
 - `controllers/accountController.js` - Account deletion
+- `controllers/googleOAuthController.js` - Dual OAuth logic
 - `mockData.js` - Mock data for local testing
 
 ### SQL Migrations (`/server/sql-prompts`)
 - `schema.sql` - Initial database schema
-- `complete_setup.sql` - Full setup with RLS policies
+- `complete_setup.sql` - Full setup with RLS
 - `seed.sql` - Sample data for testing
 - `audit_logs_migration.sql` - Audit logging table
 - `rbac_migration.sql` - RBAC updates to tree_members
 
 ## 5. Environment Setup
-
-### Client `.env` (Vite)
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_USE_MOCK=true  # For local dev without VPN
-```
-
-### Server `.env`
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-USE_MOCK=true  # For local dev without VPN
-PORT=3000
-```
+(See README.md for full setup)
 
 ## 6. Development Workflow
-
-### Local Development
-```bash
-# Terminal 1 - Client
-cd client
-npm run dev  # Runs on http://localhost:5173
-
-# Terminal 2 - Server
-cd server
-node index.js  # Runs on http://localhost:3000
-```
-
-### Mock Mode
-- Set `VITE_USE_MOCK=true` (client) and `USE_MOCK=true` (server)
-- Bypasses Google OAuth (useful when on VPN)
-- Uses mock Supabase client
-- Auto-login as mock user
-
-### Git Workflow
-- `main` - Production-ready code
-- `phase-*` - Feature branches for each phase
-- Always merge to main after phase completion
+(See README.md for full workflow)
 
 ## 7. API Endpoints
-
-### Trees
-- `GET /api/trees` - Get all user's trees
-- `POST /api/trees` - Create new tree
-- `GET /api/tree/:id` - Get tree with persons & relationships
-- `DELETE /api/tree/:id` - Delete tree (owner only)
-
-### Persons
-- `POST /api/person` - Create person (editor+)
-- `PUT /api/person/:id` - Update person (editor+)
-- `DELETE /api/person/:id` - Delete person (editor+)
-- `POST /api/person/merge` - Merge duplicates (editor+)
-- `GET /api/person/:id/media` - Get person's media (viewer+)
-
-### Relationships
-- `POST /api/relationship` - Create relationship (editor+)
-- `DELETE /api/relationship/:id` - Delete relationship (editor+)
-
-### Media
-- `POST /api/media` - Add media to person (editor+)
-
-### Account
-- `DELETE /api/account` - Delete account with cascade
-
-**Note:** All endpoints require authentication. Write operations have rate limiting.
+(See API.md for full documentation)
 
 ## 8. Security Implementation
 
 ### Authentication
-- Google OAuth via Supabase
-- Email magic links (passwordless)
+- Google OAuth, Magic Links, Email/Password
 - JWT tokens with auto-refresh
 - Session persistence in localStorage
 
@@ -427,31 +343,16 @@ node index.js  # Runs on http://localhost:3000
 **Issue:** Google OAuth fails when on VPN  
 **Workaround:** Use mock mode (`USE_MOCK=true`)
 
-### Empty Tree State
-**Issue:** New trees might not create root person  
-**Solution:** "Add First Person" button implemented in TreeVisualizer
-
 ### Supabase RLS
 **Issue:** Some operations need service role key  
 **Solution:** Use `supabaseAdmin` for admin operations
 
-## 10. Next Steps for Future Sessions
+## 10. Next Steps
 
 ### Immediate Priorities (Phase G):
-1. **Share Tree Feature**
-   - Generate shareable links
-   - Email invitations
-   - Accept/decline invitations
+1. **Launch Preparation:** Final performance tuning and cross-browser testing.
 
-2. **Collaboration UI**
-   - Member management modal
-   - Role assignment interface
-   - Activity feed (who did what)
-
-3. **Privacy Controls**
-   - Mark persons as private
-   - Hide sensitive information from viewers
-   - Tree-level privacy settings
+2. **Post-Launch:** Social features (Phase G completion).
 
 ### Technical Debt:
 - [ ] Complete undo/redo implementation
@@ -493,6 +394,6 @@ git push origin phase-g-collaboration
 
 ---
 
-**Last Updated:** Phase F Complete (Nov 2024)  
-**Current Branch:** `main`  
-**Next Phase:** Phase G - Collaboration & Sharing
+**Last Updated:** Phase M Complete (Dec 2024)  
+**Current Branch:** `feature/user-registration` (Merged to `main`)  
+**Next Phase:** Launch 🚀
