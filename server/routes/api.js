@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody, requireDocumentEditor, requireDocumentViewer, requireEventEditor } = require('../middleware/rbac');
+const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody, requireDocumentEditor, requireDocumentViewer, requireEventEditor, requireTreeEditor, requireStoryEditor } = require('../middleware/rbac');
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const { validate } = require('../middleware/validation');
