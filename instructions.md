@@ -64,12 +64,11 @@ Available tables:
 
 ### ✅ Authentication & Security
 - Google OAuth 2.0 (Dual OAuth for Login vs API)
-- Email magic links (passwordless)
-- Email/Password registration with validation
-- Password reset flow
-- Persistent sessions with auto-refresh
-- JWT validation middleware
-- Rate limiting (tiered: 100/15min general, 30/15min writes, 2/hour account deletion)
+2. **Magic Link** - Passwordless email login (Existing users only) ✅
+3. **Email/Password** - Traditional registration with validation ✅
+
+**Security:** Password requirements (8+ chars, mixed case, numbers, special), email verification required, bcrypt hashing, rate limiting.
+**Strict Mode:** Magic Links are restricted to existing accounts to prevent accidental signups. New users must register first. (tiered: 100/15min general, 30/15min writes, 2/hour account deletion)
 - Audit logging (tracks all user actions)
 - Role-Based Access Control (Owner/Editor/Viewer)
 - Account deletion with cascade

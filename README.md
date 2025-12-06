@@ -218,10 +218,11 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 #### Three Authentication Methods
 1. **Google OAuth** - Quick social login ✅
-2. **Magic Link** - Passwordless email login ✅
+2. **Magic Link** - Passwordless email login (Existing users only) ✅
 3. **Email/Password** - Traditional registration with validation ✅
 
 **Security:** Password requirements (8+ chars, mixed case, numbers, special), email verification required, bcrypt hashing, rate limiting.
+**Strict Mode:** Magic Links are restricted to existing accounts to prevent accidental signups. New users must register first.
 
 **Routes:** `/register`, `/login`, `/forgot-password`, `/reset-password`, `/auth/confirm`
 
@@ -616,22 +617,6 @@ This app uses **Runtime Configuration** to serve Google API keys from the backen
 ### Current Status
 - ✅ **Google Drive Integration**: Fully functional
 - ⚠️ **Google Photos Integration**: May show 403 errors until Google verification completes
-
-### Setup Requirements
-
-#### Backend (Render)
-Set these environment variables:
-```
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_API_KEY=your-api-key
-```
-
-#### Frontend (Vercel)
-Only Supabase variables needed:
-```
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
 
 ### Google Photos Verification Status
 Google Photos scope (`photoslibrary.readonly`) requires verification. Until approved:
