@@ -758,7 +758,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     {/* Stories Section */}
                     <div>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Stories</h4>
-                        <StoryList personId={person.id} treeId={person.data.tree_id} isEditor={canEdit} />
+                        <StoryList personId={person.id} treeId={person.tree_id} isEditor={canEdit} />
                     </div>
 
                     {/* Bio Section */}
