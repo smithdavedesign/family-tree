@@ -265,7 +265,97 @@ Available tables:
 - [ ] Security audit completed
 - [ ] Load testing completed (100+ concurrent users)
 
-## 4. Important Files & Locations
+## 4. Future Roadmap (Planned)
+
+### A. Storytelling & Narrative Features
+1. **AI “Life Book” Generator (PDF Export)**
+   - One-click exported books: Person Life Book, Family Book, Year-in-Review Book
+   - Includes: Photos, Timeline, Locations, Stories, Family tree diagrams
+
+2. **“Story Builder” — Auto-Generated Narratives**
+   - For any person, generate: Childhood photo story, Major life changes, Best friends, Places lived, Family events, Milestones
+   - Outputs: Short biography (editable), Slideshow version, Optional AI voice narration
+
+### B. Visualization & Insight Features
+3. **Relationship Heatmap (Who Appears Together?)**
+   - 2D matrix showing who appears together most
+   - Clusters highlight siblings, partners, close relationships
+   - Reveals emotional insights from photo frequency
+
+4. **Family Migration Map**
+   - Uses birthplaces + EXIF GPS
+   - Shows movement of family across cities/countries
+   - One animated line per family branch
+   - Timeline slider for different eras (e.g., 1900–1960)
+
+5. **Photo Map View**
+   - World map with GPS pins for all photos
+   - Clustered pins for dense locations
+   - Great for travel-heavy families
+
+6. **Relationship Tree Overlays**
+   - Modes you can toggle:
+     - Genetic tree
+     - Emotional tree (time spent together, photo co-appearance)
+     - Location-based tree
+     - Photo-density tree
+
+### C. Photo Organization Enhancements
+7. **Auto-Create Albums (AI Event Detection)**
+   - Automatically detect and group: Vacations, Holidays, Multi-day trips, Graduations, Events
+
+8. **Memory Collections (AI Grouped Events)**
+   - Suggested albums such as: “Hawaii Trip 2014”, “Christmas 2001”, “High School Graduation 1998”
+   - Attach collections to: A person, A couple, A family branch
+
+### D. Family Tree Experience
+9. **Family Tree Animation (Roots → Leaves Growth)**
+   - The tree grows from oldest ancestors outward
+   - Photos fade in
+   - Relationship lines animate
+   - Creates a documentary-style visual
+
+10. **Change Node Design**
+    - Support for leaf-node variants
+    - Allow unique shapes / styles
+    - Optional photo-frame styles
+    - Modern, customizable look
+
+### E. Collaboration & Social Features
+11. **Tree Collaboration Tools**
+    - Invite relatives to contribute photos
+    - Role assignments: editor, viewer, contributor
+    - Comments on photos
+    - Version history of edits
+    - “Who added what” timeline
+    - Shared album links
+
+12. **Ask Family a Question**
+    - Broadcast a question to all contributors
+    - Collect memories, stories, or details
+    - Example: “Does anyone know who this person is?”
+
+### F. Life Events & Personal History
+13. **Life Events Model (Structured Timeline Data)**
+    - Users can add structured events like: Graduation, Immigration, Marriage, Career change, Military service, Awards
+    - Filters and views like: “Show all marriages from 1950–2000”, “Show all education milestones”
+
+### G. Sensitive Data & Personal Archives
+14. **Memory Vault (Encrypted Storage)**
+    - Private, secure space for storing: Birth certificates, Marriage certificates, Immigration documents, Letters, Audio recordings
+    - Encrypted with user’s own key
+
+### H. Family Utility Features
+15. **Events & Reminders**
+    - Birthday reminders
+    - Anniversary tracker
+    - “This Week in Family History” feed
+
+16. **Audio Memories**
+    - Voice recordings attachable to any person
+    - Useful for grandparents and oral histories
+
+## 5. Important Files & Locations
 
 ### Frontend (`/client`)
 **Key Components:**

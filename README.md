@@ -351,6 +351,40 @@ ompliance (data export, right to be forgotten)
 - [ ] Dependency vulnerability scanning
 - [ ] Penetration testing
 
+## 🔮 Future Roadmap (Planned)
+
+### A. Storytelling & Narrative Features
+- **AI “Life Book” Generator (PDF Export)**: One-click exported books with photos, timeline, and stories.
+- **“Story Builder”**: Auto-generated narratives for any person (childhood, milestones, etc.).
+
+### B. Visualization & Insight Features
+- **Relationship Heatmap**: 2D matrix showing who appears together most.
+- **Family Migration Map**: Animated map showing family movement across generations.
+- **Photo Map View**: World map with GPS pins for all photos.
+- **Relationship Tree Overlays**: Toggle between Genetic, Emotional, and Location-based trees.
+
+### C. Photo Organization Enhancements
+- **Auto-Create Albums**: AI detection for vacations, holidays, and events.
+- **Memory Collections**: Suggested albums attached to persons or branches.
+
+### D. Family Tree Experience
+- **Family Tree Animation**: Documentary-style "Roots → Leaves" growth animation.
+- **Change Node Design**: Customizable leaf-node variants and styles.
+
+### E. Collaboration & Social Features
+- **Tree Collaboration Tools**: Invite relatives, comments, version history.
+- **Ask Family a Question**: Broadcast questions to contributors.
+
+### F. Life Events & Personal History
+- **Life Events Model**: Structured timeline data (Graduation, Military Service, etc.).
+
+### G. Sensitive Data & Personal Archives
+- **Memory Vault**: Encrypted storage for sensitive documents (birth certificates, etc.).
+
+### H. Family Utility Features
+- **Events & Reminders**: Birthday/Anniversary tracker.
+- **Audio Memories**: Voice recordings attachable to persons.
+
 ## 🔌 API Endpoints
 
 ### Trees

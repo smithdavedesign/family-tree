@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody, requireDocumentEditor, requireDocumentViewer } = require('../middleware/rbac');
+const { requireOwner, requireEditor, requireViewer, requirePersonEditor, requirePersonViewer, requireRelationshipEditor, requirePhotoEditor, requirePhotoViewer, requirePersonEditorBody, requireDocumentEditor, requireDocumentViewer, requireEventEditor } = require('../middleware/rbac');
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const { validate } = require('../middleware/validation');
@@ -13,6 +13,7 @@ const mediaController = require('../controllers/mediaController');
 const documentController = require('../controllers/documentController');
 const accountController = require('../controllers/accountController');
 const invitationController = require('../controllers/invitationController');
+const lifeEventController = require('../controllers/lifeEventController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -57,6 +58,12 @@ router.post('/documents', requireAuth, requirePersonEditorBody, writeLimiter, au
 router.get('/person/:id/documents', requireAuth, requirePersonViewer, documentController.getDocuments);
 router.put('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, auditLog('UPDATE', 'document'), documentController.updateDocument);
 router.delete('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, auditLog('DELETE', 'document'), documentController.deleteDocument);
+
+// Life Event routes (Phase 1 Roadmap)
+router.post('/person/:personId/events', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'life_event'), lifeEventController.addEvent);
+router.get('/person/:personId/events', requireAuth, requirePersonViewer, lifeEventController.getPersonEvents);
+router.put('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('UPDATE', 'life_event'), lifeEventController.updateEvent);
+router.delete('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('DELETE', 'life_event'), lifeEventController.deleteEvent);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);

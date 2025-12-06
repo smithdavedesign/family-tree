@@ -5,6 +5,7 @@ import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast, Modal } from './ui';
 import PhotoGallery from './PhotoGallery';
 import DocumentGallery from './DocumentGallery';
+import LifeEventsList from './LifeEventsList';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
@@ -745,6 +746,12 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                 })}
                             </div>
                         )}
+                    </div>
+
+                    {/* Life Events Section */}
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Timeline</h4>
+                        <LifeEventsList personId={person.id} isEditor={canEdit} />
                     </div>
 
                     {/* Bio Section */}

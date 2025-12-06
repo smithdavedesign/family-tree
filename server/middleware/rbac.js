@@ -294,6 +294,40 @@ const requireDocumentRole = (requiredRole) => {
 const requireDocumentEditor = requireDocumentRole(ROLES.EDITOR);
 const requireDocumentViewer = requireDocumentRole(ROLES.VIEWER);
 
+// Life Event-specific middlewares
+const requireEventRole = (requiredRole) => {
+    return async (req, res, next) => {
+        if (process.env.USE_MOCK === 'true') return next();
+
+        const eventId = req.params.id;
+        if (!eventId) return res.status(400).json({ error: 'Event ID required' });
+
+        try {
+            // Lookup tree_id via person
+            const { data: event, error } = await supabaseAdmin
+                .from('life_events')
+                .select('person_id, persons!inner(tree_id)')
+                .eq('id', eventId)
+                .single();
+
+            if (error || !event || !event.persons) {
+                return res.status(404).json({ error: 'Event not found' });
+            }
+
+            // Set treeId for the generic checker
+            req.params.treeId = event.persons.tree_id;
+
+            // Delegate to generic checker
+            return requireTreeRole(requiredRole)(req, res, next);
+        } catch (err) {
+            console.error('RBAC Event lookup error:', err);
+            return res.status(500).json({ error: 'Error checking permissions' });
+        }
+    };
+};
+
+const requireEventEditor = requireEventRole(ROLES.EDITOR);
+
 module.exports = {
     requireOwner,
     requireEditor,
@@ -306,6 +340,7 @@ module.exports = {
     requirePersonEditorBody,
     requireDocumentEditor,
     requireDocumentViewer,
+    requireEventEditor,
     requireTreeRole,
     isTreeOwner,
     getUserTreeRole,
