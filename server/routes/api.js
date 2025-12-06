@@ -43,7 +43,7 @@ router.post('/relationship', requireAuth, requireEditor, validate(relationshipSc
 router.delete('/relationship/:id', requireAuth, requireRelationshipEditor, writeLimiter, auditLog('DELETE', 'relationship'), relationshipController.deleteRelationship);
 
 // Media routes (require editor role to add)
-router.post('/media', requireAuth, requireEditor, writeLimiter, auditLog('CREATE', 'media'), mediaController.addMedia);
+router.post('/media', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'media'), mediaController.addMedia);
 
 // Photo routes (Phase H)
 router.post('/photos', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'photo'), mediaController.addPhoto);
