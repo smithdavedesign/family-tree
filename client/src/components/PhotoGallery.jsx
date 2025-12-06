@@ -3,10 +3,11 @@ import { Plus, Trash2, Star, Image as ImageIcon } from 'lucide-react';
 import { Button, useToast } from './ui';
 import { supabase } from '../auth';
 
-const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
+const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger, onProfileUpdate }) => {
     const { toast } = useToast();
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [updatingPhotoId, setUpdatingPhotoId] = useState(null);
 
     useEffect(() => {
         if (personId) {
@@ -60,6 +61,9 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
     };
 
     const handleSetPrimary = async (photo) => {
+        if (updatingPhotoId) return; // Prevent multiple clicks
+        setUpdatingPhotoId(photo.id);
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
@@ -79,6 +83,12 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
                     ...p,
                     is_primary: p.id === photo.id
                 })));
+
+                // Update parent UI immediately
+                if (onProfileUpdate) {
+                    onProfileUpdate(photo.url);
+                }
+
                 toast.success("Set as primary photo");
             } else {
                 toast.error("Failed to update photo");
@@ -86,6 +96,8 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
         } catch (error) {
             console.error("Error updating photo:", error);
             toast.error("Error updating photo");
+        } finally {
+            setUpdatingPhotoId(null);
         }
     };
 
@@ -142,9 +154,13 @@ const PhotoGallery = ({ personId, onAddPhoto, canEdit, refreshTrigger }) => {
                                     {canEdit && !photo.is_primary && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleSetPrimary(photo); }}
-                                            className="px-2 py-1 bg-white/90 rounded text-xs font-medium text-slate-700 hover:bg-slate-50 shadow-sm"
+                                            disabled={updatingPhotoId !== null}
+                                            className={`px-2 py-1 bg-white/90 rounded text-xs font-medium text-slate-700 shadow-sm ${updatingPhotoId === photo.id
+                                                    ? 'opacity-75 cursor-wait'
+                                                    : 'hover:bg-slate-50'
+                                                }`}
                                         >
-                                            Make Primary
+                                            {updatingPhotoId === photo.id ? 'Updating...' : 'Make Primary'}
                                         </button>
                                     )}
                                 </div>

@@ -101,6 +101,15 @@ const TreePage = () => {
                         <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => window.location.href = `/tree/${id}/gallery`}
+                            className="p-2"
+                            title="View Photo Gallery"
+                        >
+                            <span className="text-xl">🖼️</span>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => window.location.href = `/tree/${id}/timeline`}
                             className="p-2"
                             title="View Timeline"

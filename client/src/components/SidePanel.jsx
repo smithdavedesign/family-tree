@@ -679,6 +679,10 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                             onAddPhoto={handleGalleryPhotoAdd}
                             canEdit={canEdit}
                             refreshTrigger={galleryRefreshTrigger}
+                            onProfileUpdate={(newUrl) => {
+                                setProfilePhotoUrl(newUrl);
+                                if (onUpdate) onUpdate();
+                            }}
                         />
 
                         <div className="border-t border-slate-100 my-6"></div>

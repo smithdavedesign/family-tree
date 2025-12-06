@@ -8,6 +8,7 @@ import { ToastProvider } from './components/ui';
 const TreePage = lazy(() => import('./pages/TreePage'));
 const TreeDashboard = lazy(() => import('./pages/TreeDashboard'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
+const TreeGalleryPage = lazy(() => import('./pages/TreeGalleryPage'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const AuthError = lazy(() => import('./pages/AuthError'));
 const PhotoPickerTest = lazy(() => import('./pages/PhotoPickerTest'));
@@ -138,6 +139,7 @@ function App() {
             <Route path="/trees" element={<TreeDashboard />} />
             <Route path="/tree/:id" element={<TreePage />} />
             <Route path="/tree/:id/timeline" element={<TimelinePage />} />
+            <Route path="/tree/:id/gallery" element={<TreeGalleryPage />} />
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
             <Route path="/magic-link" element={<MagicLinkAuth />} />
             <Route path="/register" element={<Register />} />

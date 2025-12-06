@@ -85,8 +85,23 @@ exports.addPhoto = async (req, res) => {
     const { person_id, url, caption, taken_date, location, is_primary } = req.body;
 
     try {
+        let shouldBePrimary = is_primary;
+
+        // If not explicitly set as primary, check if person has a profile photo
+        if (!shouldBePrimary) {
+            const { data: person } = await supabaseAdmin
+                .from('persons')
+                .select('profile_photo_url')
+                .eq('id', person_id)
+                .single();
+
+            if (person && !person.profile_photo_url) {
+                shouldBePrimary = true;
+            }
+        }
+
         // If setting as primary, unset others first
-        if (is_primary) {
+        if (shouldBePrimary) {
             await supabaseAdmin
                 .from('photos')
                 .update({ is_primary: false })
@@ -95,14 +110,14 @@ exports.addPhoto = async (req, res) => {
 
         const { data, error } = await supabaseAdmin
             .from('photos')
-            .insert([{ person_id, url, caption, taken_date, location, is_primary }])
+            .insert([{ person_id, url, caption, taken_date, location, is_primary: shouldBePrimary }])
             .select()
             .single();
 
         if (error) throw error;
 
         // If primary, also update person's profile_photo_url
-        if (is_primary) {
+        if (shouldBePrimary) {
             await supabaseAdmin
                 .from('persons')
                 .update({ profile_photo_url: url })
@@ -194,6 +209,44 @@ exports.deletePhoto = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         console.error('Error deleting photo:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getTreePhotos = async (req, res) => {
+    const { id: treeId } = req.params;
+
+    try {
+        // Fetch all photos for persons in this tree
+        // Join with persons table to get person details
+        const { data, error } = await supabaseAdmin
+            .from('photos')
+            .select(`
+                *,
+                persons!inner (
+                    id,
+                    first_name,
+                    last_name,
+                    profile_photo_url,
+                    dob
+                )
+            `)
+            .eq('persons.tree_id', treeId)
+            .order('taken_date', { ascending: false, nullsFirst: false });
+
+        if (error) throw error;
+
+        // Flatten the structure slightly for easier frontend consumption
+        const photos = data.map(photo => ({
+            ...photo,
+            person_name: `${photo.persons.first_name} ${photo.persons.last_name || ''}`.trim(),
+            person_photo: photo.persons.profile_photo_url,
+            person_dob: photo.persons.dob
+        }));
+
+        res.json(photos);
+    } catch (error) {
+        console.error('Error fetching tree photos:', error);
         res.status(500).json({ error: error.message });
     }
 };

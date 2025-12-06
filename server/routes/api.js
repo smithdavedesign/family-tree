@@ -47,6 +47,10 @@ router.post('/photos', requireAuth, requirePersonEditorBody, writeLimiter, audit
 router.get('/person/:id/photos', requireAuth, requirePersonViewer, mediaController.getPhotos);
 router.put('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('UPDATE', 'photo'), mediaController.updatePhoto);
 router.delete('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('DELETE', 'photo'), mediaController.deletePhoto);
+router.get('/tree/:id/photos', (req, res, next) => {
+    console.log('GET /tree/:id/photos hit', req.params.id);
+    next();
+}, requireAuth, requireViewer, mediaController.getTreePhotos);
 
 // Document routes (Phase H)
 router.post('/documents', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'document'), documentController.addDocument);
