@@ -14,13 +14,13 @@ const eventSchema = Joi.object({
 });
 
 exports.getPersonEvents = async (req, res) => {
-    const { personId } = req.params;
+    const { id } = req.params;
 
     try {
         const { data, error } = await supabaseAdmin
             .from('life_events')
             .select('*')
-            .eq('person_id', personId)
+            .eq('person_id', id)
             .order('date', { ascending: true })
             .order('start_date', { ascending: true });
 
@@ -34,17 +34,26 @@ exports.getPersonEvents = async (req, res) => {
 };
 
 exports.addEvent = async (req, res) => {
-    const { personId } = req.params;
+    const { id } = req.params;
+    console.log('Adding event for person:', id, 'Body:', req.body);
+
     const { error: validationError, value } = eventSchema.validate(req.body);
 
     if (validationError) {
+        console.error('Validation error:', validationError.details[0].message);
         return res.status(400).json({ error: validationError.details[0].message });
     }
+
+    // Sanitize empty strings to null for dates
+    const payload = { ...value };
+    if (payload.date === '') payload.date = null;
+    if (payload.start_date === '') payload.start_date = null;
+    if (payload.end_date === '') payload.end_date = null;
 
     try {
         const { data, error } = await supabaseAdmin
             .from('life_events')
-            .insert([{ ...value, person_id: personId }])
+            .insert([{ ...payload, person_id: id }])
             .select()
             .single();
 
@@ -66,9 +75,15 @@ exports.updateEvent = async (req, res) => {
     }
 
     try {
+        // Sanitize empty strings to null for dates
+        const payload = { ...value };
+        if (payload.date === '') payload.date = null;
+        if (payload.start_date === '') payload.start_date = null;
+        if (payload.end_date === '') payload.end_date = null;
+
         const { data, error } = await supabaseAdmin
             .from('life_events')
-            .update(value)
+            .update(payload)
             .eq('id', id)
             .select()
             .single();

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useLifeEvents } from '../hooks/useLifeEvents';
 import LifeEventForm from './LifeEventForm';
-import { Button } from './ui';
+import { Button, useToast } from './ui';
 import { Plus, Pencil, Trash2, MapPin, Calendar } from 'lucide-react';
 
 const LifeEventsList = ({ personId, isEditor }) => {
+    const { toast } = useToast();
     const { events, isLoading, addEvent, updateEvent, deleteEvent, isAdding, isUpdating, isDeleting } = useLifeEvents(personId);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isCreating, setIsCreating] = useState(false);
@@ -20,13 +21,19 @@ const LifeEventsList = ({ personId, isEditor }) => {
             }
         } catch (error) {
             console.error('Error saving event:', error);
-            // Ideally show toast error here
+            toast.error(error.message || 'Failed to save event');
         }
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this event?')) {
-            await deleteEvent(id);
+            try {
+                await deleteEvent(id);
+                toast.success('Event deleted');
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                toast.error('Failed to delete event');
+            }
         }
     };
 

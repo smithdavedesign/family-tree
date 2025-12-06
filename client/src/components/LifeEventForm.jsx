@@ -40,7 +40,20 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Mutually exclusive date logic
+            if (name === 'date' && value) {
+                newData.start_date = '';
+                newData.end_date = '';
+            } else if ((name === 'start_date' || name === 'end_date') && value) {
+                newData.date = '';
+            }
+
+            return newData;
+        });
     };
 
     const handleSubmit = (e) => {
@@ -84,6 +97,7 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                         name="date"
                         value={formData.date}
                         onChange={handleChange}
+                        disabled={!!formData.start_date || !!formData.end_date}
                     />
                 </div>
             </div>
@@ -107,6 +121,7 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                         name="start_date"
                         value={formData.start_date}
                         onChange={handleChange}
+                        disabled={!!formData.date}
                     />
                 </div>
                 <div>
@@ -116,6 +131,7 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                         name="end_date"
                         value={formData.end_date}
                         onChange={handleChange}
+                        disabled={!!formData.date}
                     />
                 </div>
             </div>

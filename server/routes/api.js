@@ -60,8 +60,8 @@ router.put('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, a
 router.delete('/documents/:id', requireAuth, requireDocumentEditor, writeLimiter, auditLog('DELETE', 'document'), documentController.deleteDocument);
 
 // Life Event routes (Phase 1 Roadmap)
-router.post('/person/:personId/events', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'life_event'), lifeEventController.addEvent);
-router.get('/person/:personId/events', requireAuth, requirePersonViewer, lifeEventController.getPersonEvents);
+router.post('/person/:id/events', requireAuth, requirePersonEditor, writeLimiter, auditLog('CREATE', 'life_event'), lifeEventController.addEvent);
+router.get('/person/:id/events', requireAuth, requirePersonViewer, lifeEventController.getPersonEvents);
 router.put('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('UPDATE', 'life_event'), lifeEventController.updateEvent);
 router.delete('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('DELETE', 'life_event'), lifeEventController.deleteEvent);
 
