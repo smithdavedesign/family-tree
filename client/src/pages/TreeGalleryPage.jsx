@@ -1,12 +1,14 @@
+
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { supabase } from '../auth';
-import { Loader, Image as ImageIcon, Filter, Calendar, User } from 'lucide-react';
+import { Loader, Image as ImageIcon, Filter, Calendar, User, Plus, Grid, Map as MapIcon, SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
 import { useTreePhotos, useTreeDetails } from '../hooks/useTreePhotos';
 import { groupPhotosByDate, groupPhotosByPerson, filterPhotos, getUniquePersons } from '../utils/photoUtils';
 import VirtualGallery from '../components/VirtualGallery';
+import PhotoMap from '../components/PhotoMap';
 
 import AccountSettings from '../components/AccountSettings';
 
@@ -15,6 +17,8 @@ const TreeGalleryPage = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'map'
+
 
     // Fetch Data using React Query
     const { data: photos = [], isLoading: photosLoading, error: photosError } = useTreePhotos(treeId);
@@ -47,6 +51,15 @@ const TreeGalleryPage = () => {
 
     const isLoading = photosLoading || treeLoading;
     const error = photosError;
+
+    // Placeholder for handlePhotoClick and onOpenPhotoPicker
+    const handlePhotoClick = (photo) => {
+        console.log('Open lightbox', photo);
+    };
+
+    const onOpenPhotoPicker = () => {
+        console.log('Open photo picker');
+    };
 
     if (isLoading) {
         return (
@@ -85,7 +98,7 @@ const TreeGalleryPage = () => {
                 items={[
                     {
                         label: treeData?.name || 'Tree',
-                        onClick: () => navigate(`/tree/${treeId}`)
+                        onClick: () => navigate(`/ tree / ${treeId} `)
                     },
                     {
                         label: 'Photo Gallery'
@@ -111,19 +124,37 @@ const TreeGalleryPage = () => {
                         <div className="flex bg-slate-100 p-1 rounded-lg">
                             <button
                                 onClick={() => setGroupBy('date')}
-                                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
+                                className={`px - 3 py - 1.5 text - sm font - medium rounded - md transition - colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    } `}
                             >
                                 <Calendar className="w-4 h-4 inline mr-1.5" />
                                 Date
                             </button>
                             <button
                                 onClick={() => setGroupBy('person')}
-                                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
+                                className={`px - 3 py - 1.5 text - sm font - medium rounded - md transition - colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    } `}
                             >
                                 <User className="w-4 h-4 inline mr-1.5" />
                                 Person
+                            </button>
+                        </div>
+
+                        {/* View Mode Toggle */}
+                        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p - 2 rounded - md transition - all ${viewMode === 'grid' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'} `}
+                                title="Grid View"
+                            >
+                                <Grid className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('map')}
+                                className={`p - 2 rounded - md transition - all ${viewMode === 'map' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'} `}
+                                title="Map View"
+                            >
+                                <MapIcon className="w-4 h-4" />
                             </button>
                         </div>
 
@@ -141,27 +172,47 @@ const TreeGalleryPage = () => {
                             </select>
                             <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
+                        {/* Add Photo Button - Assuming a Button component exists or needs to be created/imported */}
+                        {/* <Button
+                            variant="primary"
+                            leftIcon={<Plus className="w-4 h-4" />}
+                            onClick={() => onOpenPhotoPicker()}
+                        >
+                            Add Photo
+                        </Button> */}
                     </div>
                 </div>
             </div>
 
-            {/* Gallery Grid (Virtualized) */}
+            {/* Gallery Grid (Virtualized) / Photo Map */}
             <div className="flex-1 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 h-full">
-                    {groupedPhotos.length === 0 ? (
-                        <div className="text-center py-20">
-                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <ImageIcon className="w-8 h-8 text-slate-400" />
-                            </div>
-                            <h3 className="text-lg font-medium text-slate-900">No photos found</h3>
-                            <p className="text-slate-500 mt-1">Try adjusting your filters or upload some photos to your tree.</p>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
                         </div>
                     ) : (
-                        <VirtualGallery
-                            groups={groupedPhotos}
-                            groupBy={groupBy}
-                            onPhotoClick={(photo) => console.log('Open lightbox', photo)}
-                        />
+                        viewMode === 'map' ? (
+                            <div className="h-full w-full p-4">
+                                <PhotoMap photos={filteredPhotos} />
+                            </div>
+                        ) : (
+                            groupedPhotos.length === 0 ? (
+                                <div className="text-center py-20">
+                                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <ImageIcon className="w-8 h-8 text-slate-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-slate-900">No photos found</h3>
+                                    <p className="text-slate-500 mt-1">Try adjusting your filters or upload some photos to your tree.</p>
+                                </div>
+                            ) : (
+                                <VirtualGallery
+                                    groups={groupedPhotos}
+                                    groupBy={groupBy}
+                                    onPhotoClick={handlePhotoClick}
+                                />
+                            )
+                        )
                     )}
                 </div>
             </div>

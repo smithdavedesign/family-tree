@@ -82,7 +82,7 @@ exports.getMediaForPerson = async (req, res) => {
 // --- Photos (Phase H) ---
 
 exports.addPhoto = async (req, res) => {
-    const { person_id, url, caption, taken_date, location, is_primary, width, height, orientation } = req.body;
+    const { person_id, url, caption, taken_date, is_primary, google_media_id, width, height, orientation, latitude, longitude, location_name } = req.body;
 
     try {
         let shouldBePrimary = is_primary;
@@ -127,13 +127,16 @@ exports.addPhoto = async (req, res) => {
                 url,
                 caption,
                 taken_date,
-                location,
                 is_primary: shouldBePrimary,
+                google_media_id,
                 width,
                 height,
                 orientation,
                 year,
-                month_year
+                month_year,
+                latitude,
+                longitude,
+                location_name
             }])
             .select()
             .single();
