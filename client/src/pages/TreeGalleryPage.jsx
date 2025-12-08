@@ -86,24 +86,23 @@ const TreeGalleryPage = () => {
         );
     }
 
+    const treeName = treeData?.name || 'Tree';
+
     return (
         <div className="min-h-screen bg-slate-50 h-screen flex flex-col">
             <Navbar
                 user={user}
                 onOpenSettings={() => setShowSettings(true)}
-            />
-
-            {/* Breadcrumbs */}
-            <Breadcrumbs
-                items={[
-                    {
-                        label: treeData?.name || 'Tree',
-                        onClick: () => navigate(`/ tree / ${treeId} `)
-                    },
-                    {
-                        label: 'Photo Gallery'
-                    }
-                ]}
+                leftContent={
+                    <Breadcrumbs
+                        inline
+                        showHome={false}
+                        items={[
+                            { label: treeName, href: `/tree/${treeId}` },
+                            { label: 'Photo Gallery' }
+                        ]}
+                    />
+                }
             />
 
             {/* Header / Controls */}

@@ -117,7 +117,21 @@ const TreePage = () => {
                 user={user}
                 onOpenSettings={() => setShowSettings(true)}
                 leftContent={
-                    <TreeSwitcher currentTreeId={id} />
+                    <div className="flex items-center gap-2">
+                        <TreeSwitcher currentTreeId={id} />
+                        {selectedPerson && (
+                            <>
+                                <span className="text-slate-300">/</span>
+                                <Breadcrumbs
+                                    inline
+                                    showHome={false}
+                                    items={[
+                                        { label: selectedPerson.data.label }
+                                    ]}
+                                />
+                            </>
+                        )}
+                    </div>
                 }
                 rightContent={
                     <>
@@ -153,35 +167,26 @@ const TreePage = () => {
                 }
             />
 
-            {/* Breadcrumbs */}
-            <Breadcrumbs
-                items={[
-                    {
-                        label: treeName,
-                        onClick: () => setSelectedPerson(null) // Close panel when clicking tree name
-                    },
-                    ...(selectedPerson ? [{ label: selectedPerson.data.label }] : [])
-                ]}
-            />
-
             {/* View Mode Selector */}
-            <div className="bg-white border-b border-slate-200">
+            < div className="bg-white border-b border-slate-200">
                 <div className="max-w-[1600px] mx-auto px-4 py-3">
                     <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
                 </div>
             </div>
 
             {/* Search Bar - Conditionally Rendered */}
-            {isSearchOpen && (
-                <div className="absolute top-28 left-4 z-30 w-full max-w-md animate-slideIn">
-                    <SearchBar
-                        persons={persons}
-                        onHighlight={setHighlightedNodes}
-                        onClear={() => setHighlightedNodes([])}
-                        onClose={() => setIsSearchOpen(false)}
-                    />
-                </div>
-            )}
+            {
+                isSearchOpen && (
+                    <div className="absolute top-28 left-4 z-30 w-full max-w-md animate-slideIn">
+                        <SearchBar
+                            persons={persons}
+                            onHighlight={setHighlightedNodes}
+                            onClear={() => setHighlightedNodes([])}
+                            onClose={() => setIsSearchOpen(false)}
+                        />
+                    </div>
+                )
+            }
 
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden relative">
@@ -263,13 +268,15 @@ const TreePage = () => {
                 }}
             />
 
-            {showSettings && user && (
-                <AccountSettings
-                    user={user}
-                    onClose={() => setShowSettings(false)}
-                />
-            )}
-        </div>
+            {
+                showSettings && user && (
+                    <AccountSettings
+                        user={user}
+                        onClose={() => setShowSettings(false)}
+                    />
+                )
+            }
+        </div >
     );
 };
 
