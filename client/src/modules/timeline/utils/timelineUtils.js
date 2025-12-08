@@ -7,7 +7,7 @@ import { format } from 'date-fns';
  * @param {Array} relationships - List of relationship objects from the DB
  * @returns {Array} Sorted list of TimelineEvent objects
  */
-export const normalizeTimelineEvents = (persons = [], relationships = []) => {
+export const normalizeTimelineEvents = (persons = [], relationships = [], lifeEvents = []) => {
     const events = [];
 
     persons.forEach(person => {
@@ -43,6 +43,33 @@ export const normalizeTimelineEvents = (persons = [], relationships = []) => {
 
         // Occupation Events (if we had a date, for now just static or skip)
         // We could parse attributes if they have dates, but keeping it simple for now.
+    });
+
+    // Process Life Events
+    lifeEvents.forEach(event => {
+        const person = persons.find(p => p.id === event.person_id);
+        if (!person || !event.date) return; // Skip if no person or no date
+
+        const personName = `${person.first_name} ${person.last_name || ''}`.trim();
+
+        // Map event types to timeline types
+        let type = 'life_event';
+        if (event.event_type === 'education') type = 'education';
+        if (event.event_type === 'work') type = 'work';
+        if (event.event_type === 'military') type = 'military';
+        if (event.event_type === 'award') type = 'award';
+        if (event.event_type === 'residence') type = 'residence';
+
+        events.push({
+            id: `event-${event.id}`,
+            personId: event.person_id,
+            date: new Date(event.date),
+            type: type,
+            label: event.title,
+            description: event.description || event.location || '',
+            personName,
+            metadata: { ...event }
+        });
     });
 
     relationships.forEach(rel => {

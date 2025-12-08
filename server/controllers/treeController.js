@@ -62,10 +62,22 @@ exports.getTree = async (req, res) => {
 
         if (relationshipsError) throw relationshipsError;
 
+        // 5. Fetch life events for the tree (via persons)
+        // We can't directly query life_events by tree_id as it doesn't exist on the table
+        // So we get them for the persons we just found
+        const personIds = persons.map(p => p.id);
+        const { data: lifeEvents, error: lifeEventsError } = await supabaseAdmin
+            .from('life_events')
+            .select('*')
+            .in('person_id', personIds);
+
+        if (lifeEventsError) throw lifeEventsError;
+
         res.json({
             tree,
             persons,
             relationships,
+            lifeEvents,
             name: tree.name,
             role
         });

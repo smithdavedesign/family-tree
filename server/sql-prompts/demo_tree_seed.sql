@@ -48,13 +48,13 @@ BEGIN
     RAISE NOTICE 'Found user ID: %', demo_user_id;
     
     -- Create Demo Tree
-    INSERT INTO trees (name, created_by)
+    INSERT INTO trees (name, owner_id)
     VALUES ('Demo Family Tree', demo_user_id)
     RETURNING id INTO demo_tree_id;
     
-    -- Add tree member (you as owner)
-    INSERT INTO tree_members (tree_id, user_id, role)
-    VALUES (demo_tree_id, demo_user_id, 'owner');
+    -- Add tree member (handled automatically by trigger_add_tree_owner)
+    -- INSERT INTO tree_members (tree_id, user_id, role)
+    -- VALUES (demo_tree_id, demo_user_id, 'owner');
     
     -- ========================================
     -- GENERATION 1 (Great-Grandparents)
@@ -394,32 +394,32 @@ BEGIN
     -- ========================================
     
     -- James's life events
-    INSERT INTO life_events (person_id, tree_id, event_type, title, date, location, description) VALUES
-    (p_james, demo_tree_id, 'military', 'Enlisted in US Army', '1942-06-01', 'New York, NY', 'Joined the Army during WWII'),
-    (p_james, demo_tree_id, 'military', 'Pacific Theater Service', '1943-01-15', 'Pacific Ocean', 'Served in multiple campaigns across the Pacific'),
-    (p_james, demo_tree_id, 'achievement', 'Bronze Star Medal', '1945-08-20', 'Philippines', 'Awarded for heroic service in combat'),
-    (p_james, demo_tree_id, 'career', 'Started Business', '1950-03-10', 'New York, NY', 'Founded Smith Hardware Store'),
-    (p_james, demo_tree_id, 'achievement', 'Community Leader Award', '1975-05-15', 'New York, NY', 'Recognized for 25 years of community service');
+    INSERT INTO life_events (person_id, event_type, title, date, location, description) VALUES
+    (p_james, 'military', 'Enlisted in US Army', '1942-06-01', 'New York, NY', 'Joined the Army during WWII'),
+    (p_james, 'military', 'Pacific Theater Service', '1943-01-15', 'Pacific Ocean', 'Served in multiple campaigns across the Pacific'),
+    (p_james, 'achievement', 'Bronze Star Medal', '1945-08-20', 'Philippines', 'Awarded for heroic service in combat'),
+    (p_james, 'career', 'Started Business', '1950-03-10', 'New York, NY', 'Founded Smith Hardware Store'),
+    (p_james, 'achievement', 'Community Leader Award', '1975-05-15', 'New York, NY', 'Recognized for 25 years of community service');
     
     -- John's life events
-    INSERT INTO life_events (person_id, tree_id, event_type, title, date, location, description) VALUES
-    (p_john, demo_tree_id, 'education', 'MIT Graduation', '1967-06-15', 'Cambridge, MA', 'Graduated with honors in Aerospace Engineering'),
-    (p_john, demo_tree_id, 'career', 'Joined NASA', '1967-09-01', 'Houston, TX', 'Started as junior engineer on Apollo program'),
-    (p_john, demo_tree_id, 'achievement', 'Apollo 13 Support', '1970-04-17', 'Houston, TX', 'Part of ground crew that helped save Apollo 13'),
-    (p_john, demo_tree_id, 'travel', 'European Tour', '1985-07-01', 'Europe', 'Three-month backpacking trip through 12 countries');
+    INSERT INTO life_events (person_id, event_type, title, date, location, description) VALUES
+    (p_john, 'education', 'MIT Graduation', '1967-06-15', 'Cambridge, MA', 'Graduated with honors in Aerospace Engineering'),
+    (p_john, 'career', 'Joined NASA', '1967-09-01', 'Houston, TX', 'Started as junior engineer on Apollo program'),
+    (p_john, 'achievement', 'Apollo 13 Support', '1970-04-17', 'Houston, TX', 'Part of ground crew that helped save Apollo 13'),
+    (p_john, 'travel', 'European Tour', '1985-07-01', 'Europe', 'Three-month backpacking trip through 12 countries');
     
     -- William's life events
-    INSERT INTO life_events (person_id, tree_id, event_type, title, date, location, description) VALUES
-    (p_william, demo_tree_id, 'education', 'Graduated Stanford', '1992-06-15', 'Stanford, CA', 'BS in Computer Science'),
-    (p_william, demo_tree_id, 'career', 'First Job at Tech Startup', '1992-08-01', 'San Francisco, CA', 'Joined a small startup as employee #5'),
-    (p_william, demo_tree_id, 'achievement', 'Open Source Contribution', '2010-03-14', 'Austin, TX', 'Major contribution to popular open source project'),
-    (p_william, demo_tree_id, 'family', 'Family Reunion Organizer', '2015-07-04', 'Houston, TX', 'Organized first Smith family reunion in 20 years');
+    INSERT INTO life_events (person_id, event_type, title, date, location, description) VALUES
+    (p_william, 'education', 'Graduated Stanford', '1992-06-15', 'Stanford, CA', 'BS in Computer Science'),
+    (p_william, 'career', 'First Job at Tech Startup', '1992-08-01', 'San Francisco, CA', 'Joined a small startup as employee #5'),
+    (p_william, 'achievement', 'Open Source Contribution', '2010-03-14', 'Austin, TX', 'Major contribution to popular open source project'),
+    (p_william, 'family', 'Family Reunion Organizer', '2015-07-04', 'Houston, TX', 'Organized first Smith family reunion in 20 years');
     
     -- Joseph's life events
-    INSERT INTO life_events (person_id, demo_tree_id, event_type, title, date, location, description) VALUES
-    (p_joseph, demo_tree_id, 'education', 'Accepted to MIT', '2013-04-01', 'Austin, TX', 'Received acceptance letter to MIT'),
-    (p_joseph, demo_tree_id, 'achievement', 'Hackathon Winner', '2016-10-15', 'Boston, MA', 'Won first place at major collegiate hackathon'),
-    (p_joseph, demo_tree_id, 'career', 'Google Internship', '2017-06-01', 'Mountain View, CA', 'Summer internship on machine learning team');
+    INSERT INTO life_events (person_id, event_type, title, date, location, description) VALUES
+    (p_joseph, 'education', 'Accepted to MIT', '2013-04-01', 'Austin, TX', 'Received acceptance letter to MIT'),
+    (p_joseph, 'achievement', 'Hackathon Winner', '2016-10-15', 'Boston, MA', 'Won first place at major collegiate hackathon'),
+    (p_joseph, 'career', 'Google Internship', '2017-06-01', 'Mountain View, CA', 'Summer internship on machine learning team');
     
     -- ========================================
     -- STORIES
@@ -455,7 +455,7 @@ BEGIN
         demo_tree_id,
         demo_user_id,
         'The Williams Family Journey from Ireland',
-        '{"type":"doc","content":[{"type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"From Dublin to Chicago: The Williams Story"}]},{"type":"paragraph","content":[{"type":"text","text":"Robert Williams arrived at Ellis Island in 1910 at age 8, clutching his mother''s hand and a small suitcase containing everything they owned."}]},{"type":"paragraph","content":[{"type":"text","text":"His father had come to America a year earlier to work in the steel mills of Chicago, saving enough money to bring the rest of the family over. Robert never forgot his first sight of the Statue of Liberty or the overwhelming chaos of Ellis Island."}]},{"type":"paragraph","content":[{"type":"text","text":"He grew up in Chicago''s Irish community, started working at the steel mill at 16, and became a passionate advocate for workers'' rights. He helped organize one of the first successful union drives at his plant in 1935."}]},{"type":"paragraph","content":[{"type":"text","marks":[{"type":"italic"}],"text":"His famous words:"} ]},{"type":"paragraph","content":[{"type":"text","marks":[{"type":"bold"}],"text":"\"We came here with nothing but hope. Now we fight to ensure others have the same chance we did.\"}]}]}'
+        '{"type":"doc","content":[{"type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"From Dublin to Chicago: The Williams Story"}]},{"type":"paragraph","content":[{"type":"text","text":"Robert Williams arrived at Ellis Island in 1910 at age 8, clutching his mother''s hand and a small suitcase containing everything they owned."}]},{"type":"paragraph","content":[{"type":"text","text":"His father had come to America a year earlier to work in the steel mills of Chicago, saving enough money to bring the rest of the family over. Robert never forgot his first sight of the Statue of Liberty or the overwhelming chaos of Ellis Island."}]},{"type":"paragraph","content":[{"type":"text","text":"He grew up in Chicago''s Irish community, started working at the steel mill at 16, and became a passionate advocate for workers'' rights. He helped organize one of the first successful union drives at his plant in 1935."}]},{"type":"paragraph","content":[{"type":"text","marks":[{"type":"italic"}],"text":"His famous words:"} ]},{"type":"paragraph","content":[{"type":"text","marks":[{"type":"bold"}],"text":"“We came here with nothing but hope. Now we fight to ensure others have the same chance we did.”"}]}]}'
     ) RETURNING id INTO s_immigrant_journey;
     
     INSERT INTO story_people (story_id, person_id) VALUES

@@ -33,10 +33,10 @@ const useTimelineData = (treeId) => {
                     throw new Error('Failed to fetch tree data');
                 }
 
-                const { persons, relationships } = await response.json();
+                const { persons, relationships, lifeEvents } = await response.json();
 
                 setPersons(persons);
-                const normalizedEvents = normalizeTimelineEvents(persons, relationships);
+                const normalizedEvents = normalizeTimelineEvents(persons, relationships, lifeEvents);
                 setEvents(normalizedEvents);
 
             } catch (err) {

@@ -11,7 +11,7 @@ import AccountSettings from '../../../components/AccountSettings';
 
 const TimelineContainer = () => {
     const { id } = useParams();
-    const { events, loading, error } = useTimelineData(id);
+    const { events, persons, loading, error } = useTimelineData(id);
     const [user, setUser] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
 
@@ -62,7 +62,7 @@ const TimelineContainer = () => {
                 }
             />
 
-            <TimelineScroller events={events} />
+            <TimelineScroller events={events} persons={persons} />
 
             {showSettings && (
                 <AccountSettings
