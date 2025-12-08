@@ -236,9 +236,9 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
                                 strokeWidth="2"
                                 className="cursor-pointer transition-opacity"
                                 opacity={isHovered ? 1 : 0.85}
-                                onMouseEnter={() => setHov eredPerson(segment.person.id)}
-                            onMouseLeave={() => setHoveredPerson(null)}
-                            onClick={() => handleSegmentClick(segment)}
+                                onMouseEnter={() => setHoveredPerson(segment.person.id)}
+                                onMouseLeave={() => setHoveredPerson(null)}
+                                onClick={() => handleSegmentClick(segment)}
                             />
                             {/* Text label */}
                             {segment.endAngle - segment.startAngle > 15 && (
