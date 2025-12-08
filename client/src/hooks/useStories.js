@@ -37,7 +37,9 @@ export const useStories = (treeId, personId) => {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to create story');
+            const errorText = await response.text();
+            console.error('Story creation failed:', response.status, errorText);
+            throw new Error(`Failed to create story: ${errorText}`);
         }
 
         return response.json();

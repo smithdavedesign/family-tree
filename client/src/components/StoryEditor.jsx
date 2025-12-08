@@ -42,7 +42,7 @@ const StoryEditor = ({ content, onChange }) => {
     };
 
     return (
-        <div className="border border-slate-200 rounded-lg overflow-hidden">
+        <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
             {/* Toolbar */}
             <div className="flex items-center gap-1 p-2 bg-slate-50 border-b border-slate-200">
                 <button
@@ -108,8 +108,57 @@ const StoryEditor = ({ content, onChange }) => {
             {/* Editor Content */}
             <EditorContent
                 editor={editor}
-                className="prose max-w-none p-4 min-h-[300px] focus:outline-none"
+                className="prose prose-slate max-w-none p-4 min-h-[300px] focus-within:outline-none"
             />
+            <style>{`
+                .ProseMirror {
+                    min-height: 300px;
+                    outline: none;
+                    color: #1e293b;
+                }
+                .ProseMirror h1 {
+                    font-size: 2em;
+                    font-weight: 700;
+                    margin: 0.67em 0;
+                    line-height: 1.2;
+                }
+                .ProseMirror h2 {
+                    font-size: 1.5em;
+                    font-weight: 600;
+                    margin: 0.75em 0;
+                    line-height: 1.3;
+                }
+                .ProseMirror p {
+                    margin: 1em 0;
+                    line-height: 1.6;
+                }
+                .ProseMirror ul, .ProseMirror ol {
+                    padding-left: 1.5em;
+                    margin: 1em 0;
+                }
+                .ProseMirror ul {
+                    list-style-type: disc;
+                }
+                .ProseMirror ol {
+                    list-style-type: decimal;
+                }
+                .ProseMirror li {
+                    margin: 0.5em 0;
+                }
+                .ProseMirror a {
+                    color: #0d9488;
+                    text-decoration: underline;
+                }
+                .ProseMirror strong {
+                    font-weight: 600;
+                }
+                .ProseMirror em {
+                    font-style: italic;
+                }
+                .ProseMirror:focus {
+                    outline: none;
+                }
+            `}</style>
         </div>
     );
 };
