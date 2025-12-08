@@ -268,7 +268,16 @@ exports.getTreePhotos = async (req, res) => {
             ...photo,
             person_name: `${photo.persons.first_name} ${photo.persons.last_name || ''}`.trim(),
             person_photo: photo.persons.profile_photo_url,
-            person_dob: photo.persons.dob
+            person_dob: photo.persons.dob,
+
+            // New fields for PhotoLightbox
+            date: photo.taken_date,
+            location: photo.location_name,
+            person: {
+                id: photo.persons.id,
+                name: `${photo.persons.first_name} ${photo.persons.last_name || ''}`.trim(),
+                photo_url: photo.persons.profile_photo_url
+            }
         }));
 
         res.json(photos);
