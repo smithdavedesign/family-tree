@@ -48,8 +48,8 @@ BEGIN
     RAISE NOTICE 'Found user ID: %', demo_user_id;
     
     -- Create Demo Tree
-    INSERT INTO trees (name, description, created_by)
-    VALUES ('Demo Family Tree', 'Comprehensive demo tree with all features', demo_user_id)
+    INSERT INTO trees (name, created_by)
+    VALUES ('Demo Family Tree', demo_user_id)
     RETURNING id INTO demo_tree_id;
     
     -- Add tree member (you as owner)
