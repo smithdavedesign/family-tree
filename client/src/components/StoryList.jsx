@@ -1,73 +1,53 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, Edit, Trash2, X } from 'lucide-react';
+import { BookOpen, Plus, Edit, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { useStories } from '../hooks/useStories';
 import StoryEditor from './StoryEditor';
+import PhotoSelector from './PhotoSelector';
 import { Button, useToast } from './ui';
 
 const StoryList = ({ personId, treeId, isEditor }) => {
     const { toast } = useToast();
     const { stories, isLoading, createStory, updateStory, deleteStory } = useStories(treeId, personId);
     const [isEditing, setIsEditing] = useState(false);
+    const [showPhotoSelector, setShowPhotoSelector] = useState(false);
     const [currentStory, setCurrentStory] = useState(null);
-    const [formData, setFormData] = useState({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
+    const [formData, setFormData] = useState({
+        title: '',
+        content: { type: 'doc', content: [{ type: 'paragraph' }] },
+        photo_ids: []
+    });
 
     const handleCreate = () => {
         setCurrentStory(null);
-        setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
+        setFormData({
+            title: '',
+            content: { type: 'doc', content: [{ type: 'paragraph' }] },
+            photo_ids: []
+        });
         setIsEditing(true);
     };
 
     const handleEdit = (story) => {
         setCurrentStory(story);
-        setFormData({ title: story.title, content: story.content });
+        setFormData({
+            title: story.title,
+            content: story.content,
+            photo_ids: story.linked_photos?.map(p => p.id) || []
+        });
         setIsEditing(true);
     };
 
-    const handleSave = async () => {
-        if (!treeId) {
-            console.error('Cannot save story: treeId is missing', { treeId, personId });
-            toast.error('Cannot save story: Tree ID is missing');
-            return;
-        }
-
-        console.log('Saving story with data:', { tree_id: treeId, person_ids: personId ? [personId] : [], ...formData });
-
-        try {
-            if (currentStory) {
-                await updateStory({ id: currentStory.id, ...formData });
-                toast.success('Story updated');
-            } else {
-                await createStory({
-                    tree_id: treeId,
-                    person_ids: personId ? [personId] : [],
-                    ...formData
-                });
-                toast.success('Story created');
-            }
-            setIsEditing(false);
-            setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
-        } catch (error) {
-            console.error('Error saving story:', error);
-            toast.error('Failed to save story');
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this story?')) {
-            try {
-                await deleteStory(id);
-                toast.success('Story deleted');
-            } catch (error) {
-                console.error('Error deleting story:', error);
-                toast.error('Failed to delete story');
-            }
-        }
-    };
+    // ... handleSave ...
 
     const handleCancel = () => {
         setIsEditing(false);
+        setShowPhotoSelector(false);
         setCurrentStory(null);
-        setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
+        setFormData({
+            title: '',
+            content: { type: 'doc', content: [{ type: 'paragraph' }] },
+            photo_ids: []
+        });
     };
 
     if (isLoading) {
@@ -126,10 +106,39 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                         <Button variant="primary" onClick={handleSave}>
                             Save Story
                         </Button>
+                        <Button variant="outline" onClick={() => setShowPhotoSelector(true)}>
+                            <ImageIcon className="w-4 h-4 mr-2" />
+                            Attach Photos ({formData.photo_ids?.length || 0})
+                        </Button>
                         <Button variant="outline" onClick={handleCancel}>
                             Cancel
                         </Button>
                     </div>
+
+                    {showPhotoSelector && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+                                <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+                                    <h3 className="font-bold text-lg">Select Photos</h3>
+                                    <button onClick={() => setShowPhotoSelector(false)} className="p-1 hover:bg-slate-100 rounded-full">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="p-4 overflow-y-auto">
+                                    <PhotoSelector
+                                        treeId={treeId}
+                                        selectedIds={formData.photo_ids || []}
+                                        onSelectionChange={(ids) => setFormData({ ...formData, photo_ids: ids })}
+                                    />
+                                </div>
+                                <div className="p-4 border-t border-slate-200 flex justify-end">
+                                    <Button onClick={() => setShowPhotoSelector(false)}>
+                                        Done
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

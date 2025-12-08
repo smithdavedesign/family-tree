@@ -769,7 +769,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     {/* Timeline Section */}
                     <div>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Timeline</h4>
-                        <LifeEventsList personId={person.id} isEditor={canEdit} />
+                        <LifeEventsList personId={person.id} treeId={person.data.tree_id} isEditor={canEdit} />
                     </div>
 
                     {/* Stories Section */}

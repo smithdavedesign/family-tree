@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { usePhotoDetails } from '../hooks/usePhotoDetails';
 
 const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+    const { stories, events } = usePhotoDetails(photo?.id);
+
     // Handle keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -119,6 +123,48 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                                             )}
                                             {person.name}
                                         </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Related Stories */}
+                        {stories && stories.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-white/10">
+                                <div className="flex items-center gap-3 text-white/80 mb-1">
+                                    <BookOpen className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <span className="font-medium">Related Stories</span>
+                                </div>
+                                <div className="pl-8 space-y-2">
+                                    {stories.map(story => (
+                                        <Link
+                                            key={story.id}
+                                            to={`/story/${story.id}`}
+                                            className="block p-2 bg-white/10 rounded-md hover:bg-white/20 transition-colors"
+                                        >
+                                            <p className="text-sm font-medium text-white">{story.title}</p>
+                                            <p className="text-xs text-white/60 truncate">{story.content}</p>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Related Events */}
+                        {events && events.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-white/10">
+                                <div className="flex items-center gap-3 text-white/80 mb-1">
+                                    <Flag className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <span className="font-medium">Related Events</span>
+                                </div>
+                                <div className="pl-8 space-y-2">
+                                    {events.map(event => (
+                                        <div key={event.id} className="p-2 bg-white/10 rounded-md">
+                                            <p className="text-sm font-medium text-white">{event.title}</p>
+                                            <p className="text-xs text-white/60">
+                                                {new Date(event.date || event.start_date).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     ))}
                                 </div>
                             </div>

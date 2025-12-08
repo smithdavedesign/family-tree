@@ -153,6 +153,7 @@ function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/settings" element={<AccountSettings />} />
             <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
+            <Route path="/story/:id" element={<StoryPage />} />
           </Routes>
         </Suspense>
       </Router>

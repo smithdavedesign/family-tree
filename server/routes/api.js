@@ -66,6 +66,7 @@ router.post('/person/:id/events', requireAuth, requirePersonEditor, writeLimiter
 router.get('/person/:id/events', requireAuth, requirePersonViewer, lifeEventController.getPersonEvents);
 router.put('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('UPDATE', 'life_event'), lifeEventController.updateEvent);
 router.delete('/events/:id', requireAuth, requireEventEditor, writeLimiter, auditLog('DELETE', 'life_event'), lifeEventController.deleteEvent);
+router.get('/photos/:id/events', requireAuth, requireViewer, lifeEventController.getEventsForPhoto);
 
 // Reminder routes (Phase 2 Roadmap)
 router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEvents);
