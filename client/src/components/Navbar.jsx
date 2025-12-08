@@ -32,8 +32,8 @@ const Navbar = ({
     };
 
     return (
-        <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
-            <div className="max-w-[1600px] mx-auto px-4">
+        <nav className="sticky top-0 z-40 max-w-[1600px] mx-auto px-4 bg-white/80 backdrop-blur-md border-b border-slate-200">
+            <div>
                 <div className="flex justify-between items-center h-16">
                     {/* Left Side */}
                     <div className="flex items-center gap-4">
