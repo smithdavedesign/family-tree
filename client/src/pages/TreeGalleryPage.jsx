@@ -119,39 +119,39 @@ const TreeGalleryPage = () => {
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                         {/* Group By Toggle */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
                             <button
                                 onClick={() => setGroupBy('date')}
-                                className={`px - 3 py - 1.5 text - sm font - medium rounded - md transition - colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    } `}
+                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
                             >
-                                <Calendar className="w-4 h-4 inline mr-1.5" />
+                                <Calendar className="w-4 h-4" />
                                 Date
                             </button>
                             <button
                                 onClick={() => setGroupBy('person')}
-                                className={`px - 3 py - 1.5 text - sm font - medium rounded - md transition - colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    } `}
+                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
                             >
-                                <User className="w-4 h-4 inline mr-1.5" />
+                                <User className="w-4 h-4" />
                                 Person
                             </button>
                         </div>
 
                         {/* View Mode Toggle */}
-                        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p - 2 rounded - md transition - all ${viewMode === 'grid' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'} `}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Grid View"
                             >
                                 <Grid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('map')}
-                                className={`p - 2 rounded - md transition - all ${viewMode === 'map' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'} `}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'}`}
                                 title="Map View"
                             >
                                 <MapIcon className="w-4 h-4" />
