@@ -24,6 +24,14 @@ const StoryList = ({ personId, treeId, isEditor }) => {
     };
 
     const handleSave = async () => {
+        if (!treeId) {
+            console.error('Cannot save story: treeId is missing', { treeId, personId });
+            toast.error('Cannot save story: Tree ID is missing');
+            return;
+        }
+
+        console.log('Saving story with data:', { tree_id: treeId, person_ids: personId ? [personId] : [], ...formData });
+
         try {
             if (currentStory) {
                 await updateStory({ id: currentStory.id, ...formData });
