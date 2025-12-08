@@ -103,7 +103,7 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick }) => {
                                     {row.items.map(photo => (
                                         <div
                                             key={photo.id}
-                                            className="group relative aspect-square bg-slate-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all"
+                                            className="group relative h-[250px] bg-slate-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all"
                                             onClick={() => onPhotoClick && onPhotoClick(photo)}
                                         >
                                             <LazyImage
