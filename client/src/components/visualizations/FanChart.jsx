@@ -6,7 +6,16 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
 
     const ancestorTree = useMemo(() => {
         if (!centerPersonId || !persons || !relationships) return null;
-        return buildAncestorTree(centerPersonId, persons, relationships, 5);
+
+        const tree = buildAncestorTree(centerPersonId, persons, relationships, 5);
+        console.log('Fan Chart Debug:', {
+            centerPersonId,
+            personsCount: persons?.length,
+            relationshipsCount: relationships?.length,
+            ancestorTree: tree,
+            hasParents: tree?.parents?.length > 0
+        });
+        return tree;
     }, [centerPersonId, persons, relationships]);
 
     if (!ancestorTree) {
