@@ -6,7 +6,7 @@ const ViewModeSelector = ({ viewMode, onChange }) => {
         { id: 'standard', label: 'Standard Tree', icon: TreePine },
         { id: 'fan', label: 'Ancestor Fan', icon: Fan },
         { id: 'descendant', label: 'Descendants', icon: TrendingDown },
-        { id: 'timeline', label: 'Timeline', icon: Calendar },
+        { id: 'timeline', label: 'Event Chart', icon: Calendar },
     ];
 
     return (

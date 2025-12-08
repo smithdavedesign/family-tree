@@ -1,3 +1,4 @@
+```javascript
 import React, { useState, useMemo } from 'react';
 import {
     ResponsiveContainer,
@@ -11,7 +12,12 @@ import {
 } from 'recharts';
 import { aggregateTimeline, transformForRecharts } from '../../utils/treeUtils';
 
-const TimelineView = ({ persons, relationships, lifeEvents = [], onEventClick }) => {
+/**
+ * EventChartView - Recharts-based event visualization
+ * Shows births, deaths, marriages, and life events on a timeline scatter plot
+ * Note: This is different from the dedicated TimelinePage (/tree/:id/timeline)
+ */
+const EventChartView = ({ persons, relationships, lifeEvents = [], onEventClick }) => {
     const [selectedPerson, setSelectedPerson] = useState('all');
     const [selectedEventTypes, setSelectedEventTypes] = useState({
         birth: true,
@@ -91,7 +97,7 @@ const TimelineView = ({ persons, relationships, lifeEvents = [], onEventClick })
         } else if (style.shape === 'diamond') {
             return (
                 <path
-                    d={`M ${cx} ${cy - 8} L ${cx + 8} ${cy} L ${cx} ${cy + 8} L ${cx - 8} ${cy} Z`}
+                    d={`M ${ cx } ${ cy - 8 } L ${ cx + 8 } ${ cy } L ${ cx } ${ cy + 8 } L ${ cx - 8 } ${ cy } Z`}
                     fill={style.fill}
                     stroke="white"
                     strokeWidth={2}
@@ -228,4 +234,4 @@ const TimelineView = ({ persons, relationships, lifeEvents = [], onEventClick })
     );
 };
 
-export default TimelineView;
+export default EventChartView;

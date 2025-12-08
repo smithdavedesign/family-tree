@@ -12,7 +12,7 @@ import Navbar from '../components/Navbar';
 import ViewModeSelector from '../components/ViewModeSelector';
 import FanChart from '../components/visualizations/FanChart';
 import DescendantChart from '../components/visualizations/DescendantChart';
-import TimelineView from '../components/visualizations/TimelineView';
+import TimelineView from '../components/visualizations/EventChartView';
 import { Share2, Settings } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
