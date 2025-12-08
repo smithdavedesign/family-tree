@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, MapPin, User, Info } from 'lucide-react';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const PhotoLightbox = ({ photo, onClose }) => {
-    // Close on escape key
+const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+    // Handle keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') onClose();
+            if (e.key === 'ArrowRight' && onNext) onNext();
+            if (e.key === 'ArrowLeft' && onPrev) onPrev();
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [onClose]);
+    }, [onClose, onNext, onPrev]);
 
     if (!photo) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn group">
             {/* Close Button */}
             <button
                 onClick={onClose}
@@ -23,6 +25,27 @@ const PhotoLightbox = ({ photo, onClose }) => {
             >
                 <X className="w-8 h-8" />
             </button>
+
+            {/* Navigation Buttons */}
+            {hasPrev && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); onPrev(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
+                    aria-label="Previous photo"
+                >
+                    <ChevronLeft className="w-8 h-8" />
+                </button>
+            )}
+
+            {hasNext && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); onNext(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
+                    aria-label="Next photo"
+                >
+                    <ChevronRight className="w-8 h-8" />
+                </button>
+            )}
 
             <div className="flex flex-col md:flex-row w-full h-full max-w-[1600px] mx-auto overflow-hidden">
                 {/* Image Area */}

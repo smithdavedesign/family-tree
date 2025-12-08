@@ -227,6 +227,20 @@ const TreeGalleryPage = () => {
                 <PhotoLightbox
                     photo={selectedPhoto}
                     onClose={() => setSelectedPhoto(null)}
+                    onNext={() => {
+                        const currentIndex = filteredPhotos.findIndex(p => p.id === selectedPhoto.id);
+                        if (currentIndex < filteredPhotos.length - 1) {
+                            setSelectedPhoto(filteredPhotos[currentIndex + 1]);
+                        }
+                    }}
+                    onPrev={() => {
+                        const currentIndex = filteredPhotos.findIndex(p => p.id === selectedPhoto.id);
+                        if (currentIndex > 0) {
+                            setSelectedPhoto(filteredPhotos[currentIndex - 1]);
+                        }
+                    }}
+                    hasNext={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) < filteredPhotos.length - 1}
+                    hasPrev={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) > 0}
                 />
             )}
 
