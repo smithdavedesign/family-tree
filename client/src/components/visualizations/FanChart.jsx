@@ -172,7 +172,7 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full bg-white p-8">
+        <div className="flex flex-col items-center justify-center h-full bg-white p-8 relative">
             <div className="mb-4">
                 <h3 className="text-lg font-semibold text-slate-900">
                     Ancestor Fan Chart
@@ -236,9 +236,9 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
                                 strokeWidth="2"
                                 className="cursor-pointer transition-opacity"
                                 opacity={isHovered ? 1 : 0.85}
-                                onMouseEnter={() => setHoveredPerson(segment.person.id)}
-                                onMouseLeave={() => setHoveredPerson(null)}
-                                onClick={() => handleSegmentClick(segment)}
+                                onMouseEnter={() => setHov eredPerson(segment.person.id)}
+                            onMouseLeave={() => setHoveredPerson(null)}
+                            onClick={() => handleSegmentClick(segment)}
                             />
                             {/* Text label */}
                             {segment.endAngle - segment.startAngle > 15 && (
@@ -258,14 +258,14 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
                 })}
             </svg>
 
-            {/* Tooltip */}
+            {/* Tooltip - Positioned absolutely to prevent layout shift */}
             {hoveredPerson && (
-                <div className="mt-4 p-3 bg-slate-800 text-white rounded-lg shadow-lg">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 p-3 bg-slate-800 text-white rounded-lg shadow-lg z-10">
                     {(() => {
                         const person = segments.find(s => s.person.id === hoveredPerson)?.person;
                         if (!person) return null;
                         return (
-                            <div className="text-sm">
+                            <div className="text-sm whitespace-nowrap">
                                 <p className="font-semibold">{person.first_name} {person.last_name || ''}</p>
                                 <p className="text-slate-300 text-xs">
                                     {person.dob ? new Date(person.dob).getFullYear() : '?'} - {person.dod ? new Date(person.dod).getFullYear() : 'Present'}
