@@ -122,24 +122,26 @@ const TreeGalleryPage = () => {
 
                     <div className="flex items-center gap-4">
                         {/* Group By Toggle */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
-                            <button
-                                onClick={() => setGroupBy('date')}
-                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                            >
-                                <Calendar className="w-4 h-4" />
-                                Date
-                            </button>
-                            <button
-                                onClick={() => setGroupBy('person')}
-                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                            >
-                                <User className="w-4 h-4" />
-                                Person
-                            </button>
-                        </div>
+                        {viewMode === 'grid' && (
+                            <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
+                                <button
+                                    onClick={() => setGroupBy('date')}
+                                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    <Calendar className="w-4 h-4" />
+                                    Date
+                                </button>
+                                <button
+                                    onClick={() => setGroupBy('person')}
+                                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    <User className="w-4 h-4" />
+                                    Person
+                                </button>
+                            </div>
+                        )}
 
                         {/* View Mode Toggle */}
                         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
@@ -160,19 +162,21 @@ const TreeGalleryPage = () => {
                         </div>
 
                         {/* Person Filter */}
-                        <div className="relative">
-                            <select
-                                value={filterPerson}
-                                onChange={(e) => setFilterPerson(e.target.value)}
-                                className="pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none cursor-pointer hover:bg-slate-50"
-                            >
-                                <option value="all">All People</option>
-                                {persons.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                            <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        </div>
+                        {viewMode === 'grid' && (
+                            <div className="relative">
+                                <select
+                                    value={filterPerson}
+                                    onChange={(e) => setFilterPerson(e.target.value)}
+                                    className="pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none cursor-pointer hover:bg-slate-50"
+                                >
+                                    <option value="all">All People</option>
+                                    {persons.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                                <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            </div>
+                        )}
                         {/* Add Photo Button - Assuming a Button component exists or needs to be created/imported */}
                         {/* <Button
                             variant="primary"
