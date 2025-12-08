@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ReactFlow, {
     ReactFlowProvider,
     Controls,
@@ -9,6 +9,7 @@ import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 import CustomNode from '../CustomNode';
 import { getDescendantIds } from '../../utils/treeUtils';
+import { Home, ChevronUp } from 'lucide-react';
 
 const nodeWidth = 256;
 const nodeHeight = 80;
@@ -51,13 +52,58 @@ const getLayoutedElements = (nodes, edges) => {
 const nodeTypes = { custom: CustomNode };
 
 const DescendantChartContent = ({ persons, relationships, rootPersonId, onNodeClick }) => {
+    // State for current root (can change when clicking nodes)
+    const [currentRootId, setCurrentRootId] = useState(rootPersonId);
+    const [navigationHistory, setNavigationHistory] = useState([rootPersonId]);
+
+    // Reset when rootPersonId prop changes
+    useEffect(() => {
+        setCurrentRootId(rootPersonId);
+        setNavigationHistory([rootPersonId]);
+    }, [rootPersonId]);
+
+    // Get parent of current root
+    const getParentId = (personId) => {
+        const parentRelationship = relationships.find(r =>
+            r.person_2_id === personId && r.type === 'parent_child'
+        );
+        return parentRelationship?.person_1_id;
+    };
+
+    const handleReset = () => {
+        setCurrentRootId(rootPersonId);
+        setNavigationHistory([rootPersonId]);
+    };
+
+    const handleGoToParent = () => {
+        const parentId = getParentId(currentRootId);
+        if (parentId) {
+            setCurrentRootId(parentId);
+            setNavigationHistory(prev => [...prev, parentId]);
+        }
+    };
+
+    const handleInternalNodeClick = (event, node) => {
+        // Update current root to clicked node
+        setCurrentRootId(node.id);
+        setNavigationHistory(prev => [...prev, node.id]);
+
+        // Also call parent handler
+        if (onNodeClick) {
+            onNodeClick(event, node);
+        }
+    };
+
+    const currentPerson = persons.find(p => p.id === currentRootId);
+    const parentId = getParentId(currentRootId);
+    const hasParent = !!parentId;
     const { nodes, edges } = useMemo(() => {
-        if (!rootPersonId || !persons || !relationships) {
+        if (!currentRootId || !persons || !relationships) {
             return { nodes: [], edges: [] };
         }
 
         // Get all descendant IDs
-        const descendantIds = getDescendantIds(rootPersonId, persons, relationships);
+        const descendantIds = getDescendantIds(currentRootId, persons, relationships);
 
         // Filter persons to descendants only
         const descendantPersons = persons.filter(p => descendantIds.includes(p.id));
@@ -85,7 +131,7 @@ const DescendantChartContent = ({ persons, relationships, rootPersonId, onNodeCl
                 dod: p.dod,
                 occupation: p.occupation,
                 pob: p.pob,
-                highlighted: p.id === rootPersonId
+                highlighted: p.id === currentRootId
             },
             position: { x: 0, y: 0 }
         }));
@@ -119,7 +165,7 @@ const DescendantChartContent = ({ persons, relationships, rootPersonId, onNodeCl
         });
 
         return getLayoutedElements(initialNodes, initialEdges);
-    }, [rootPersonId, persons, relationships]);
+    }, [currentRootId, persons, relationships]);
 
     if (nodes.length === 0) {
         return (
@@ -130,16 +176,49 @@ const DescendantChartContent = ({ persons, relationships, rootPersonId, onNodeCl
     }
 
     return (
-        <div className="h-full w-full">
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white px-4 py-2 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-slate-900">Descendant Chart</h3>
-                <p className="text-sm text-slate-500">Showing {nodes.length} descendant{nodes.length !== 1 ? 's' : ''}</p>
+        <div className="h-full w-full relative">
+            {/* Header with Navigation Controls */}
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white px-4 py-3 rounded-lg shadow-md border border-slate-200">
+                <div className="flex items-center gap-4">
+                    {/* Navigation Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleReset}
+                            disabled={currentRootId === rootPersonId}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Reset to original view"
+                        >
+                            <Home className="w-4 h-4" />
+                            <span className="hidden sm:inline">Reset</span>
+                        </button>
+
+                        <button
+                            onClick={handleGoToParent}
+                            disabled={!hasParent}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Go to parent"
+                        >
+                            <ChevronUp className="w-4 h-4" />
+                            <span className="hidden sm:inline">Parent</span>
+                        </button>
+                    </div>
+
+                    {/* Current Focus */}
+                    <div className="border-l border-slate-300 pl-4">
+                        <div className="text-xs text-slate-500">Showing descendants of:</div>
+                        <div className="font-semibold text-slate-900">
+                            {currentPerson?.first_name} {currentPerson?.last_name || ''}
+                        </div>
+                        <div className="text-xs text-slate-600">{nodes.length} descendant{nodes.length !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
             </div>
+
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
-                onNodeClick={onNodeClick}
+                onNodeClick={handleInternalNodeClick}
                 fitView
                 fitViewOptions={{ padding: 0.2 }}
                 minZoom={0.1}
