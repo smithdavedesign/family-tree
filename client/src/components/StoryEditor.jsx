@@ -12,7 +12,9 @@ const StoryEditor = ({ content, onChange }) => {
                 openOnClick: false,
             }),
         ],
-        content: content || '',
+        content: content && typeof content === 'object' && Object.keys(content).length > 0
+            ? content
+            : { type: 'doc', content: [{ type: 'paragraph' }] },
         onUpdate: ({ editor }) => {
             const json = editor.getJSON();
             onChange(json);

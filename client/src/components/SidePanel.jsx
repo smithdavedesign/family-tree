@@ -62,18 +62,35 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`/ api / person / ${person.id}/media`, {
+            const response = await fetch(`/api/person/${person.id}/media`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
 
-            if (response.ok) {
+            // Check for non-success status codes
+            if (!response.ok) {
+                console.error(`Media fetch failed with status: ${response.status}`);
+                setMedia([]);
+                return;
+            }
+
+            // Check the Content-Type header before attempting to parse as JSON
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
                 const data = await response.json();
                 setMedia(data);
+            } else {
+                // Handle unexpected content type (e.g., HTML error page)
+                console.error("Error: Expected JSON, received unexpected content type:", contentType);
+                const text = await response.text();
+                console.error("Unexpected response content start:", text.substring(0, 100));
+                setMedia([]);
             }
         } catch (error) {
             console.error("Error fetching media:", error);
+            setMedia([]);
         } finally {
             setLoadingMedia(false);
         }

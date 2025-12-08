@@ -9,11 +9,11 @@ const StoryList = ({ personId, treeId, isEditor }) => {
     const { stories, isLoading, createStory, updateStory, deleteStory } = useStories(treeId, personId);
     const [isEditing, setIsEditing] = useState(false);
     const [currentStory, setCurrentStory] = useState(null);
-    const [formData, setFormData] = useState({ title: '', content: {} });
+    const [formData, setFormData] = useState({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
 
     const handleCreate = () => {
         setCurrentStory(null);
-        setFormData({ title: '', content: {} });
+        setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
         setIsEditing(true);
     };
 
@@ -37,7 +37,7 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                 toast.success('Story created');
             }
             setIsEditing(false);
-            setFormData({ title: '', content: {} });
+            setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
         } catch (error) {
             console.error('Error saving story:', error);
             toast.error('Failed to save story');
@@ -59,7 +59,7 @@ const StoryList = ({ personId, treeId, isEditor }) => {
     const handleCancel = () => {
         setIsEditing(false);
         setCurrentStory(null);
-        setFormData({ title: '', content: {} });
+        setFormData({ title: '', content: { type: 'doc', content: [{ type: 'paragraph' }] } });
     };
 
     if (isLoading) {
