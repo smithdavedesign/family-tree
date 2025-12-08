@@ -64,6 +64,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: layoutedNodes, edges };
 };
 
+// Define nodeTypes outside component to prevent recreation
 const nodeTypes = { custom: CustomNode };
 
 const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen }) => {
