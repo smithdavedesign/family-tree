@@ -7,6 +7,24 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
     const ancestorTree = useMemo(() => {
         if (!centerPersonId || !persons || !relationships) return null;
 
+        // Debug: What relationships exist for this person?
+        const personRelationships = relationships.filter(r =>
+            r.person_1_id === centerPersonId || r.person_2_id === centerPersonId
+        );
+
+        const parentRelationships = relationships.filter(r =>
+            r.person_2_id === centerPersonId && r.type === 'parent_child'
+        );
+
+        console.log('Relationship Debug:', {
+            centerPersonId,
+            centerPerson: persons.find(p => p.id === centerPersonId),
+            allRelationships: relationships,
+            personRelationships,
+            parentRelationships,
+            relationshipTypes: [...new Set(relationships.map(r => r.type))]
+        });
+
         const tree = buildAncestorTree(centerPersonId, persons, relationships, 5);
         console.log('Fan Chart Debug:', {
             centerPersonId,
