@@ -66,31 +66,57 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                         )}
                     </div>
 
+                    {/* Associated Person (Primary) */}
+                    {photo.person && (
+                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0">
+                                {photo.person.photo_url ? (
+                                    <img src={photo.person.photo_url} alt={photo.person.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-full h-full p-2 text-white/50" />
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-sm text-white/50">Photo of</p>
+                                <p className="font-semibold text-white">{photo.person.name}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-4">
                         {photo.date && (
                             <div className="flex items-center gap-3 text-white/80">
-                                <Calendar className="w-5 h-5 text-teal-400" />
-                                <span>{new Date(photo.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                <Calendar className="w-5 h-5 text-teal-400 shrink-0" />
+                                <div>
+                                    <p className="text-xs text-white/50">Date Taken</p>
+                                    <span>{new Date(photo.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                </div>
                             </div>
                         )}
 
                         {photo.location && (
                             <div className="flex items-center gap-3 text-white/80">
-                                <MapPin className="w-5 h-5 text-teal-400" />
-                                <span>{photo.location}</span>
+                                <MapPin className="w-5 h-5 text-teal-400 shrink-0" />
+                                <div>
+                                    <p className="text-xs text-white/50">Location</p>
+                                    <span>{photo.location}</span>
+                                </div>
                             </div>
                         )}
 
-                        {/* Tagged People (Mock data structure for now if not available) */}
+                        {/* Tagged People (Secondary) */}
                         {photo.people && photo.people.length > 0 && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 pt-2">
                                 <div className="flex items-center gap-3 text-white/80 mb-1">
-                                    <User className="w-5 h-5 text-teal-400" />
+                                    <User className="w-5 h-5 text-teal-400 shrink-0" />
                                     <span className="font-medium">Tagged People</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 pl-8">
                                     {photo.people.map((person, idx) => (
-                                        <span key={idx} className="px-2 py-1 bg-white/10 rounded-md text-xs hover:bg-white/20 transition-colors cursor-default">
+                                        <span key={idx} className="px-2 py-1 bg-white/10 rounded-md text-xs hover:bg-white/20 transition-colors cursor-default flex items-center gap-1">
+                                            {person.photo_url && (
+                                                <img src={person.photo_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                                            )}
                                             {person.name}
                                         </span>
                                     ))}
