@@ -12,12 +12,15 @@ import PhotoMap from '../components/PhotoMap';
 
 import AccountSettings from '../components/AccountSettings';
 
+import PhotoLightbox from '../components/PhotoLightbox';
+
 const TreeGalleryPage = () => {
     const { id: treeId } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'map'
+    const [selectedPhoto, setSelectedPhoto] = useState(null);
 
 
     // Fetch Data using React Query
@@ -52,9 +55,8 @@ const TreeGalleryPage = () => {
     const isLoading = photosLoading || treeLoading;
     const error = photosError;
 
-    // Placeholder for handlePhotoClick and onOpenPhotoPicker
     const handlePhotoClick = (photo) => {
-        console.log('Open lightbox', photo);
+        setSelectedPhoto(photo);
     };
 
     const onOpenPhotoPicker = () => {
@@ -107,7 +109,7 @@ const TreeGalleryPage = () => {
 
             {/* Header / Controls */}
             <div className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0 z-20">
-                <div className="max-w-[1600px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+                <div className="w-full px-4 py-3 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <ImageIcon className="w-6 h-6 text-teal-600" />
@@ -185,7 +187,7 @@ const TreeGalleryPage = () => {
 
             {/* Gallery Grid (Virtualized) / Photo Map */}
             <div className="flex-1 overflow-hidden">
-                <div className="max-w-[1600px] mx-auto px-4 h-full">
+                <div className="w-full px-4 h-full">
                     {isLoading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
@@ -215,6 +217,14 @@ const TreeGalleryPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Lightbox */}
+            {selectedPhoto && (
+                <PhotoLightbox
+                    photo={selectedPhoto}
+                    onClose={() => setSelectedPhoto(null)}
+                />
+            )}
 
             {/* Account Settings Modal */}
             {showSettings && (
