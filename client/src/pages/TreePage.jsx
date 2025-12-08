@@ -200,7 +200,7 @@ const TreePage = () => {
                         <FanChart
                             persons={persons}
                             relationships={relationships}
-                            centerPersonId={selectedPerson?.id || (persons[0]?.id)}
+                            centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
                             onPersonClick={handleNodeClick}
                         />
                     )}
@@ -208,7 +208,7 @@ const TreePage = () => {
                         <DescendantChart
                             persons={persons}
                             relationships={relationships}
-                            rootPersonId={selectedPerson?.id || (persons[0]?.id)}
+                            rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
                             onNodeClick={handleNodeClick}
                         />
                     )}
