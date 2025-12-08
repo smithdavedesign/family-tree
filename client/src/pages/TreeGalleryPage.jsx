@@ -107,8 +107,8 @@ const TreeGalleryPage = () => {
             />
 
             {/* Header / Controls */}
-            <div className="bg-white border-b border-slate-200 px-4 py-3 shadow-sm flex-shrink-0 z-20">
-                <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0 z-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <ImageIcon className="w-6 h-6 text-teal-600" />
@@ -186,14 +186,14 @@ const TreeGalleryPage = () => {
 
             {/* Gallery Grid (Virtualized) / Photo Map */}
             <div className="flex-1 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 h-full">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
                     {isLoading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
                         </div>
                     ) : (
                         viewMode === 'map' ? (
-                            <div className="h-full w-full p-4">
+                            <div className="h-full w-full py-4">
                                 <PhotoMap photos={filteredPhotos} />
                             </div>
                         ) : (
