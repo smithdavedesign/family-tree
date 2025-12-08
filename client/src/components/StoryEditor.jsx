@@ -1,16 +1,12 @@
 import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Link as LinkIcon } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered, Heading1, Heading2 } from 'lucide-react';
 
 const StoryEditor = ({ content, onChange }) => {
     const editor = useEditor({
         extensions: [
             StarterKit,
-            Link.configure({
-                openOnClick: false,
-            }),
         ],
         content: content && typeof content === 'object' && Object.keys(content).length > 0
             ? content
@@ -25,21 +21,7 @@ const StoryEditor = ({ content, onChange }) => {
         return null;
     }
 
-    const setLink = () => {
-        const previousUrl = editor.getAttributes('link').href;
-        const url = window.prompt('URL', previousUrl);
 
-        if (url === null) {
-            return;
-        }
-
-        if (url === '') {
-            editor.chain().focus().extendMarkRange('link').unsetLink().run();
-            return;
-        }
-
-        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-    };
 
     return (
         <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
@@ -92,16 +74,6 @@ const StoryEditor = ({ content, onChange }) => {
                     title="Numbered List"
                 >
                     <ListOrdered className="w-4 h-4" />
-                </button>
-
-                <div className="w-px h-6 bg-slate-300 mx-1" />
-
-                <button
-                    onClick={setLink}
-                    className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('link') ? 'bg-slate-200' : ''}`}
-                    title="Add Link"
-                >
-                    <LinkIcon className="w-4 h-4" />
                 </button>
             </div>
 
