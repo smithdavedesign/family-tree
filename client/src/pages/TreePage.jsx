@@ -9,6 +9,10 @@ import AccountSettings from '../components/AccountSettings';
 import PhotoPicker from '../components/PhotoPicker';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Navbar from '../components/Navbar';
+import ViewModeSelector from '../components/ViewModeSelector';
+import FanChart from '../components/visualizations/FanChart';
+import DescendantChart from '../components/visualizations/DescendantChart';
+import TimelineView from '../components/visualizations/TimelineView';
 import { Share2, Settings } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
@@ -17,6 +21,8 @@ const TreePage = () => {
     const { id } = useParams();
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [persons, setPersons] = useState([]);
+    const [relationships, setRelationships] = useState([]);
+    const [lifeEvents, setLifeEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [highlightedNodes, setHighlightedNodes] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -28,6 +34,18 @@ const TreePage = () => {
     const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState(null);
+
+    // View mode state with localStorage persistence
+    const [viewMode, setViewMode] = useState(() => {
+        const saved = localStorage.getItem(`viewMode_${id}`);
+        return saved || 'standard';
+    });
+
+    // Persist view mode changes
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        localStorage.setItem(`viewMode_${id}`, mode);
+    };
 
     useEffect(() => {
         loadTreeData();
@@ -51,10 +69,25 @@ const TreePage = () => {
 
             if (!response.ok) throw new Error('Failed to load tree');
 
-            const { persons: treePersons, name, role } = await response.json();
+            const { persons: treePersons, relationships: treeRelationships, name, role } = await response.json();
             setPersons(treePersons);
+            setRelationships(treeRelationships || []);
             setTreeName(name);
             setUserRole(role);
+
+            // Fetch life events for timeline view
+            try {
+                const eventsResponse = await fetch(`/api/life-events?tree_id=${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (eventsResponse.ok) {
+                    const events = await eventsResponse.json();
+                    setLifeEvents(events);
+                }
+            } catch (err) {
+                console.error('Error loading life events:', err);
+                setLifeEvents([]);
+            }
         } catch (error) {
             console.error('Error loading tree:', error);
         } finally {
@@ -131,6 +164,11 @@ const TreePage = () => {
                 ]}
             />
 
+            {/* View Mode Selector */}
+            <div className="flex justify-center py-4 bg-white border-b border-slate-200">
+                <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+            </div>
+
             {/* Search Bar - Conditionally Rendered */}
             {isSearchOpen && (
                 <div className="absolute top-28 left-4 z-30 w-full max-w-md animate-slideIn">
@@ -145,17 +183,43 @@ const TreePage = () => {
 
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden relative">
-                {/* Tree Visualizer */}
+                {/* Tree Visualizer - Conditional Rendering based on ViewMode */}
                 <div className="flex-1 relative">
-                    <TreeVisualizer
-                        treeId={id}
-                        onNodeClick={handleNodeClick}
-                        highlightedNodes={highlightedNodes}
-                        key={refreshTrigger}
-                        userRole={userRole}
-                        onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
-                        isSearchOpen={isSearchOpen}
-                    />
+                    {viewMode === 'standard' && (
+                        <TreeVisualizer
+                            treeId={id}
+                            onNodeClick={handleNodeClick}
+                            highlightedNodes={highlightedNodes}
+                            key={refreshTrigger}
+                            userRole={userRole}
+                            onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+                            isSearchOpen={isSearchOpen}
+                        />
+                    )}
+                    {viewMode === 'fan' && (
+                        <FanChart
+                            persons={persons}
+                            relationships={relationships}
+                            centerPersonId={selectedPerson?.id || (persons[0]?.id)}
+                            onPersonClick={handleNodeClick}
+                        />
+                    )}
+                    {viewMode === 'descendant' && (
+                        <DescendantChart
+                            persons={persons}
+                            relationships={relationships}
+                            rootPersonId={selectedPerson?.id || (persons[0]?.id)}
+                            onNodeClick={handleNodeClick}
+                        />
+                    )}
+                    {viewMode === 'timeline' && (
+                        <TimelineView
+                            persons={persons}
+                            relationships={relationships}
+                            lifeEvents={lifeEvents}
+                            onEventClick={handleNodeClick}
+                        />
+                    )}
                 </div>
 
                 {/* ... (SidePanel) */}
