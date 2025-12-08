@@ -64,9 +64,6 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: layoutedNodes, edges };
 };
 
-// Define nodeTypes outside component to prevent recreation
-const nodeTypes = { custom: CustomNode };
-
 const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen }) => {
     const { toast } = useToast();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -81,6 +78,9 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
     const [isViewLocked, setIsViewLocked] = useState(false);
     const [selectedNodeId, setSelectedNodeId] = useState(null);
     const { fitView, setCenter, getNodes, getEdges } = useReactFlow();
+
+    // Memoize nodeTypes to prevent React Flow warning
+    const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
     // Store original data to restore after focus mode
     const [originalGraph, setOriginalGraph] = useState({ nodes: [], edges: [] });
