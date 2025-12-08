@@ -165,8 +165,10 @@ const TreePage = () => {
             />
 
             {/* View Mode Selector */}
-            <div className="flex justify-center py-4 bg-white border-b border-slate-200">
-                <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+            <div className="bg-white border-b border-slate-200">
+                <div className="max-w-[1600px] mx-auto px-4 py-3">
+                    <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+                </div>
             </div>
 
             {/* Search Bar - Conditionally Rendered */}

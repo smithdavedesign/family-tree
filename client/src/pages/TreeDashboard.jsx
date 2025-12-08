@@ -156,15 +156,16 @@ const TreeDashboard = (props) => {
                 }
             />
 
-            <div className="flex">
+            <div className="max-w-[1600px] mx-auto px-4 flex items-start">
                 <Sidebar
                     activeView={activeView}
                     onViewChange={setActiveView}
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
+                    className="shrink-0"
                 />
 
-                <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
+                <main className="flex-1 min-w-0 py-8 pl-8 animate-fadeIn">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                         <div>
