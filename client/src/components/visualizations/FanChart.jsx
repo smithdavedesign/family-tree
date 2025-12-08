@@ -149,8 +149,25 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
 
     const handleSegmentClick = (segment) => {
         if (onPersonClick && segment.person) {
-            // Create a mock event and node for compatibility with TreeVisualizer pattern
-            onPersonClick(null, { data: segment.person });
+            // Match TreeVisualizer's node structure
+            const nodeStructure = {
+                id: segment.person.id,
+                data: {
+                    id: segment.person.id,
+                    tree_id: segment.person.tree_id,
+                    label: `${segment.person.first_name} ${segment.person.last_name || ''}`,
+                    first_name: segment.person.first_name,
+                    last_name: segment.person.last_name,
+                    profile_photo_url: segment.person.profile_photo_url,
+                    gender: segment.person.gender,
+                    dob: segment.person.dob,
+                    dod: segment.person.dod,
+                    pob: segment.person.pob,
+                    occupation: segment.person.occupation,
+                    bio: segment.person.bio
+                }
+            };
+            onPersonClick(null, nodeStructure);
         }
     };
 
