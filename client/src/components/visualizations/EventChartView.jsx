@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useMemo } from 'react';
 import {
     ResponsiveContainer,
@@ -97,7 +96,7 @@ const EventChartView = ({ persons, relationships, lifeEvents = [], onEventClick 
         } else if (style.shape === 'diamond') {
             return (
                 <path
-                    d={`M ${ cx } ${ cy - 8 } L ${ cx + 8 } ${ cy } L ${ cx } ${ cy + 8 } L ${ cx - 8 } ${ cy } Z`}
+                    d={`M ${cx} ${cy - 8} L ${cx + 8} ${cy} L ${cx} ${cy + 8} L ${cx - 8} ${cy} Z`}
                     fill={style.fill}
                     stroke="white"
                     strokeWidth={2}
