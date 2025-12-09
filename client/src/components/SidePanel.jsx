@@ -748,10 +748,21 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         ) : (
                             <div className="space-y-2">
                                 {relationships.map((rel) => {
-                                    const typeLabel = rel.type === 'spouse' ? 'Spouse' :
-                                        rel.type === 'adoptive_parent_child' ? 'Adoptive' :
-                                            rel.type === 'step_parent_child' ? 'Step' :
-                                                rel.direction === 'from' ? 'Parent of' : 'Child of';
+                                    // Format relationship type label
+                                    const relType = rel.relationship_type?.toLowerCase() || '';
+                                    let typeLabel = rel.relationship_type?.replace('_', ' ') || 'Related to';
+
+                                    // Special handling for common types
+                                    if (relType === 'spouse') {
+                                        typeLabel = 'Spouse';
+                                    } else if (relType === 'partner') {
+                                        typeLabel = 'Partner';
+                                    } else if (relType === 'sibling') {
+                                        typeLabel = 'Sibling';
+                                    } else if (relType.includes('parent') && relType.includes('child')) {
+                                        // Determine if this person is parent or child
+                                        typeLabel = rel.direction === 'from' ? 'Parent of' : 'Child of';
+                                    }
 
                                     return (
                                         <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
