@@ -10,6 +10,7 @@ import PersonTimeline from '../components/PersonTimeline';
 import PersonPhotoGallery from '../components/PersonPhotoGallery';
 import PersonStories from '../components/PersonStories';
 import RelationshipMap from '../components/RelationshipMap';
+import SidePanel from '../components/SidePanel';
 
 // Fetch aggregated person data
 const fetchPersonProfile = async (treeId, personId) => {
@@ -45,6 +46,8 @@ const PersonPage = () => {
     const { treeId, personId } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = React.useState(null);
+    const [showSidePanel, setShowSidePanel] = React.useState(false);
+    const [refreshKey, setRefreshKey] = React.useState(0);
 
     React.useEffect(() => {
         const fetchUser = async () => {
@@ -54,8 +57,8 @@ const PersonPage = () => {
         fetchUser();
     }, []);
 
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['personProfile', treeId, personId],
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: ['personProfile', treeId, personId, refreshKey],
         queryFn: () => fetchPersonProfile(treeId, personId),
         enabled: !!treeId && !!personId,
     });
@@ -108,6 +111,36 @@ const PersonPage = () => {
     const lifespan = calculateLifespan();
     const fullName = `${person.first_name} ${person.middle_name || ''} ${person.last_name || ''}`.trim();
 
+    // Handler functions for actions
+    const handleUpdate = () => {
+        setRefreshKey(prev => prev + 1);
+    };
+
+    const handleEditPerson = () => {
+        setShowSidePanel(true);
+    };
+
+    const handleAddPhoto = () => {
+        // TODO: Open photo picker or navigate to gallery
+        setShowSidePanel(true);
+    };
+
+    const handleAddStory = () => {
+        // TODO: Open story creation or navigate to stories
+        setShowSidePanel(true);
+    };
+
+    // Format person data for SidePanel
+    const sidePanelPerson = {
+        id: person.id,
+        data: {
+            ...person,
+            label: fullName,
+            subline: person.dob ? new Date(person.dob).getFullYear().toString() : '',
+            tree_id: treeId
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Navbar */}
@@ -130,18 +163,9 @@ const PersonPage = () => {
                 <PersonHero
                     person={person}
                     isEditor={isEditor}
-                    onEditPerson={() => {
-                        // TODO: Open edit modal or navigate to edit page
-                        console.log('Edit person');
-                    }}
-                    onAddPhoto={() => {
-                        // TODO: Open photo picker
-                        console.log('Add photo');
-                    }}
-                    onAddStory={() => {
-                        // TODO: Navigate to story creation or open modal
-                        console.log('Add story');
-                    }}
+                    onEditPerson={handleEditPerson}
+                    onAddPhoto={handleAddPhoto}
+                    onAddStory={handleAddStory}
                 />
 
                 {/* Life Timeline */}
@@ -161,6 +185,17 @@ const PersonPage = () => {
                     treeId={treeId}
                 />
             </main>
+
+            {/* Side Panel for Editing */}
+            {showSidePanel && (
+                <SidePanel
+                    person={sidePanelPerson}
+                    onClose={() => setShowSidePanel(false)}
+                    onUpdate={handleUpdate}
+                    onOpenPhotoPicker={() => { }}
+                    userRole={userRole}
+                />
+            )}
         </div>
     );
 };

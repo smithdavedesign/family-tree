@@ -6,25 +6,43 @@ const RelationshipMap = ({ person, relationships, allPersons, treeId }) => {
     // Helper to find person by ID
     const findPerson = (id) => allPersons.find(p => p.id === id);
 
+    // Debug logging
+    console.log('RelationshipMap Debug:', {
+        personId: person.id,
+        relationshipsCount: relationships?.length || 0,
+        allPersonsCount: allPersons?.length || 0,
+        relationships: relationships
+    });
+
     // Extract different relationship types
     const parents = [];
     const spouses = [];
     const children = [];
     const siblings = [];
 
+    if (!relationships || !Array.isArray(relationships)) {
+        console.warn('No relationships array provided');
+        return null;
+    }
+
     relationships.forEach(rel => {
         const isP1 = rel.person_1_id === person.id;
         const otherId = isP1 ? rel.person_2_id : rel.person_1_id;
         const otherPerson = findPerson(otherId);
-        if (!otherPerson) return;
+
+        if (!otherPerson) {
+            console.warn(`Could not find person with id: ${otherId}`);
+            return;
+        }
 
         switch (rel.relationship_type) {
             case 'parent_child':
-                if (isP1) {
-                    // Person is parent
+                // In parent_child: person_1 is the parent, person_2 is the child
+                if (rel.person_1_id === person.id) {
+                    // This person is the parent
                     children.push({ ...otherPerson, relationship: rel });
                 } else {
-                    // Person is child
+                    // This person is the child
                     parents.push({ ...otherPerson, relationship: rel });
                 }
                 break;
