@@ -35,28 +35,24 @@ const RelationshipMap = ({ person, relationships, allPersons, treeId }) => {
             return;
         }
 
-        switch (rel.relationship_type) {
-            case 'parent_child':
-                // In parent_child: person_1 is the parent, person_2 is the child
-                if (rel.person_1_id === person.id) {
-                    // This person is the parent
-                    children.push({ ...otherPerson, relationship: rel });
-                } else {
-                    // This person is the child
-                    parents.push({ ...otherPerson, relationship: rel });
-                }
-                break;
-            case 'spouse':
-            case 'partner':
-                spouses.push({ ...otherPerson, relationship: rel });
-                break;
-            case 'sibling':
-                siblings.push({ ...otherPerson, relationship: rel });
-                break;
+        // Categorize based on relationship_type
+        const relType = rel.relationship_type?.toLowerCase() || '';
+
+        if (relType.includes('parent') && relType.includes('child')) {
+            // parent_child: person_1 is parent, person_2 is child
+            if (rel.person_1_id === person.id) {
+                children.push({ ...otherPerson, relationship: rel });
+            } else {
+                parents.push({ ...otherPerson, relationship: rel });
+            }
+        } else if (relType === 'spouse' || relType === 'partner') {
+            spouses.push({ ...otherPerson, relationship: rel });
+        } else if (relType === 'sibling') {
+            siblings.push({ ...otherPerson, relationship: rel });
         }
     });
 
-    const PersonCard = ({ person: p, label, iconColor = "teal" }) => {
+    const PersonCard = ({ person: p, relationshipLabel }) => {
         const fullName = `${p.first_name} ${p.last_name || ''}`.trim();
         const lifespan = p.dob ? (p.dod ?
             `${new Date(p.dob).getFullYear()}–${new Date(p.dod).getFullYear()}` :

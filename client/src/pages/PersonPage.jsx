@@ -192,13 +192,24 @@ const PersonPage = () => {
 
             {/* Side Panel for Editing */}
             {showSidePanel && (
-                <SidePanel
-                    person={sidePanelPerson}
-                    onClose={() => setShowSidePanel(false)}
-                    onUpdate={handleUpdate}
-                    onOpenPhotoPicker={() => { }}
-                    userRole={userRole}
-                />
+                <div className="fixed inset-0 z-50 flex items-start justify-end">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setShowSidePanel(false)}
+                    />
+
+                    {/* Panel */}
+                    <div className="relative w-full max-w-2xl h-full bg-white shadow-2xl overflow-hidden">
+                        <SidePanel
+                            person={sidePanelPerson}
+                            onClose={() => setShowSidePanel(false)}
+                            onUpdate={handleUpdate}
+                            onOpenPhotoPicker={() => { }}
+                            userRole={userRole}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );
