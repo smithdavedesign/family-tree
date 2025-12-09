@@ -160,15 +160,16 @@ exports.getEventsForPhoto = async (req, res) => {
 
     try {
         // Find events where media_ids contains the photo ID
+        // Using raw filter because media_ids is JSONB and we need to check containment
         const { data, error } = await supabaseAdmin
             .from('life_events')
             .select('*')
-            .contains('media_ids', [id])
+            .filter('media_ids', 'cs', `["${id}"]`)
             .order('date', { ascending: true });
 
         if (error) throw error;
 
-        res.json(data);
+        res.json(data || []);
     } catch (error) {
         console.error('Error fetching events for photo:', error);
         res.status(500).json({ error: error.message });

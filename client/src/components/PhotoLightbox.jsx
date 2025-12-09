@@ -136,16 +136,27 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                                     <span className="font-medium">Related Stories</span>
                                 </div>
                                 <div className="pl-8 space-y-2">
-                                    {stories.map(story => (
-                                        <Link
-                                            key={story.id}
-                                            to={`/story/${story.id}`}
-                                            className="block p-2 bg-white/10 rounded-md hover:bg-white/20 transition-colors"
-                                        >
-                                            <p className="text-sm font-medium text-white">{story.title}</p>
-                                            <p className="text-xs text-white/60 truncate">{story.content}</p>
-                                        </Link>
-                                    ))}
+                                    {stories.map(story => {
+                                        // Extract preview text from story content (first paragraph)
+                                        let preview = 'No content';
+                                        if (story.content && typeof story.content === 'object' && story.content.content) {
+                                            const firstParagraph = story.content.content.find(node => node.type === 'paragraph');
+                                            if (firstParagraph && firstParagraph.content) {
+                                                preview = firstParagraph.content.map(c => c.text || '').join('');
+                                            }
+                                        }
+
+                                        return (
+                                            <Link
+                                                key={story.id}
+                                                to={`/story/${story.id}`}
+                                                className="block p-2 bg-white/10 rounded-md hover:bg-white/20 transition-colors"
+                                            >
+                                                <p className="text-sm font-medium text-white">{story.title}</p>
+                                                <p className="text-xs text-white/60 truncate">{preview}</p>
+                                            </Link>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
