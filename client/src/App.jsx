@@ -159,6 +159,7 @@ function App() {
             <Route path="/story/:id" element={<StoryPage />} />
             <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
             <Route path="/tree/:treeId/albums" element={<AlbumPage />} />
+            <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
           </Routes>
         </Suspense>
       </Router>

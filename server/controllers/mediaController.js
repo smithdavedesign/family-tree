@@ -164,14 +164,21 @@ exports.getPhotos = async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('photos')
-            .select('*')
+            .select('*, persons!inner(tree_id)')
             .eq('person_id', personId)
             .order('is_primary', { ascending: false }) // Primary first
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        res.json(data);
+        // Map to include tree_id at top level
+        const photos = data.map(photo => ({
+            ...photo,
+            tree_id: photo.persons?.tree_id,
+            persons: undefined // Remove nested object
+        }));
+
+        res.json(photos);
     } catch (error) {
         console.error('Error fetching photos:', error);
         res.status(500).json({ error: error.message });
@@ -271,7 +278,7 @@ exports.getTreePhotos = async (req, res) => {
             person_name: `${photo.persons.first_name} ${photo.persons.last_name || ''}`.trim(),
             person_photo_url: photo.persons.profile_photo_url,
             person_dob: photo.persons.dob,
-            tree_id: photo.persons.tree_id, // Add tree_id for navigation
+            tree_id: treeId, // Add tree_id for navigation
 
             // New fields for PhotoLightbox
             date: photo.taken_date,

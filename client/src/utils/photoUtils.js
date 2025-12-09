@@ -41,7 +41,7 @@ export const groupPhotosByPerson = (photos) => {
             groups[name] = {
                 id: photo.person_id,
                 name: name,
-                photo: photo.person_photo,
+                photo: photo.person_photo_url,
                 dob: photo.person_dob,
                 items: []
             };

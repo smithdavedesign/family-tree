@@ -123,12 +123,14 @@ const PersonPhotoGallery = ({ personId }) => {
             </div>
 
             {/* Photo Lightbox */}
-            {lightboxIndex !== null && (
+            {lightboxIndex !== null && photos[lightboxIndex] && (
                 <PhotoLightbox
-                    photos={photos}
-                    currentIndex={lightboxIndex}
+                    photo={photos[lightboxIndex]}
                     onClose={() => setLightboxIndex(null)}
-                    onNavigate={setLightboxIndex}
+                    onNext={() => setLightboxIndex(prev => prev + 1)}
+                    onPrev={() => setLightboxIndex(prev => prev - 1)}
+                    hasNext={lightboxIndex < photos.length - 1}
+                    hasPrev={lightboxIndex > 0}
                 />
             )}
         </>

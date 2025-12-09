@@ -12,6 +12,8 @@ import PersonStories from '../components/PersonStories';
 import RelationshipMap from '../components/RelationshipMap';
 import PersonDocuments from '../components/PersonDocuments';
 import SidePanel from '../components/SidePanel';
+import PersonHeatmap from '../components/PersonHeatmap';
+import { Map as MapIcon } from 'lucide-react';
 
 // Fetch aggregated person data
 const fetchPersonProfile = async (treeId, personId) => {
@@ -162,6 +164,15 @@ const PersonPage = () => {
 
                 {/* Photo Gallery */}
                 <PersonPhotoGallery personId={personId} />
+
+                {/* Location History (Map) */}
+                <section>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <MapIcon className="w-5 h-5 text-teal-600" />
+                        Location History
+                    </h2>
+                    <PersonHeatmap personId={personId} />
+                </section>
 
                 {/* Stories */}
                 <PersonStories personId={personId} treeId={treeId} />

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Trash2, Plus, Lock, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Lock, Image as ImageIcon, X, Star } from 'lucide-react';
 import { Button, Modal, useToast } from './ui';
 import { supabase } from '../auth';
 import PhotoLightbox from './PhotoLightbox';
+import PhotoSelectorModal from './PhotoSelectorModal';
 
 const AlbumView = ({ albumId, onBack, userRole }) => {
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isPhotoSelectorOpen, setIsPhotoSelectorOpen] = useState(false);
     const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(null);
     const [editData, setEditData] = useState({ name: '', description: '', is_private: false });
 
@@ -58,6 +60,31 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
         }
     });
 
+    // Set Cover Photo Mutation (Added)
+    const setCoverMutation = useMutation({
+        mutationFn: async (photoId) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`/api/album/${albumId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ cover_photo_id: photoId })
+            });
+            if (!response.ok) throw new Error('Failed to set cover photo');
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['album', albumId]);
+            queryClient.invalidateQueries(['albums']);
+            toast.success('Cover photo updated');
+        },
+        onError: () => {
+            toast.error('Failed to set cover photo');
+        }
+    });
+
     // Delete album mutation
     const deleteMutation = useMutation({
         mutationFn: async () => {
@@ -97,6 +124,31 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
         }
     });
 
+    // Add Photos Mutation (Added)
+    const addPhotosMutation = useMutation({
+        mutationFn: async (photoIds) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`/api/album/${albumId}/photos`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ photo_ids: photoIds })
+            });
+            if (!response.ok) throw new Error('Failed to add photos');
+            return response.json();
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(['album', albumId]);
+            toast.success(`Added ${data.added} photos to album`);
+            setIsPhotoSelectorOpen(false);
+        },
+        onError: () => {
+            toast.error('Failed to add photos');
+        }
+    });
+
     const handleUpdate = () => {
         if (!editData.name.trim()) {
             toast.error('Album name is required');
@@ -115,6 +167,14 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
         if (confirm('Remove this photo from the album?')) {
             removePhotoMutation.mutate(photoId);
         }
+    };
+
+    const handleAddPhotos = (photoIds) => { // Added handler
+        addPhotosMutation.mutate(photoIds);
+    };
+
+    const handleSetCover = (photoId) => {
+        setCoverMutation.mutate(photoId);
     };
 
     if (isLoading) {
@@ -143,9 +203,10 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
                         variant="ghost"
                         size="sm"
                         onClick={onBack}
-                        className="mt-1"
+                        className="mt-1 gap-2"
                     >
                         <ArrowLeft className="w-4 h-4" />
+                        Back to Albums
                     </Button>
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -169,6 +230,14 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
                 {/* Actions */}
                 {album.permissions?.canEdit && (
                     <div className="flex gap-2">
+                        <Button // Added "Add Photos" button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsPhotoSelectorOpen(true)}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Photos
+                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
@@ -197,37 +266,67 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
                     <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-slate-700 mb-2">No photos yet</h3>
                     <p className="text-slate-500 mb-4">Add photos to this album from the gallery</p>
+                    {album.permissions?.canEdit && ( // Added button for empty state
+                        <Button onClick={() => setIsPhotoSelectorOpen(true)}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Photos
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {album.photos.map((photo, index) => (
-                        <div
-                            key={photo.id}
-                            className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-pointer"
-                            onClick={() => setSelectedPhotoIndex(index)}
-                        >
-                            <img
-                                src={photo.thumbnail_url || photo.url}
-                                alt={photo.caption || ''}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                loading="lazy"
-                            />
+                    {album.photos.map((item, index) => {
+                        // Handle both structure types: direct photo object or nested in item
+                        const photo = item.photo || item;
+                        const isCover = album.cover_photo_id === photo.id;
 
-                            {/* Remove button */}
-                            {album.permissions?.canEdit && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRemovePhoto(photo.id);
-                                    }}
-                                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-                                    title="Remove from album"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                        return (
+                            <div
+                                key={photo.id}
+                                className={`group relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-pointer ${isCover ? 'ring-4 ring-teal-500 ring-offset-2' : ''
+                                    }`}
+                                onClick={() => setSelectedPhotoIndex(index)}
+                            >
+                                <img
+                                    src={photo.thumbnail_url || photo.url}
+                                    alt={photo.caption || ''}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                    loading="lazy"
+                                />
+
+                                {/* Cover Photo Badge/Button */}
+                                {album.permissions?.canEdit && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSetCover(photo.id);
+                                        }}
+                                        className={`absolute top-2 left-2 p-1.5 rounded-full transition-all ${isCover
+                                            ? 'bg-teal-500 text-white opacity-100'
+                                            : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/50 hover:text-white'
+                                            }`}
+                                        title={isCover ? "Current cover photo" : "Set as cover photo"}
+                                    >
+                                        <Star className={`w-4 h-4 ${isCover ? 'fill-current' : ''}`} />
+                                    </button>
+                                )}
+
+                                {/* Remove button */}
+                                {album.permissions?.canEdit && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemovePhoto(photo.id);
+                                        }}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                                        title="Remove from album"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
             )}
 
@@ -300,11 +399,25 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
             )}
 
             {/* Lightbox */}
-            {selectedPhotoIndex !== null && (
+            {selectedPhotoIndex !== null && album.photos[selectedPhotoIndex] && (
                 <PhotoLightbox
-                    photos={album.photos}
-                    initialIndex={selectedPhotoIndex}
+                    photo={{ ...album.photos[selectedPhotoIndex], tree_id: album.tree.id }}
                     onClose={() => setSelectedPhotoIndex(null)}
+                    onNext={() => setSelectedPhotoIndex(prev => prev + 1)}
+                    onPrev={() => setSelectedPhotoIndex(prev => prev - 1)}
+                    hasNext={selectedPhotoIndex < album.photos.length - 1}
+                    hasPrev={selectedPhotoIndex > 0}
+                />
+            )}
+
+            {/* Photo Selector Modal */}
+            {isPhotoSelectorOpen && (
+                <PhotoSelectorModal
+                    isOpen={isPhotoSelectorOpen}
+                    onClose={() => setIsPhotoSelectorOpen(false)}
+                    treeId={album.tree?.id}
+                    onSelectPhotos={handleAddPhotos}
+                    isAdding={addPhotosMutation.isPending}
                 />
             )}
         </div>

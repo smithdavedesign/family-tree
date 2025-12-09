@@ -1,13 +1,14 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import LazyImage from './LazyImage';
-import { User } from 'lucide-react';
+import { User, MoreVertical, FolderPlus, CheckCircle2, Circle } from 'lucide-react';
 
 const COLUMN_COUNT = 4; // Responsive logic can be added later (e.g. useWindowSize)
 const GAP = 16; // px
 
-const VirtualGallery = ({ groups, groupBy, onPhotoClick }) => {
+const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set(), onToggleSelect, onAddToAlbum }) => {
     const parentRef = useRef(null);
+    const [activeMenuId, setActiveMenuId] = useState(null);
 
     // Flatten the groups into a list of "rows" for the virtualizer
     // Each item in the list is either a 'header' or a 'photo-row'
@@ -48,6 +49,7 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick }) => {
         <div
             ref={parentRef}
             className="h-full overflow-y-auto w-full pr-2"
+            onClick={() => setActiveMenuId(null)} // Close menu on outside click
         >
             <div
                 style={{
@@ -100,31 +102,85 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick }) => {
                                         gridTemplateColumns: `repeat(${COLUMN_COUNT}, minmax(0, 1fr))`
                                     }}
                                 >
-                                    {row.items.map(photo => (
-                                        <div
-                                            key={photo.id}
-                                            className="group relative h-[250px] bg-slate-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all"
-                                            onClick={() => onPhotoClick && onPhotoClick(photo)}
-                                        >
-                                            <LazyImage
-                                                src={photo.url}
-                                                alt={photo.caption || 'Family photo'}
-                                                width={photo.width}
-                                                height={photo.height}
-                                                className="w-full h-full"
-                                            />
+                                    {row.items.map(photo => {
+                                        const isSelected = selectedIds.has(photo.id);
+                                        return (
+                                            <div
+                                                key={photo.id}
+                                                className={`group relative h-[250px] bg-slate-200 rounded-lg overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-4 ring-teal-500 ring-inset' : 'hover:shadow-md'
+                                                    }`}
+                                                onClick={() => onPhotoClick && onPhotoClick(photo)}
+                                            >
+                                                <LazyImage
+                                                    src={photo.url}
+                                                    alt={photo.caption || 'Family photo'}
+                                                    width={photo.width}
+                                                    height={photo.height}
+                                                    className="w-full h-full"
+                                                />
 
-                                            {/* Overlay Info */}
-                                            {(photo.caption || photo.location) && (
-                                                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <p className="text-white text-xs truncate font-medium">{photo.caption || 'No caption'}</p>
-                                                    {photo.location && (
-                                                        <p className="text-white/80 text-[10px] truncate">{photo.location}</p>
+                                                {/* Selection Checkbox */}
+                                                {onToggleSelect && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onToggleSelect(photo.id);
+                                                        }}
+                                                        className={`absolute top-2 left-2 p-1 rounded-full transition-all z-20 ${isSelected
+                                                                ? 'bg-teal-500 text-white opacity-100'
+                                                                : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/50'
+                                                            }`}
+                                                    >
+                                                        {isSelected ? (
+                                                            <CheckCircle2 className="w-5 h-5" />
+                                                        ) : (
+                                                            <Circle className="w-5 h-5" />
+                                                        )}
+                                                    </button>
+                                                )}
+
+                                                {/* More Menu */}
+                                                <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveMenuId(activeMenuId === photo.id ? null : photo.id);
+                                                        }}
+                                                        className="p-1.5 bg-black/30 hover:bg-black/50 text-white rounded-full backdrop-blur-sm"
+                                                    >
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {activeMenuId === photo.id && (
+                                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-slate-100 py-1 z-30 animate-in fade-in zoom-in-95 duration-100">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onAddToAlbum(photo.id);
+                                                                    setActiveMenuId(null);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                                            >
+                                                                <FolderPlus className="w-4 h-4 text-slate-400" />
+                                                                Add to Album
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+
+                                                {/* Overlay Info */}
+                                                {(photo.caption || photo.location) && (
+                                                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                        <p className="text-white text-xs truncate font-medium">{photo.caption || 'No caption'}</p>
+                                                        {photo.location && (
+                                                            <p className="text-white/80 text-[10px] truncate">{photo.location}</p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                     {/* Fill empty cells if row is incomplete */}
                                     {[...Array(COLUMN_COUNT - row.items.length)].map((_, i) => (
                                         <div key={`empty-${i}`} />

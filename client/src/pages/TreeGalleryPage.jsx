@@ -4,24 +4,29 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { supabase } from '../auth';
-import { Loader, Image as ImageIcon, Filter, Calendar, User, Plus, Grid, Map as MapIcon, SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
+import { Loader, Image as ImageIcon, Filter, Calendar, User, Plus, Grid, Map as MapIcon, SlidersHorizontal, X, Search, ChevronDown, FolderPlus } from 'lucide-react';
 import { useTreePhotos, useTreeDetails } from '../hooks/useTreePhotos';
 import { groupPhotosByDate, groupPhotosByPerson, filterPhotos, getUniquePersons } from '../utils/photoUtils';
 import VirtualGallery from '../components/VirtualGallery';
-import PhotoMap from '../components/PhotoMap';
-
+import MapGallery from '../components/MapGallery';
 import AccountSettings from '../components/AccountSettings';
-
 import PhotoLightbox from '../components/PhotoLightbox';
+import AlbumSelectorModal from '../components/AlbumSelectorModal';
+import { Button, useToast } from '../components/ui';
 
 const TreeGalleryPage = () => {
     const { id: treeId } = useParams();
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [user, setUser] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'map'
     const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+    // Selection State
+    const [selectedPhotoIds, setSelectedPhotoIds] = useState(new Set());
+    const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
+    const [albumModalPhotoIds, setAlbumModalPhotoIds] = useState([]);
 
     // Fetch Data using React Query
     const { data: photos = [], isLoading: photosLoading, error: photosError } = useTreePhotos(treeId);
@@ -56,11 +61,37 @@ const TreeGalleryPage = () => {
     const error = photosError;
 
     const handlePhotoClick = (photo) => {
-        setSelectedPhoto(photo);
+        // If in selection mode (at least one selected), clicking toggles selection
+        if (selectedPhotoIds.size > 0) {
+            handleToggleSelect(photo.id);
+        } else {
+            setSelectedPhoto(photo);
+        }
     };
 
-    const onOpenPhotoPicker = () => {
-        console.log('Open photo picker');
+    const handleToggleSelect = (photoId) => {
+        const newSet = new Set(selectedPhotoIds);
+        if (newSet.has(photoId)) {
+            newSet.delete(photoId);
+        } else {
+            newSet.add(photoId);
+        }
+        setSelectedPhotoIds(newSet);
+    };
+
+    const handleAddToAlbum = (photoId) => {
+        setAlbumModalPhotoIds([photoId]);
+        setIsAlbumModalOpen(true);
+    };
+
+    const handleBulkAddToAlbum = () => {
+        if (selectedPhotoIds.size === 0) return;
+        setAlbumModalPhotoIds(Array.from(selectedPhotoIds));
+        setIsAlbumModalOpen(true);
+    };
+
+    const clearSelection = () => {
+        setSelectedPhotoIds(new Set());
     };
 
     if (isLoading) {
@@ -121,6 +152,31 @@ const TreeGalleryPage = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {/* Bulk Actions */}
+                        {selectedPhotoIds.size > 0 && (
+                            <div className="flex items-center gap-2 mr-4 animate-in fade-in slide-in-from-top-2">
+                                <span className="text-sm font-medium text-slate-700">
+                                    {selectedPhotoIds.size} selected
+                                </span>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={handleBulkAddToAlbum}
+                                    className="flex items-center gap-2"
+                                >
+                                    <FolderPlus className="w-4 h-4" />
+                                    Add to Album
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={clearSelection}
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        )}
+
                         {/* Group By Toggle */}
                         {viewMode === 'grid' && (
                             <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
@@ -177,14 +233,6 @@ const TreeGalleryPage = () => {
                                 <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                             </div>
                         )}
-                        {/* Add Photo Button - Assuming a Button component exists or needs to be created/imported */}
-                        {/* <Button
-                            variant="primary"
-                            leftIcon={<Plus className="w-4 h-4" />}
-                            onClick={() => onOpenPhotoPicker()}
-                        >
-                            Add Photo
-                        </Button> */}
                     </div>
                 </div>
             </div>
@@ -199,7 +247,7 @@ const TreeGalleryPage = () => {
                     ) : (
                         viewMode === 'map' ? (
                             <div className="h-full w-full py-4">
-                                <PhotoMap photos={filteredPhotos} />
+                                <MapGallery photos={filteredPhotos} onPhotoClick={handlePhotoClick} />
                             </div>
                         ) : (
                             groupedPhotos.length === 0 ? (
@@ -215,6 +263,9 @@ const TreeGalleryPage = () => {
                                     groups={groupedPhotos}
                                     groupBy={groupBy}
                                     onPhotoClick={handlePhotoClick}
+                                    selectedIds={selectedPhotoIds}
+                                    onToggleSelect={handleToggleSelect}
+                                    onAddToAlbum={handleAddToAlbum}
                                 />
                             )
                         )
@@ -241,6 +292,24 @@ const TreeGalleryPage = () => {
                     }}
                     hasNext={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) < filteredPhotos.length - 1}
                     hasPrev={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) > 0}
+                    onAddToAlbum={() => handleAddToAlbum(selectedPhoto.id)}
+                />
+            )}
+
+            {/* Album Selector Modal */}
+            {isAlbumModalOpen && (
+                <AlbumSelectorModal
+                    isOpen={isAlbumModalOpen}
+                    onClose={() => {
+                        setIsAlbumModalOpen(false);
+                        setAlbumModalPhotoIds([]);
+                        // Optionally clear selection after adding
+                        if (selectedPhotoIds.size > 0) {
+                            clearSelection();
+                        }
+                    }}
+                    photoIds={albumModalPhotoIds}
+                    treeId={treeId}
                 />
             )}
 

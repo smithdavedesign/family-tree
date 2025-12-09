@@ -17,6 +17,7 @@ const lifeEventController = require('../controllers/lifeEventController');
 const reminderController = require('../controllers/reminderController');
 const storyController = require('../controllers/storyController');
 const albumController = require('../controllers/albumController');
+const mapController = require('../controllers/mapController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -90,6 +91,7 @@ router.post('/album/:albumId/photos', requireAuth, validate(addPhotosToAlbumSche
 router.delete('/album/:albumId/photos/:photoId', requireAuth, writeLimiter, albumController.removePhotoFromAlbum);
 router.put('/album/:albumId/photos/reorder', requireAuth, validate(reorderPhotosSchema), writeLimiter, albumController.reorderAlbumPhotos);
 router.get('/person/:personId/albums', requireAuth, albumController.getPersonAlbums);
+router.get('/photo/:photoId/albums', requireAuth, albumController.getPhotoAlbums);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
@@ -105,6 +107,11 @@ router.get('/config', (req, res) => {
 // Google OAuth routes
 const googleOAuthRoutes = require('./googleOAuth');
 router.use('/google', googleOAuthRoutes);
+
+// Map routes (Phase P)
+router.get('/map/nearby', requireAuth, mapController.getNearbyPhotos);
+router.get('/person/:id/map-stats', requireAuth, mapController.getPersonLocationStats);
+router.get('/map/global-stats', requireAuth, mapController.getGlobalTravelStats);
 
 // Export routes
 const exportRoutes = require('./export');

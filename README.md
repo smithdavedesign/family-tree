@@ -217,9 +217,10 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Navigation integration (TreePage → Albums link)
 - [x] Permission system (viewer/editor/owner)
 - [x] Private albums (owner-only visibility)
-- [x] Cover photo support
+- [x] Cover photo support (default + manual selection)
 - [x] Photo count tracking
 - [x] Sort order management
+- [x] Breadcrumb navigation with deep linking
 
 #### Components Created
 - `AlbumManager.jsx` - Album grid with search/create
@@ -229,6 +230,37 @@ The application uses a relational database (PostgreSQL) with the following key e
 - `AlbumPage.jsx` - Main album route
 
 **API:** 9 endpoints covering album CRUD, photo management, bulk operations, and person album lookups.
+
+---
+
+### ✅ Phase P: Map & Geo-Intelligence (100%) - **COMPLETE**
+**Timeline:** Completed Dec 2024 | **Location-Based Photo Discovery**
+
+**Goal:** Transform the photo gallery into an interactive map experience with clustering, person attribution, and global travel insights.
+
+#### Completed Features
+- [x] Interactive map gallery with marker clustering
+- [x] Layer controls (Street, Satellite, Topographic)
+- [x] Rich map popups with person attribution
+- [x] Album/story links in popups
+- [x] "Nearby Photos" discovery (20km radius)
+- [x] Person Location History heatmap
+- [x] Global Travel Dashboard widget
+- [x] Backend endpoints for location stats
+- [x] Consistent teal color scheme across all maps
+
+#### Components Created
+- `MapGallery.jsx` - Interactive map with clustering and layers
+- `MapPopup.jsx` - Rich popup with person details and actions
+- `PersonHeatmap.jsx` - Individual location history visualization
+- `GlobalTravelDashboard.jsx` - Dashboard widget for travel stats
+
+#### API Endpoints
+- `GET /api/map/nearby` - Find photos within radius
+- `GET /api/person/:id/map-stats` - Person location statistics
+- `GET /api/map/global-stats` - Global travel analytics
+
+**UX Enhancement:** Clicking map markers shows info card first, with explicit "View Full Image" button for lightbox.
 
 ---
 
@@ -418,8 +450,8 @@ ompliance (data export, right to be forgotten)
 - [x] **H.15 Events & Reminders**: Dashboard widget for upcoming birthdays, anniversaries, and life events.
 - [x] **F.14 Photo Map View**: Interactive map showing photos clustered by location.
 - [x] **F.11 Storytelling / Blog**: "Stories" feature to write rich text articles about ancestors.
-- [ ] **F.12 Visualization Enhancements**: Fan charts, descendant charts, and timeline views.
-- [ ] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
+- [x] **F.12 Visualization Enhancements**: Fan charts, descendant charts, and timeline views.
+- [x] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
 - [ ] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.
 - [ ] **G.17 Collaboration**: Activity feed, comments, and granular permissions.
 - [ ] **F.18 Sensitive Data**: Privacy controls for living people and sensitive facts.

@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import AccountSettings from '../components/AccountSettings';
 import EventsWidget from '../components/dashboard/EventsWidget';
+import GlobalTravelDashboard from '../components/GlobalTravelDashboard';
 
 const TreeDashboard = (props) => {
     const [user, setUser] = useState(props.user || null);
@@ -258,6 +259,9 @@ const TreeDashboard = (props) => {
 
                         {/* Right Column - Activity & Events */}
                         <div className="space-y-6">
+                            {/* Global Travel Stats */}
+                            <GlobalTravelDashboard />
+
                             {/* Events Widget */}
                             <EventsWidget />
 

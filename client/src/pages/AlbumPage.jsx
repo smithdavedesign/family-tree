@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -8,8 +8,8 @@ import AlbumView from '../components/AlbumView';
 import { supabase } from '../auth';
 
 const AlbumPage = () => {
-    const { treeId } = useParams();
-    const [selectedAlbumId, setSelectedAlbumId] = useState(null);
+    const { treeId, albumId } = useParams();
+    const navigate = useNavigate();
 
     // Fetch tree info for role
     const { data: treeData } = useQuery({
@@ -30,15 +30,20 @@ const AlbumPage = () => {
 
     // Breadcrumb items
     const breadcrumbItems = [
-        { label: 'Trees', path: '/trees' },
-        { label: treeName, path: `/tree/${treeId}` },
-        { label: 'Albums', path: `/tree/${treeId}/albums` }
+        { label: treeName, href: `/tree/${treeId}` }
     ];
 
-    if (selectedAlbumId && treeData) {
+    if (albumId && treeData) {
         breadcrumbItems.push({
-            label: 'Album Details',
-            path: `/tree/${treeId}/album/${selectedAlbumId}`
+            label: 'Albums',
+            href: `/tree/${treeId}/albums`
+        });
+        breadcrumbItems.push({
+            label: 'Album Details'
+        });
+    } else {
+        breadcrumbItems.push({
+            label: 'Albums'
         });
     }
 
@@ -50,17 +55,17 @@ const AlbumPage = () => {
                 <Breadcrumbs items={breadcrumbItems} />
 
                 <div className="mt-6">
-                    {selectedAlbumId ? (
+                    {albumId ? (
                         <AlbumView
-                            albumId={selectedAlbumId}
-                            onBack={() => setSelectedAlbumId(null)}
+                            albumId={albumId}
+                            onBack={() => navigate(`/tree/${treeId}/albums`)}
                             userRole={userRole}
                         />
                     ) : (
                         <AlbumManager
                             treeId={treeId}
                             userRole={userRole}
-                            onAlbumClick={setSelectedAlbumId}
+                            onAlbumClick={(id) => navigate(`/tree/${treeId}/album/${id}`)}
                         />
                     )}
                 </div>

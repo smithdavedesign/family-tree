@@ -12,7 +12,7 @@ const fetchStory = async (id) => {
     if (!token) throw new Error('Not authenticated');
 
     const apiUrl = import.meta.env.VITE_API_URL || '';
-    const response = await fetch(`${apiUrl}/api/stories/${id}`, {
+    const response = await fetch(`${apiUrl}/api/story/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
 

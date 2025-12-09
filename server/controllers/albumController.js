@@ -114,13 +114,13 @@ const getAlbum = async (req, res) => {
             .select(`
                 *,
                 tree:trees(id, name),
+                cover_photo:photos!cover_photo_id(url),
                 album_photos(
                     id,
                     sort_order,
                     photo:photos(
                         id,
                         url,
-                        thumbnail_url,
                         caption,
                         taken_date,
                         location,
@@ -158,6 +158,7 @@ const getAlbum = async (req, res) => {
             name: album.name,
             description: album.description,
             cover_photo_id: album.cover_photo_id,
+            cover_photo_url: album.cover_photo?.url || null,
             is_private: album.is_private,
             tree: album.tree,
             photos,
@@ -270,24 +271,30 @@ const deleteAlbum = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete album' });
     }
 };
-
 // Add photos to album
 const addPhotosToAlbum = async (req, res) => {
     try {
         const { albumId } = req.params;
-        const { photo_ids } = req.body;
+        const { photo_ids: photoIds } = req.body;
 
-        if (!Array.isArray(photo_ids) || photo_ids.length === 0) {
-            return res.status(400).json({ error: 'photo_ids must be a non-empty array' });
+        if (!photoIds || !Array.isArray(photoIds) || photoIds.length === 0) {
+            return res.status(400).json({ error: 'No photos provided' });
         }
 
-        // Get album to check tree_id
-        const { data: album } = await supabaseAdmin
+        // Check current album state (for cover photo)
+        const { data: album, error: albumError } = await supabaseAdmin
             .from('albums')
-            .select('tree_id')
+            .select('tree_id, cover_photo_id') // Also select tree_id for permission check
             .eq('id', albumId)
             .single();
 
+        console.log('[addPhotosToAlbum] Album state:', {
+            id: albumId,
+            hasCover: !!album?.cover_photo_id,
+            coverId: album?.cover_photo_id
+        });
+
+        if (albumError) throw albumError;
         if (!album) {
             return res.status(404).json({ error: 'Album not found' });
         }
@@ -304,36 +311,53 @@ const addPhotosToAlbum = async (req, res) => {
             return res.status(403).json({ error: 'Insufficient permissions' });
         }
 
-        // Get max sort_order
-        const { data: maxOrder } = await supabaseAdmin
+        // Get current max sort order
+        const { data: maxOrderData } = await supabaseAdmin
             .from('album_photos')
             .select('sort_order')
             .eq('album_id', albumId)
             .order('sort_order', { ascending: false })
-            .limit(1)
-            .single();
+            .limit(1);
 
-        let nextOrder = (maxOrder?.sort_order || 0) + 1;
+        let startOrder = (maxOrderData?.[0]?.sort_order || 0) + 1;
 
-        // Insert photos (ignore duplicates)
-        const inserts = photo_ids.map(photo_id => ({
+        const albumPhotos = photoIds.map((photoId, index) => ({
             album_id: albumId,
-            photo_id,
-            sort_order: nextOrder++,
-            added_by: req.user.id
+            photo_id: photoId,
+            sort_order: startOrder + index,
+            added_by: req.user.id // Add added_by field
         }));
 
-        const { data, error } = await supabaseAdmin
+        // Insert photos (ignore duplicates)
+        const { error } = await supabaseAdmin
             .from('album_photos')
-            .upsert(inserts, { onConflict: 'album_id,photo_id', ignoreDuplicates: true })
-            .select();
+            .upsert(albumPhotos, { onConflict: 'album_id,photo_id', ignoreDuplicates: true }); // Use upsert to ignore duplicates
 
         if (error) throw error;
 
-        res.json({ added: data.length, message: `Added ${data.length} photos to album` });
+        // Set default cover photo if none exists and photos were added
+        console.log('[addPhotosToAlbum] Checking default cover:', {
+            currentCover: album.cover_photo_id,
+            newPhotos: photoIds.length,
+            firstPhoto: photoIds[0]
+        });
+
+        if (!album.cover_photo_id && photoIds.length > 0) {
+            console.log('[addPhotosToAlbum] Setting default cover to:', photoIds[0]);
+            const { error: updateError } = await supabaseAdmin
+                .from('albums')
+                .update({ cover_photo_id: photoIds[0] })
+                .eq('id', albumId);
+
+            if (updateError) {
+                console.error('[addPhotosToAlbum] Failed to set default cover:', updateError);
+            }
+        }
+
+        res.json({ success: true, added: photoIds.length });
     } catch (error) {
         console.error('Error adding photos to album:', error);
-        res.status(500).json({ error: 'Failed to add photos' });
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -470,6 +494,29 @@ const getPersonAlbums = async (req, res) => {
     }
 };
 
+// Get albums containing a specific photo
+const getPhotoAlbums = async (req, res) => {
+    try {
+        const { photoId } = req.params;
+
+        const { data: albums, error } = await supabaseAdmin
+            .from('albums')
+            .select(`
+                id,
+                name,
+                album_photos!inner(photo_id)
+            `)
+            .eq('album_photos.photo_id', photoId);
+
+        if (error) throw error;
+
+        res.json(albums.map(a => ({ id: a.id, name: a.name })));
+    } catch (error) {
+        console.error('Error fetching photo albums:', error);
+        res.status(500).json({ error: 'Failed to fetch photo albums' });
+    }
+};
+
 module.exports = {
     getTreeAlbums,
     createAlbum,
@@ -479,5 +526,6 @@ module.exports = {
     addPhotosToAlbum,
     removePhotoFromAlbum,
     reorderAlbumPhotos,
-    getPersonAlbums
+    getPersonAlbums,
+    getPhotoAlbums
 };

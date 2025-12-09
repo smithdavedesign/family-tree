@@ -1,10 +1,27 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../auth';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePhotoDetails } from '../hooks/usePhotoDetails';
 
-const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAddToAlbum }) => {
     const { stories, events } = usePhotoDetails(photo?.id);
+
+    // Fetch albums this photo is in
+    const { data: photoAlbums } = useQuery({
+        queryKey: ['photo-albums', photo?.id],
+        queryFn: async () => {
+            if (!photo?.id) return [];
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`/api/photo/${photo.id}/albums`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            if (!response.ok) return [];
+            return response.json();
+        },
+        enabled: !!photo?.id
+    });
 
     // Handle keyboard navigation
     useEffect(() => {
@@ -62,9 +79,20 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                 </div>
 
                 {/* Info Sidebar (Desktop) / Bottom Sheet (Mobile) */}
-                <div className="w-full md:w-80 lg:w-96 bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
+                <div className="w-full md:w-80 lg:w-96 bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 md:pt-16 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
                     <div>
-                        <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
+                        <div className="flex items-start justify-between gap-4">
+                            <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
+                            {onAddToAlbum && (
+                                <button
+                                    onClick={() => onAddToAlbum(photo.id)}
+                                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
+                                    title="Add to Album"
+                                >
+                                    <FolderPlus className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
                         {photo.description && (
                             <p className="text-white/70 text-sm leading-relaxed">{photo.description}</p>
                         )}
@@ -179,6 +207,28 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                                                 {new Date(event.date || event.start_date).toLocaleDateString()}
                                             </p>
                                         </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Albums List */}
+                        {photoAlbums && photoAlbums.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-white/10">
+                                <div className="flex items-center gap-3 text-white/80 mb-1">
+                                    <Folder className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <span className="font-medium">In Albums</span>
+                                </div>
+                                <div className="pl-8 flex flex-wrap gap-2">
+                                    {photoAlbums.map(album => (
+                                        <Link
+                                            key={album.id}
+                                            to={`/tree/${photo.tree_id}/album/${album.id}`}
+                                            onClick={onClose}
+                                            className="px-2 py-1 bg-white/10 rounded-md text-xs hover:bg-white/20 transition-colors text-white flex items-center gap-1"
+                                        >
+                                            {album.name}
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
