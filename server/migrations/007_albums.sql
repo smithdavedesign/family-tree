@@ -128,19 +128,19 @@ CREATE TRIGGER update_albums_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_album_updated_at();
 
--- Add audit logging trigger for albums
+-- Add audit logging trigger for albums (simplified - no metadata)
 CREATE OR REPLACE FUNCTION log_album_changes()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
-        VALUES (auth.uid(), 'CREATE', 'album', NEW.id, jsonb_build_object('name', NEW.name, 'tree_id', NEW.tree_id));
+        INSERT INTO audit_logs (user_id, action, resource_type, resource_id)
+        VALUES (auth.uid(), 'CREATE', 'album', NEW.id);
     ELSIF TG_OP = 'UPDATE' THEN
-        INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
-        VALUES (auth.uid(), 'UPDATE', 'album', NEW.id, jsonb_build_object('name', NEW.name));
+        INSERT INTO audit_logs (user_id, action, resource_type, resource_id)
+        VALUES (auth.uid(), 'UPDATE', 'album', NEW.id);
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
-        VALUES (auth.uid(), 'DELETE', 'album', OLD.id, jsonb_build_object('name', OLD.name));
+        INSERT INTO audit_logs (user_id, action, resource_type, resource_id)
+        VALUES (auth.uid(), 'DELETE', 'album', OLD.id);
     END IF;
     RETURN NEW;
 END;
