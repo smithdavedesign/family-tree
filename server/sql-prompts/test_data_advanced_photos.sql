@@ -97,8 +97,8 @@ BEGIN
     
     IF v_event_james_enlist IS NOT NULL THEN
         UPDATE life_events 
-        SET media_ids = array_append(COALESCE(media_ids, '{}'), v_photo_james_war)
-        WHERE id = v_event_james_enlist AND NOT (media_ids @> ARRAY[v_photo_james_war]);
+        SET media_ids = COALESCE(media_ids, '[]'::jsonb) || to_jsonb(v_photo_james_war)
+        WHERE id = v_event_james_enlist AND NOT (COALESCE(media_ids, '[]'::jsonb) @> to_jsonb(v_photo_james_war));
         RAISE NOTICE 'Linked photo to James enlistment event';
     END IF;
 
@@ -107,8 +107,8 @@ BEGIN
     
     IF v_event_john_grad IS NOT NULL THEN
         UPDATE life_events 
-        SET media_ids = array_append(COALESCE(media_ids, '{}'), v_photo_john_grad)
-        WHERE id = v_event_john_grad AND NOT (media_ids @> ARRAY[v_photo_john_grad]);
+        SET media_ids = COALESCE(media_ids, '[]'::jsonb) || to_jsonb(v_photo_john_grad)
+        WHERE id = v_event_john_grad AND NOT (COALESCE(media_ids, '[]'::jsonb) @> to_jsonb(v_photo_john_grad));
         RAISE NOTICE 'Linked photo to John graduation event';
     END IF;
 
