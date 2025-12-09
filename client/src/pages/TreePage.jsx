@@ -35,7 +35,7 @@ const TreePage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState(null);
 
-    // View mode state with localStorage persistence
+    // View mode state with localStorage persistence - default to 'standard'
     const [viewMode, setViewMode] = useState(() => {
         const saved = localStorage.getItem(`viewMode_${id}`);
         return saved || 'standard';
