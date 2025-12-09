@@ -78,19 +78,19 @@ BEGIN
     RETURNING id INTO v_album_grandparents;
 
     -- Add photos to albums
-    -- Note: This assumes photos already exist from previous enrichment scripts
-    -- We'll add them based on date ranges and themes
+    -- Note: Photos are linked to persons, persons to trees, so we need to join
     
     -- Family Gatherings: Add photos from various years (10 photos)
     INSERT INTO album_photos (album_id, photo_id, sort_order, added_by)
     SELECT 
         v_album_family,
-        id,
-        ROW_NUMBER() OVER (ORDER BY taken_date),
+        p.id,
+        ROW_NUMBER() OVER (ORDER BY p.taken_date),
         v_user_id
-    FROM photos
-    WHERE tree_id = v_tree_id
-    AND taken_date IS NOT NULL
+    FROM photos p
+    INNER JOIN persons per ON p.person_id = per.id
+    WHERE per.tree_id = v_tree_id
+    AND p.taken_date IS NOT NULL
     ORDER BY RANDOM()
     LIMIT 10;
 
@@ -98,12 +98,13 @@ BEGIN
     INSERT INTO album_photos (album_id, photo_id, sort_order, added_by)
     SELECT 
         v_album_wedding,
-        id,
-        ROW_NUMBER() OVER (ORDER BY taken_date),
+        p.id,
+        ROW_NUMBER() OVER (ORDER BY p.taken_date),
         v_user_id
-    FROM photos
-    WHERE tree_id = v_tree_id
-    AND (caption ILIKE '%wedding%' OR caption ILIKE '%married%' OR EXTRACT(MONTH FROM taken_date) IN (6, 7, 8, 9))
+    FROM photos p
+    INNER JOIN persons per ON p.person_id = per.id
+    WHERE per.tree_id = v_tree_id
+    AND (p.caption ILIKE '%wedding%' OR p.caption ILIKE '%married%' OR EXTRACT(MONTH FROM p.taken_date) IN (6, 7, 8, 9))
     ORDER BY RANDOM()
     LIMIT 8;
 
@@ -111,12 +112,13 @@ BEGIN
     INSERT INTO album_photos (album_id, photo_id, sort_order, added_by)
     SELECT 
         v_album_military,
-        id,
-        ROW_NUMBER() OVER (ORDER BY taken_date),
+        p.id,
+        ROW_NUMBER() OVER (ORDER BY p.taken_date),
         v_user_id
-    FROM photos
-    WHERE tree_id = v_tree_id
-    AND EXTRACT(YEAR FROM taken_date) BETWEEN 1940 AND 1960
+    FROM photos p
+    INNER JOIN persons per ON p.person_id = per.id
+    WHERE per.tree_id = v_tree_id
+    AND EXTRACT(YEAR FROM p.taken_date) BETWEEN 1940 AND 1960
     ORDER BY RANDOM()
     LIMIT 6;
 
@@ -124,12 +126,13 @@ BEGIN
     INSERT INTO album_photos (album_id, photo_id, sort_order, added_by)
     SELECT 
         v_album_childhood,
-        id,
-        ROW_NUMBER() OVER (ORDER BY taken_date),
+        p.id,
+        ROW_NUMBER() OVER (ORDER BY p.taken_date),
         v_user_id
-    FROM photos
-    WHERE tree_id = v_tree_id
-    AND EXTRACT(YEAR FROM taken_date) < 1970
+    FROM photos p
+    INNER JOIN persons per ON p.person_id = per.id
+    WHERE per.tree_id = v_tree_id
+    AND EXTRACT(YEAR FROM p.taken_date) < 1970
     ORDER BY RANDOM()
     LIMIT 12;
 
@@ -137,12 +140,13 @@ BEGIN
     INSERT INTO album_photos (album_id, photo_id, sort_order, added_by)
     SELECT 
         v_album_grandparents,
-        id,
-        ROW_NUMBER() OVER (ORDER BY taken_date),
+        p.id,
+        ROW_NUMBER() OVER (ORDER BY p.taken_date),
         v_user_id
-    FROM photos
-    WHERE tree_id = v_tree_id
-    AND EXTRACT(YEAR FROM taken_date) < 1950
+    FROM photos p
+    INNER JOIN persons per ON p.person_id = per.id
+    WHERE per.tree_id = v_tree_id
+    AND EXTRACT(YEAR FROM p.taken_date) < 1950
     ORDER BY RANDOM()
     LIMIT 15;
 
