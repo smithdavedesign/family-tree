@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, User, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../auth';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 const fetchStory = async (id) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -19,6 +21,69 @@ const fetchStory = async (id) => {
     }
 
     return response.json();
+};
+
+const StoryContent = ({ content }) => {
+    const editor = useEditor({
+        extensions: [StarterKit],
+        content: content && typeof content === 'object' && Object.keys(content).length > 0
+            ? content
+            : { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'No content' }] }] },
+        editable: false,
+    });
+
+    if (!editor) return null;
+
+    return (
+        <div className="prose prose-slate max-w-none mb-12">
+            <EditorContent editor={editor} />
+            <style>{`
+                .ProseMirror {
+                    outline: none;
+                    color: #334155;
+                    font-size: 1.125rem;
+                    line-height: 1.75rem;
+                }
+                .ProseMirror h1 {
+                    font-size: 2em;
+                    font-weight: 700;
+                    margin: 0.67em 0;
+                    line-height: 1.2;
+                    color: #0f172a;
+                }
+                .ProseMirror h2 {
+                    font-size: 1.5em;
+                    font-weight: 600;
+                    margin: 0.75em 0;
+                    line-height: 1.3;
+                    color: #1e293b;
+                }
+                .ProseMirror p {
+                    margin: 1em 0;
+                    line-height: 1.75;
+                }
+                .ProseMirror ul, .ProseMirror ol {
+                    padding-left: 1.5em;
+                    margin: 1em 0;
+                }
+                .ProseMirror ul {
+                    list-style-type: disc;
+                }
+                .ProseMirror ol {
+                    list-style-type: decimal;
+                }
+                .ProseMirror li {
+                    margin: 0.5em 0;
+                }
+                .ProseMirror strong {
+                    font-weight: 600;
+                }
+                .ProseMirror em {
+                    font-style: italic;
+                }
+            `}</style>
+        </div>
+    );
 };
 
 const StoryPage = () => {
@@ -89,11 +154,8 @@ const StoryPage = () => {
                             </div>
                         </header>
 
-                        <div className="prose prose-slate max-w-none mb-12">
-                            <p className="whitespace-pre-wrap text-lg leading-relaxed text-slate-700">
-                                {story.content}
-                            </p>
-                        </div>
+                        {/* Story Content - rendered with TipTap */}
+                        <StoryContent content={story.content} />
 
                         {/* Linked Photos */}
                         {story.linked_photos && story.linked_photos.length > 0 && (
