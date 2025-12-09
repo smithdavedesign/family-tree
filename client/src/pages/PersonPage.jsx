@@ -121,16 +121,6 @@ const PersonPage = () => {
         setShowSidePanel(true);
     };
 
-    const handleAddPhoto = () => {
-        // TODO: Open photo picker or navigate to gallery
-        setShowSidePanel(true);
-    };
-
-    const handleAddStory = () => {
-        // TODO: Open story creation or navigate to stories
-        setShowSidePanel(true);
-    };
-
     // Format person data for SidePanel
     const sidePanelPerson = {
         id: person.id,
@@ -165,8 +155,6 @@ const PersonPage = () => {
                     person={person}
                     isEditor={isEditor}
                     onEditPerson={handleEditPerson}
-                    onAddPhoto={handleAddPhoto}
-                    onAddStory={handleAddStory}
                 />
 
                 {/* Life Timeline */}

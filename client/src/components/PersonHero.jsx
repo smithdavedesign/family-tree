@@ -1,7 +1,7 @@
 import React from 'react';
 import { User as UserIcon, MapPin, Briefcase, Calendar, Edit, Image as ImageIcon, BookOpen } from 'lucide-react';
 
-const PersonHero = ({ person, isEditor, onEditPerson, onAddPhoto, onAddStory }) => {
+const PersonHero = ({ person, isEditor, onEditPerson }) => {
     const fullName = `${person.first_name} ${person.middle_name || ''} ${person.last_name || ''}`.trim();
 
     // Calculate age or lifespan
@@ -43,7 +43,7 @@ const PersonHero = ({ person, isEditor, onEditPerson, onAddPhoto, onAddStory }) 
                         </div>
                         {isEditor && (
                             <button
-                                onClick={onAddPhoto}
+                                onClick={onEditPerson}
                                 className="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-teal-50"
                                 title="Change photo"
                             >
@@ -83,9 +83,7 @@ const PersonHero = ({ person, isEditor, onEditPerson, onAddPhoto, onAddStory }) 
                                     <MapPin className="w-4 h-4 text-slate-600" />
                                     <div>
                                         <div className="text-xs text-slate-500">Died</div>
-                                        <div className="text-sm font-semi
-
-bold text-slate-700">{person.place_of_death}</div>
+                                        <div className="text-sm font-semibold text-slate-700">{person.place_of_death}</div>
                                     </div>
                                 </div>
                             )}
@@ -107,31 +105,15 @@ bold text-slate-700">{person.place_of_death}</div>
                             </p>
                         )}
 
-                        {/* Action Buttons */}
+                        {/* Edit Button */}
                         {isEditor && (
-                            <div className="flex flex-wrap gap-3">
-                                <button
-                                    onClick={onEditPerson}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md hover:shadow-lg font-medium"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    Edit Person
-                                </button>
-                                <button
-                                    onClick={onAddPhoto}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-slate-300 text-slate-700 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all font-medium"
-                                >
-                                    <ImageIcon className="w-4 h-4" />
-                                    Add Photo
-                                </button>
-                                <button
-                                    onClick={onAddStory}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-slate-300 text-slate-700 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all font-medium"
-                                >
-                                    <BookOpen className="w-4 h-4" />
-                                    Add Story
-                                </button>
-                            </div>
+                            <button
+                                onClick={onEditPerson}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md hover:shadow-lg font-medium"
+                            >
+                                <Edit className="w-4 h-4" />
+                                Edit Person
+                            </button>
                         )}
                     </div>
                 </div>
