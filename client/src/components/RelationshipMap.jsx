@@ -36,7 +36,7 @@ const RelationshipMap = ({ person, relationships, allPersons, treeId }) => {
         }
 
         // Categorize based on relationship_type
-        const relType = rel.relationship_type?.toLowerCase() || '';
+        const relType = rel.type?.toLowerCase() || '';
 
         if (relType.includes('parent') && relType.includes('child')) {
             // parent_child: person_1 is parent, person_2 is child
@@ -73,11 +73,9 @@ const RelationshipMap = ({ person, relationships, allPersons, treeId }) => {
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        {label && (
-                            <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5">
-                                {label}
-                            </div>
-                        )}
+                        <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5">
+                            {relationshipLabel || p.relationship?.type?.replace('_', ' ')}
+                        </div>
                         <div className="font-semibold text-slate-900 group-hover:text-teal-600 transition-colors truncate">
                             {fullName}
                         </div>
