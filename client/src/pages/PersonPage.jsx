@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, User as UserIcon } from 'lucide-react';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
+import PersonHero from '../components/PersonHero';
 
 // Fetch aggregated person data
 const fetchPersonProfile = async (treeId, personId) => {
@@ -126,62 +127,23 @@ const PersonPage = () => {
 
             {/* Main Content */}
             <main className="max-w-6xl mx-auto px-4 py-8">
-                {/* Hero Section - Placeholder */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
-                    <div className="flex flex-col md:flex-row gap-6 items-start">
-                        {/* Profile Photo */}
-                        <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
-                            {person.profile_photo_url ? (
-                                <img
-                                    src={person.profile_photo_url}
-                                    alt={fullName}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <UserIcon className="w-full h-full p-8 text-slate-300" />
-                            )}
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1">
-                            <h1 className="text-4xl font-bold text-slate-900 mb-2">{fullName}</h1>
-                            {lifespan && (
-                                <p className="text-lg text-slate-600 mb-4">{lifespan}</p>
-                            )}
-
-                            {/* Quick Tags */}
-                            <div className="flex flex-wrap gap-3">
-                                {person.pob && (
-                                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full text-sm">
-                                        <span className="text-slate-500">📍</span>
-                                        <span className="font-medium text-slate-700">{person.pob}</span>
-                                    </div>
-                                )}
-                                {person.occupation && (
-                                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full text-sm">
-                                        <span className="text-slate-500">💼</span>
-                                        <span className="font-medium text-slate-700">{person.occupation}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    {isEditor && (
-                        <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-                            <button className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium">
-                                Edit Person
-                            </button>
-                            <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">
-                                Add Photo
-                            </button>
-                            <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">
-                                Add Story
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {/* Hero Section */}
+                <PersonHero
+                    person={person}
+                    isEditor={isEditor}
+                    onEditPerson={() => {
+                        // TODO: Open edit modal or navigate to edit page
+                        console.log('Edit person');
+                    }}
+                    onAddPhoto={() => {
+                        // TODO: Open photo picker
+                        console.log('Add photo');
+                    }}
+                    onAddStory={() => {
+                        // TODO: Navigate to story creation or open modal
+                        console.log('Add story');
+                    }}
+                />
 
                 {/* Content Sections - Placeholders */}
                 <div className="grid grid-cols-1 gap-8">
