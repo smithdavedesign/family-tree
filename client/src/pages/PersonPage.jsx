@@ -5,6 +5,10 @@ import { ArrowLeft, User as UserIcon } from 'lucide-react';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import PersonHero from '../components/PersonHero';
+import PersonTimeline from '../components/PersonTimeline';
+import PersonPhotoGallery from '../components/PersonPhotoGallery';
+import PersonStories from '../components/PersonStories';
+import RelationshipMap from '../components/RelationshipMap';
 
 // Fetch aggregated person data
 const fetchPersonProfile = async (treeId, personId) => {
@@ -30,6 +34,7 @@ const fetchPersonProfile = async (treeId, personId) => {
         relationships: treeData.relationships.filter(r =>
             r.person_1_id === personId || r.person_2_id === personId
         ),
+        allPersons: treeData.persons, // Needed for relationship map
         treeName: treeData.name,
         userRole: treeData.role
     };
@@ -82,7 +87,7 @@ const PersonPage = () => {
 
     if (!data) return null;
 
-    const { person, relationships, treeName, userRole } = data;
+    const { person, relationships, allPersons, treeName, userRole } = data;
     const isEditor = userRole === 'owner' || userRole === 'editor';
 
     // Calculate age or lifespan
@@ -126,7 +131,7 @@ const PersonPage = () => {
             />
 
             {/* Main Content */}
-            <main className="max-w-6xl mx-auto px-4 py-8">
+            <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
                 {/* Hero Section */}
                 <PersonHero
                     person={person}
@@ -145,28 +150,22 @@ const PersonPage = () => {
                     }}
                 />
 
-                {/* Content Sections - Placeholders */}
-                <div className="grid grid-cols-1 gap-8">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Life Timeline</h2>
-                        <p className="text-slate-500">Timeline view coming soon...</p>
-                    </div>
+                {/* Life Timeline */}
+                <PersonTimeline person={person} personId={personId} />
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Photos</h2>
-                        <p className="text-slate-500">Photo gallery coming soon...</p>
-                    </div>
+                {/* Photo Gallery */}
+                <PersonPhotoGallery personId={personId} />
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Stories</h2>
-                        <p className="text-slate-500">Stories section coming soon...</p>
-                    </div>
+                {/* Stories */}
+                <PersonStories personId={personId} treeId={treeId} />
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Family Connections</h2>
-                        <p className="text-slate-500">Relationship map coming soon...</p>
-                    </div>
-                </div>
+                {/* Family Connections */}
+                <RelationshipMap
+                    person={person}
+                    relationships={relationships}
+                    allPersons={allPersons}
+                    treeId={treeId}
+                />
             </main>
         </div>
     );
