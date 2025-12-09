@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, GraduationCap, Heart, Users, FileText, Upload, Check, Camera, Phone, Mail, Home, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, GraduationCap, Heart, Users, FileText, Upload, Check, Camera, Phone, Mail, Home, BookOpen, ExternalLink } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast, Modal } from './ui';
@@ -423,16 +424,25 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                             <div className="text-center mt-4 space-y-1">
                                 <h3 className="text-2xl font-bold text-slate-800">{person.data.label}</h3>
                                 <p className="text-slate-500 font-medium">{person.data.subline}</p>
-                                {canEdit && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setIsEditing(true)}
-                                        className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                                <div className="flex gap-2 justify-center mt-3">
+                                    <Link
+                                        to={`/tree/${person.data.tree_id}/person/${person.id}`}
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
                                     >
-                                        Edit Details
-                                    </Button>
-                                )}
+                                        <ExternalLink className="w-4 h-4" />
+                                        View Full Profile
+                                    </Link>
+                                    {canEdit && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsEditing(true)}
+                                            className="text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                                        >
+                                            Edit Details
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         ) : (
                             <div className="w-full mt-6 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -738,10 +748,21 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                         ) : (
                             <div className="space-y-2">
                                 {relationships.map((rel) => {
-                                    const typeLabel = rel.type === 'spouse' ? 'Spouse' :
-                                        rel.type === 'adoptive_parent_child' ? 'Adoptive' :
-                                            rel.type === 'step_parent_child' ? 'Step' :
-                                                rel.direction === 'from' ? 'Parent of' : 'Child of';
+                                    // Format relationship type label
+                                    const relType = rel.type?.toLowerCase() || '';
+                                    let typeLabel = rel.type?.replace('_', ' ') || 'Related to';
+
+                                    // Special handling for common types
+                                    if (relType === 'spouse') {
+                                        typeLabel = 'Spouse';
+                                    } else if (relType === 'partner') {
+                                        typeLabel = 'Partner';
+                                    } else if (relType === 'sibling') {
+                                        typeLabel = 'Sibling';
+                                    } else if (relType.includes('parent') && relType.includes('child')) {
+                                        // Determine if this person is parent or child
+                                        typeLabel = rel.direction === 'from' ? 'Parent of' : 'Child of';
+                                    }
 
                                     return (
                                         <div key={rel.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
@@ -769,7 +790,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     {/* Timeline Section */}
                     <div>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Timeline</h4>
-                        <LifeEventsList personId={person.id} isEditor={canEdit} />
+                        <LifeEventsList personId={person.id} treeId={person.data.tree_id} isEditor={canEdit} />
                     </div>
 
                     {/* Stories Section */}

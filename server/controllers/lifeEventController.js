@@ -17,7 +17,7 @@ exports.getPersonEvents = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { data, error } = await supabaseAdmin
+        const { data: events, error } = await supabaseAdmin
             .from('life_events')
             .select('*')
             .eq('person_id', id)
@@ -26,7 +26,43 @@ exports.getPersonEvents = async (req, res) => {
 
         if (error) throw error;
 
-        res.json(data);
+        // Collect all media IDs
+        const allMediaIds = events.reduce((acc, event) => {
+            if (event.media_ids && Array.isArray(event.media_ids)) {
+                return [...acc, ...event.media_ids];
+            }
+            return acc;
+        }, []);
+
+        if (allMediaIds.length > 0) {
+            // Fetch photos
+            const { data: photos, error: photosError } = await supabaseAdmin
+                .from('photos')
+                .select('*')
+                .in('id', allMediaIds);
+
+            if (photosError) throw photosError;
+
+            // Map photos to events
+            const photosMap = photos.reduce((acc, photo) => {
+                acc[photo.id] = photo;
+                return acc;
+            }, {});
+
+            events.forEach(event => {
+                if (event.media_ids && Array.isArray(event.media_ids)) {
+                    event.photos = event.media_ids.map(id => photosMap[id]).filter(Boolean);
+                } else {
+                    event.photos = [];
+                }
+            });
+        } else {
+            events.forEach(event => {
+                event.photos = [];
+            });
+        }
+
+        res.json(events);
     } catch (error) {
         console.error('Error fetching life events:', error);
         res.status(500).json({ error: error.message });
@@ -115,6 +151,46 @@ exports.deleteEvent = async (req, res) => {
         res.json({ message: 'Event deleted successfully' });
     } catch (error) {
         console.error('Error deleting life event:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getEventsForPhoto = async (req, res) => {
+    const { id } = req.params; // photo_id
+
+    try {
+        // Find events where media_ids contains the photo ID
+        // Using proper JSON.stringify for JSONB containment check
+        const { data, error } = await supabaseAdmin
+            .from('life_events')
+            .select('*')
+            .filter('media_ids', 'cs', JSON.stringify([id]))
+            .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        res.json(data || []);
+    } catch (error) {
+        console.error('Error fetching events for photo:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getTreeEvents = async (req, res) => {
+    const { id } = req.params; // tree_id
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('life_events')
+            .select('*, persons!inner(tree_id)')
+            .eq('persons.tree_id', id)
+            .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching tree events:', error);
         res.status(500).json({ error: error.message });
     }
 };

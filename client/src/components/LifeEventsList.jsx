@@ -4,7 +4,7 @@ import LifeEventForm from './LifeEventForm';
 import { Button, useToast } from './ui';
 import { Plus, Pencil, Trash2, MapPin, Calendar } from 'lucide-react';
 
-const LifeEventsList = ({ personId, isEditor }) => {
+const LifeEventsList = ({ personId, treeId, isEditor }) => {
     const { toast } = useToast();
     const { events, isLoading, addEvent, updateEvent, deleteEvent, isAdding, isUpdating, isDeleting } = useLifeEvents(personId);
     const [editingEvent, setEditingEvent] = useState(null);
@@ -57,6 +57,7 @@ const LifeEventsList = ({ personId, isEditor }) => {
 
             {isCreating && (
                 <LifeEventForm
+                    treeId={treeId}
                     onSave={handleSave}
                     onCancel={() => setIsCreating(false)}
                     isSaving={isAdding}
@@ -65,6 +66,7 @@ const LifeEventsList = ({ personId, isEditor }) => {
 
             {editingEvent && (
                 <LifeEventForm
+                    treeId={treeId}
                     event={editingEvent}
                     onSave={handleSave}
                     onCancel={() => setEditingEvent(null)}

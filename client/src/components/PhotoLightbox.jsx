@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { usePhotoDetails } from '../hooks/usePhotoDetails';
 
 const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+    const { stories, events } = usePhotoDetails(photo?.id);
+
     // Handle keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -68,8 +72,11 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
 
                     {/* Associated Person (Primary) */}
                     {photo.person && (
-                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0">
+                        <Link
+                            to={`/tree/${photo.tree_id}/person/${photo.person.id}`}
+                            className="flex items-center gap-3 pb-4 border-b border-white/10 hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors group"
+                        >
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0 ring-2 ring-transparent group-hover:ring-white/30 transition-all">
                                 {photo.person.photo_url ? (
                                     <img src={photo.person.photo_url} alt={photo.person.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -78,9 +85,9 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                             </div>
                             <div>
                                 <p className="text-sm text-white/50">Photo of</p>
-                                <p className="font-semibold text-white">{photo.person.name}</p>
+                                <p className="font-semibold text-white group-hover:text-teal-300 transition-colors">{photo.person.name}</p>
                             </div>
-                        </div>
+                        </Link>
                     )}
 
                     <div className="space-y-4">
@@ -119,6 +126,59 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                                             )}
                                             {person.name}
                                         </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Related Stories */}
+                        {stories && stories.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-white/10">
+                                <div className="flex items-center gap-3 text-white/80 mb-1">
+                                    <BookOpen className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <span className="font-medium">Related Stories</span>
+                                </div>
+                                <div className="pl-8 space-y-2">
+                                    {stories.map(story => {
+                                        // Extract preview text from story content (first paragraph)
+                                        let preview = 'No content';
+                                        if (story.content && typeof story.content === 'object' && story.content.content) {
+                                            const firstParagraph = story.content.content.find(node => node.type === 'paragraph');
+                                            if (firstParagraph && firstParagraph.content) {
+                                                preview = firstParagraph.content.map(c => c.text || '').join('');
+                                            }
+                                        }
+
+                                        return (
+                                            <Link
+                                                key={story.id}
+                                                to={`/story/${story.id}`}
+                                                className="block p-2 bg-white/10 rounded-md hover:bg-white/20 transition-colors"
+                                            >
+                                                <p className="text-sm font-medium text-white">{story.title}</p>
+                                                <p className="text-xs text-white/60 truncate">{preview}</p>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Related Events */}
+                        {events && events.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t border-white/10">
+                                <div className="flex items-center gap-3 text-white/80 mb-1">
+                                    <Flag className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <span className="font-medium">Related Events</span>
+                                </div>
+                                <div className="pl-8 space-y-2">
+                                    {events.map(event => (
+                                        <div key={event.id} className="p-2 bg-white/10 rounded-md">
+                                            <p className="text-sm font-medium text-white">{event.title}</p>
+                                            <p className="text-xs text-white/60">
+                                                {new Date(event.date || event.start_date).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     ))}
                                 </div>
                             </div>

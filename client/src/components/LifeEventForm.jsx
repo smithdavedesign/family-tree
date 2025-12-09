@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input } from './ui';
-import { X } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
+import PhotoSelector from './PhotoSelector';
 
 const EVENT_TYPES = [
     { value: 'education', label: 'Education' },
@@ -13,7 +14,8 @@ const EVENT_TYPES = [
     { value: 'other', label: 'Other' }
 ];
 
-const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
+const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
+    const [showPhotoSelector, setShowPhotoSelector] = useState(false);
     const [formData, setFormData] = useState({
         event_type: 'other',
         title: '',
@@ -21,7 +23,8 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
         start_date: '',
         end_date: '',
         location: '',
-        description: ''
+        description: '',
+        media_ids: []
     });
 
     useEffect(() => {
@@ -33,7 +36,8 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                 start_date: event.start_date || '',
                 end_date: event.end_date || '',
                 location: event.location || '',
-                description: event.description || ''
+                description: event.description || '',
+                media_ids: event.media_ids || []
             });
         }
     }, [event]);
@@ -158,6 +162,25 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                 />
             </div>
 
+            {/* Photo Attachment */}
+            <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Photos</label>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    fullWidth
+                    onClick={() => setShowPhotoSelector(true)}
+                    className="flex items-center justify-center gap-2"
+                >
+                    <ImageIcon className="w-4 h-4" />
+                    {formData.media_ids?.length > 0
+                        ? `${formData.media_ids.length} Photo${formData.media_ids.length !== 1 ? 's' : ''} Attached`
+                        : 'Attach Photos'
+                    }
+                </Button>
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
                 <Button variant="ghost" size="sm" onClick={onCancel}>
                     Cancel
@@ -166,6 +189,35 @@ const LifeEventForm = ({ event, onSave, onCancel, isSaving }) => {
                     {event ? 'Update Event' : 'Add Event'}
                 </Button>
             </div>
+
+            {showPhotoSelector && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+                        <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+                            <h3 className="font-bold text-lg">Select Photos</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowPhotoSelector(false)}
+                                className="p-1 hover:bg-slate-100 rounded-full"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-4 overflow-y-auto">
+                            <PhotoSelector
+                                treeId={treeId}
+                                selectedIds={formData.media_ids || []}
+                                onSelectionChange={(ids) => setFormData(prev => ({ ...prev, media_ids: ids }))}
+                            />
+                        </div>
+                        <div className="p-4 border-t border-slate-200 flex justify-end">
+                            <Button type="button" onClick={() => setShowPhotoSelector(false)}>
+                                Done
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </form>
     );
 };

@@ -1,7 +1,7 @@
 const { supabaseAdmin } = require('../middleware/auth');
 
 exports.createStory = async (req, res) => {
-    const { tree_id, title, content, person_ids = [] } = req.body;
+    const { tree_id, title, content, person_ids = [], photo_ids = [] } = req.body;
 
     try {
         // Create the story
@@ -32,6 +32,21 @@ exports.createStory = async (req, res) => {
             if (linkError) throw linkError;
         }
 
+        // Link photos to the story
+        if (photo_ids.length > 0) {
+            const storyPhotoInserts = photo_ids.map((photo_id, index) => ({
+                story_id: story.id,
+                photo_id,
+                order: index
+            }));
+
+            const { error: photoLinkError } = await supabaseAdmin
+                .from('story_photos')
+                .insert(storyPhotoInserts);
+
+            if (photoLinkError) throw photoLinkError;
+        }
+
         res.status(201).json(story);
     } catch (error) {
         console.error('Error creating story:', error);
@@ -40,7 +55,7 @@ exports.createStory = async (req, res) => {
 };
 
 exports.getStories = async (req, res) => {
-    const { tree_id, person_id } = req.query;
+    const { tree_id, person_id, photo_id } = req.query;
 
     try {
         let query = supabaseAdmin
@@ -57,6 +72,19 @@ exports.getStories = async (req, res) => {
                 .from('story_people')
                 .select('story_id')
                 .eq('person_id', person_id);
+
+            if (linkError) throw linkError;
+
+            const ids = storyIds.map(sp => sp.story_id);
+            query = query.in('id', ids);
+        }
+
+        if (photo_id) {
+            // Get stories linked to this photo
+            const { data: storyIds, error: linkError } = await supabaseAdmin
+                .from('story_photos')
+                .select('story_id')
+                .eq('photo_id', photo_id);
 
             if (linkError) throw linkError;
 
@@ -92,12 +120,23 @@ exports.getStory = async (req, res) => {
         // Get linked people
         const { data: people, error: peopleError } = await supabaseAdmin
             .from('story_people')
-            .select('person_id, persons(id, first_name, last_name)')
+            .select('person_id, persons(id, first_name, last_name, profile_photo_url)')
             .eq('story_id', id);
 
         if (peopleError) throw peopleError;
 
         story.linked_people = people.map(p => p.persons);
+
+        // Get linked photos
+        const { data: photos, error: photosError } = await supabaseAdmin
+            .from('story_photos')
+            .select('photo_id, photos(*)')
+            .eq('story_id', id)
+            .order('order', { ascending: true });
+
+        if (photosError) throw photosError;
+
+        story.linked_photos = photos.map(p => p.photos);
 
         res.json(story);
     } catch (error) {
@@ -108,7 +147,7 @@ exports.getStory = async (req, res) => {
 
 exports.updateStory = async (req, res) => {
     const { id } = req.params;
-    const { title, content, person_ids } = req.body;
+    const { title, content, person_ids, photo_ids } = req.body;
 
     try {
         // Update story
@@ -145,6 +184,30 @@ exports.updateStory = async (req, res) => {
                     .insert(storyPeopleInserts);
 
                 if (linkError) throw linkError;
+            }
+        }
+
+        // Update linked photos if provided
+        if (photo_ids !== undefined) {
+            // Delete existing links
+            await supabaseAdmin
+                .from('story_photos')
+                .delete()
+                .eq('story_id', id);
+
+            // Insert new links
+            if (photo_ids.length > 0) {
+                const storyPhotoInserts = photo_ids.map((photo_id, index) => ({
+                    story_id: id,
+                    photo_id,
+                    order: index
+                }));
+
+                const { error: photoLinkError } = await supabaseAdmin
+                    .from('story_photos')
+                    .insert(storyPhotoInserts);
+
+                if (photoLinkError) throw photoLinkError;
             }
         }
 

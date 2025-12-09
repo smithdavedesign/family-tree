@@ -35,7 +35,7 @@ const TreePage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState(null);
 
-    // View mode state with localStorage persistence
+    // View mode state with localStorage persistence - default to 'standard'
     const [viewMode, setViewMode] = useState(() => {
         const saved = localStorage.getItem(`viewMode_${id}`);
         return saved || 'standard';
@@ -77,7 +77,7 @@ const TreePage = () => {
 
             // Fetch life events for timeline view
             try {
-                const eventsResponse = await fetch(`/api/life-events?tree_id=${id}`, {
+                const eventsResponse = await fetch(`/api/tree/${id}/events`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (eventsResponse.ok) {
