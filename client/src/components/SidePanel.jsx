@@ -749,8 +749,8 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                             <div className="space-y-2">
                                 {relationships.map((rel) => {
                                     // Format relationship type label
-                                    const relType = rel.relationship_type?.toLowerCase() || '';
-                                    let typeLabel = rel.relationship_type?.replace('_', ' ') || 'Related to';
+                                    const relType = rel.type?.toLowerCase() || '';
+                                    let typeLabel = rel.type?.replace('_', ' ') || 'Related to';
 
                                     // Special handling for common types
                                     if (relType === 'spouse') {
