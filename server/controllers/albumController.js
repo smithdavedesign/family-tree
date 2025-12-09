@@ -13,7 +13,7 @@ const getTreeAlbums = async (req, res) => {
         const { sort = 'created_at', order = 'desc' } = req.query;
 
         // Verify user has access to tree
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', treeId)
@@ -25,7 +25,7 @@ const getTreeAlbums = async (req, res) => {
         }
 
         // Fetch albums with photo count
-        const { data: albums, error } = await supabase
+        const { data: albums, error } = await supabaseAdmin
             .from('albums')
             .select(`
                 id,
@@ -69,7 +69,7 @@ const createAlbum = async (req, res) => {
         const { name, description, cover_photo_id, is_private } = req.body;
 
         // Verify user has editor/owner role
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', treeId)
@@ -81,7 +81,7 @@ const createAlbum = async (req, res) => {
         }
 
         // Create album
-        const { data: album, error } = await supabase
+        const { data: album, error } = await supabaseAdmin
             .from('albums')
             .insert({
                 tree_id: treeId,
@@ -109,7 +109,7 @@ const getAlbum = async (req, res) => {
         const { albumId } = req.params;
 
         // Fetch album with photos
-        const { data: album, error } = await supabase
+        const { data: album, error } = await supabaseAdmin
             .from('albums')
             .select(`
                 *,
@@ -137,7 +137,7 @@ const getAlbum = async (req, res) => {
         }
 
         // Check user access
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -183,7 +183,7 @@ const updateAlbum = async (req, res) => {
         const { name, description, cover_photo_id, is_private } = req.body;
 
         // Get album to check tree_id
-        const { data: album } = await supabase
+        const { data: album } = await supabaseAdmin
             .from('albums')
             .select('tree_id')
             .eq('id', albumId)
@@ -194,7 +194,7 @@ const updateAlbum = async (req, res) => {
         }
 
         // Verify permissions
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -212,7 +212,7 @@ const updateAlbum = async (req, res) => {
         if (cover_photo_id !== undefined) updates.cover_photo_id = cover_photo_id;
         if (is_private !== undefined) updates.is_private = is_private;
 
-        const { data: updated, error } = await supabase
+        const { data: updated, error } = await supabaseAdmin
             .from('albums')
             .update(updates)
             .eq('id', albumId)
@@ -234,7 +234,7 @@ const deleteAlbum = async (req, res) => {
         const { albumId } = req.params;
 
         // Get album to check tree_id
-        const { data: album } = await supabase
+        const { data: album } = await supabaseAdmin
             .from('albums')
             .select('tree_id, name')
             .eq('id', albumId)
@@ -245,7 +245,7 @@ const deleteAlbum = async (req, res) => {
         }
 
         // Verify owner permission
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -257,7 +257,7 @@ const deleteAlbum = async (req, res) => {
         }
 
         // Delete album (cascade will remove album_photos)
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('albums')
             .delete()
             .eq('id', albumId);
@@ -282,7 +282,7 @@ const addPhotosToAlbum = async (req, res) => {
         }
 
         // Get album to check tree_id
-        const { data: album } = await supabase
+        const { data: album } = await supabaseAdmin
             .from('albums')
             .select('tree_id')
             .eq('id', albumId)
@@ -293,7 +293,7 @@ const addPhotosToAlbum = async (req, res) => {
         }
 
         // Verify permissions
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -305,7 +305,7 @@ const addPhotosToAlbum = async (req, res) => {
         }
 
         // Get max sort_order
-        const { data: maxOrder } = await supabase
+        const { data: maxOrder } = await supabaseAdmin
             .from('album_photos')
             .select('sort_order')
             .eq('album_id', albumId)
@@ -323,7 +323,7 @@ const addPhotosToAlbum = async (req, res) => {
             added_by: req.user.id
         }));
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('album_photos')
             .upsert(inserts, { onConflict: 'album_id,photo_id', ignoreDuplicates: true })
             .select();
@@ -343,7 +343,7 @@ const removePhotoFromAlbum = async (req, res) => {
         const { albumId, photoId } = req.params;
 
         // Get album to check tree_id
-        const { data: album } = await supabase
+        const { data: album } = await supabaseAdmin
             .from('albums')
             .select('tree_id')
             .eq('id', albumId)
@@ -354,7 +354,7 @@ const removePhotoFromAlbum = async (req, res) => {
         }
 
         // Verify permissions
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -366,7 +366,7 @@ const removePhotoFromAlbum = async (req, res) => {
         }
 
         // Remove photo
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('album_photos')
             .delete()
             .eq('album_id', albumId)
@@ -392,7 +392,7 @@ const reorderAlbumPhotos = async (req, res) => {
         }
 
         // Get album to check tree_id
-        const { data: album } = await supabase
+        const { data: album } = await supabaseAdmin
             .from('albums')
             .select('tree_id')
             .eq('id', albumId)
@@ -403,7 +403,7 @@ const reorderAlbumPhotos = async (req, res) => {
         }
 
         // Verify permissions
-        const { data: member } = await supabase
+        const { data: member } = await supabaseAdmin
             .from('tree_members')
             .select('role')
             .eq('tree_id', album.tree_id)
@@ -416,7 +416,7 @@ const reorderAlbumPhotos = async (req, res) => {
 
         // Update sort orders
         const updates = photo_orders.map(({ photo_id, sort_order }) =>
-            supabase
+            supabaseAdmin
                 .from('album_photos')
                 .update({ sort_order })
                 .eq('album_id', albumId)
@@ -437,7 +437,7 @@ const getPersonAlbums = async (req, res) => {
     try {
         const { personId } = req.params;
 
-        const { data: albums, error } = await supabase
+        const { data: albums, error } = await supabaseAdmin
             .from('albums')
             .select(`
                 id,
