@@ -177,13 +177,11 @@ module.exports = {
     personUpdateSchema,
     relationshipSchema,
     treeSchema,
-    inviteSchema,
-    storySchema,
-    storyUpdateSchema,
-    invitationSchema, // Corrected from inviteSchema
-    photoSchema, // Added photoSchema
+    invitationSchema,
+    photoSchema,
     albumSchema,
     albumUpdateSchema,
     addPhotosToAlbumSchema,
     reorderPhotosSchema
 };
+
