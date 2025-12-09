@@ -10,6 +10,7 @@ import PersonTimeline from '../components/PersonTimeline';
 import PersonPhotoGallery from '../components/PersonPhotoGallery';
 import PersonStories from '../components/PersonStories';
 import RelationshipMap from '../components/RelationshipMap';
+import PersonDocuments from '../components/PersonDocuments';
 import SidePanel from '../components/SidePanel';
 
 // Fetch aggregated person data
@@ -176,6 +177,9 @@ const PersonPage = () => {
 
                 {/* Stories */}
                 <PersonStories personId={personId} treeId={treeId} />
+
+                {/* Documents */}
+                <PersonDocuments personId={personId} />
 
                 {/* Family Connections */}
                 <RelationshipMap
