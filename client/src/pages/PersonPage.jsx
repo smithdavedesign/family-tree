@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, User as UserIcon } from 'lucide-react';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
+import Breadcrumbs from '../components/Breadcrumbs';
 import PersonHero from '../components/PersonHero';
 import PersonTimeline from '../components/PersonTimeline';
 import PersonPhotoGallery from '../components/PersonPhotoGallery';
@@ -113,21 +114,14 @@ const PersonPage = () => {
             <Navbar
                 user={user}
                 onOpenSettings={() => { }}
-                leftContent={
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate(`/tree/${treeId}`)}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                            title="Back to Tree"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <div className="flex flex-col">
-                            <span className="text-xs text-slate-400">{treeName}</span>
-                            <span className="font-semibold text-white">{fullName}</span>
-                        </div>
-                    </div>
-                }
+            />
+
+            {/* Breadcrumbs */}
+            <Breadcrumbs
+                items={[
+                    { label: treeName, href: `/tree/${treeId}` },
+                    { label: fullName }
+                ]}
             />
 
             {/* Main Content */}

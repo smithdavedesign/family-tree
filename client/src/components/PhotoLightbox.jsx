@@ -72,8 +72,11 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
 
                     {/* Associated Person (Primary) */}
                     {photo.person && (
-                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0">
+                        <Link
+                            to={`/tree/${photo.tree_id}/person/${photo.person.id}`}
+                            className="flex items-center gap-3 pb-4 border-b border-white/10 hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors group"
+                        >
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0 ring-2 ring-transparent group-hover:ring-white/30 transition-all">
                                 {photo.person.photo_url ? (
                                     <img src={photo.person.photo_url} alt={photo.person.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -82,9 +85,9 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev }) => 
                             </div>
                             <div>
                                 <p className="text-sm text-white/50">Photo of</p>
-                                <p className="font-semibold text-white">{photo.person.name}</p>
+                                <p className="font-semibold text-white group-hover:text-teal-300 transition-colors">{photo.person.name}</p>
                             </div>
-                        </div>
+                        </Link>
                     )}
 
                     <div className="space-y-4">
