@@ -1,8 +1,9 @@
-const { supabase } = require('../middleware/auth');
+const { supabaseAdmin } = require('../middleware/auth');
 
 /**
  * Album Controller
  * Handles CRUD operations for photo albums
+ * Uses supabaseAdmin to bypass RLS since we manually check permissions
  */
 
 // Get all albums for a tree
