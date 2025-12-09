@@ -23,6 +23,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const EmailConfirm = lazy(() => import('./pages/EmailConfirm'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const StoryPage = lazy(() => import('./pages/StoryPage'));
+const PersonPage = lazy(() => import('./pages/PersonPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -155,6 +156,7 @@ function App() {
             <Route path="/settings" element={<AccountSettings />} />
             <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
             <Route path="/story/:id" element={<StoryPage />} />
+            <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
           </Routes>
         </Suspense>
       </Router>
