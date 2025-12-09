@@ -143,11 +143,47 @@ const photoSchema = Joi.object({
     is_primary: Joi.boolean().default(false)
 });
 
+
+// Album validation schemas
+const albumSchema = Joi.object({
+    name: Joi.string().min(1).max(255).required(),
+    description: Joi.string().max(2000).empty('').allow(null),
+    cover_photo_id: Joi.string().uuid().empty('').allow(null),
+    is_private: Joi.boolean()
+});
+
+const albumUpdateSchema = Joi.object({
+    name: Joi.string().min(1).max(255),
+    description: Joi.string().max(2000).empty('').allow(null),
+    cover_photo_id: Joi.string().uuid().empty('').allow(null),
+    is_private: Joi.boolean()
+}).min(1);
+
+const addPhotosToAlbumSchema = Joi.object({
+    photo_ids: Joi.array().items(Joi.string().uuid()).min(1).max(100).required()
+});
+
+const reorderPhotosSchema = Joi.object({
+    photo_orders: Joi.array().items(
+        Joi.object({
+            photo_id: Joi.string().uuid().required(),
+            sort_order: Joi.number().integer().min(0).required()
+        })
+    ).min(1).required()
+});
+
 module.exports = {
     personSchema,
     personUpdateSchema,
-    treeSchema,
     relationshipSchema,
-    invitationSchema,
-    photoSchema
+    treeSchema,
+    inviteSchema,
+    storySchema,
+    storyUpdateSchema,
+    invitationSchema, // Corrected from inviteSchema
+    photoSchema, // Added photoSchema
+    albumSchema,
+    albumUpdateSchema,
+    addPhotosToAlbumSchema,
+    reorderPhotosSchema
 };

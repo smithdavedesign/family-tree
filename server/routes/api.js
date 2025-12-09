@@ -5,7 +5,7 @@ const { requireOwner, requireEditor, requireViewer, requirePersonEditor, require
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const { validate } = require('../middleware/validation');
-const { personSchema, personUpdateSchema, treeSchema, relationshipSchema, invitationSchema, photoSchema } = require('../validation/schemas');
+const { personSchema, personUpdateSchema, treeSchema, relationshipSchema, invitationSchema, photoSchema, albumSchema, albumUpdateSchema, addPhotosToAlbumSchema, reorderPhotosSchema } = require('../validation/schemas');
 const treeController = require('../controllers/treeController');
 const personController = require('../controllers/personController');
 const relationshipController = require('../controllers/relationshipController');
@@ -16,6 +16,7 @@ const invitationController = require('../controllers/invitationController');
 const lifeEventController = require('../controllers/lifeEventController');
 const reminderController = require('../controllers/reminderController');
 const storyController = require('../controllers/storyController');
+const albumController = require('../controllers/albumController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -72,12 +73,23 @@ router.get('/tree/:id/events', requireAuth, requireViewer, lifeEventController.g
 // Reminder routes (Phase 2 Roadmap)
 router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEvents);
 
-// Story routes (Phase 4 Roadmap)
-router.post('/stories', requireAuth, requireTreeEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
+// Story routes
 router.get('/stories', requireAuth, storyController.getStories);
-router.get('/stories/:id', requireAuth, storyController.getStory);
-router.put('/stories/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('UPDATE', 'story'), storyController.updateStory);
-router.delete('/stories/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('DELETE', 'story'), storyController.deleteStory);
+router.get('/story/:id', requireAuth, storyController.getStory);
+router.post('/story', requireAuth, requireStoryEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
+router.put('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('UPDATE', 'story'), storyController.updateStory);
+router.delete('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('DELETE', 'story'), storyController.deleteStory);
+
+// Album routes
+router.get('/tree/:treeId/albums', requireAuth, requireViewer, albumController.getTreeAlbums);
+router.post('/tree/:treeId/albums', requireAuth, requireTreeEditor, validate(albumSchema), writeLimiter, auditLog('CREATE', 'album'), albumController.createAlbum);
+router.get('/album/:albumId', requireAuth, albumController.getAlbum);
+router.put('/album/:albumId', requireAuth, validate(albumUpdateSchema), writeLimiter, auditLog('UPDATE', 'album'), albumController.updateAlbum);
+router.delete('/album/:albumId', requireAuth, writeLimiter, auditLog('DELETE', 'album'), albumController.deleteAlbum);
+router.post('/album/:albumId/photos', requireAuth, validate(addPhotosToAlbumSchema), writeLimiter, albumController.addPhotosToAlbum);
+router.delete('/album/:albumId/photos/:photoId', requireAuth, writeLimiter, albumController.removePhotoFromAlbum);
+router.put('/album/:albumId/photos/reorder', requireAuth, validate(reorderPhotosSchema), writeLimiter, albumController.reorderAlbumPhotos);
+router.get('/person/:personId/albums', requireAuth, albumController.getPersonAlbums);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
