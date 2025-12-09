@@ -25,7 +25,7 @@ const AlbumPage = () => {
         enabled: !!treeId
     });
 
-    const tree Name = treeData?.name || 'Family Tree';
+    const treeName = treeData?.name || 'Family Tree';
     const userRole = treeData?.role || 'viewer';
 
     // Breadcrumb items
