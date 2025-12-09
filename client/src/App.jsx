@@ -22,6 +22,7 @@ const Login = lazy(() => import('./pages/Login'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const EmailConfirm = lazy(() => import('./pages/EmailConfirm'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const StoryPage = lazy(() => import('./pages/StoryPage'));
 
 // Loading component
 const PageLoader = () => (
