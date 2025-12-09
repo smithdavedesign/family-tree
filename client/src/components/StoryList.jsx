@@ -37,7 +37,45 @@ const StoryList = ({ personId, treeId, isEditor }) => {
         setIsEditing(true);
     };
 
-    // ... handleSave ...
+    const handleSave = async () => {
+        if (!formData.title.trim()) {
+            toast.error('Please enter a title');
+            return;
+        }
+
+        try {
+            if (currentStory) {
+                await updateStory({
+                    id: currentStory.id,
+                    ...formData
+                });
+                toast.success('Story updated successfully');
+            } else {
+                await createStory({
+                    tree_id: treeId,
+                    person_ids: [personId],
+                    ...formData
+                });
+                toast.success('Story created successfully');
+            }
+            handleCancel();
+        } catch (error) {
+            console.error('Error saving story:', error);
+            toast.error('Failed to save story');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this story?')) {
+            try {
+                await deleteStory(id);
+                toast.success('Story deleted successfully');
+            } catch (error) {
+                console.error('Error deleting story:', error);
+                toast.error('Failed to delete story');
+            }
+        }
+    };
 
     const handleCancel = () => {
         setIsEditing(false);

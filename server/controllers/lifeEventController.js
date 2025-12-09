@@ -174,3 +174,22 @@ exports.getEventsForPhoto = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getTreeEvents = async (req, res) => {
+    const { id } = req.params; // tree_id
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('life_events')
+            .select('*, persons!inner(tree_id)')
+            .eq('persons.tree_id', id)
+            .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching tree events:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

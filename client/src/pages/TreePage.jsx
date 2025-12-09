@@ -77,7 +77,7 @@ const TreePage = () => {
 
             // Fetch life events for timeline view
             try {
-                const eventsResponse = await fetch(`/api/life-events?tree_id=${id}`, {
+                const eventsResponse = await fetch(`/api/tree/${id}/events`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (eventsResponse.ok) {
