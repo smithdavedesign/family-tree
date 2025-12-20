@@ -18,6 +18,7 @@ const reminderController = require('../controllers/reminderController');
 const storyController = require('../controllers/storyController');
 const albumController = require('../controllers/albumController');
 const mapController = require('../controllers/mapController');
+const locationController = require('../controllers/locationController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -112,6 +113,26 @@ router.use('/google', googleOAuthRoutes);
 router.get('/map/nearby', requireAuth, mapController.getNearbyPhotos);
 router.get('/person/:id/map-stats', requireAuth, mapController.getPersonLocationStats);
 router.get('/map/global-stats', requireAuth, mapController.getGlobalTravelStats);
+
+// Location routes (Phase Q)
+router.post('/locations', requireAuth, writeLimiter, locationController.createLocation);
+router.get('/locations', requireAuth, locationController.getLocations);
+router.get('/location/:id', requireAuth, locationController.getLocation);
+router.put('/location/:id', requireAuth, writeLimiter, locationController.updateLocation);
+router.delete('/location/:id', requireAuth, writeLimiter, locationController.deleteLocation);
+router.get('/location/:id/details', requireAuth, locationController.getLocationDetails);
+
+// Story-Location linking
+router.post('/story/:storyId/locations', requireAuth, requireStoryEditor, writeLimiter, locationController.addStoryLocation);
+router.delete('/story/:storyId/location/:locationId', requireAuth, requireStoryEditor, writeLimiter, locationController.removeStoryLocation);
+router.get('/story/:storyId/locations', requireAuth, locationController.getStoryLocations);
+
+// Person-Location linking
+router.post('/person/:personId/locations', requireAuth, writeLimiter, locationController.addPersonLocation);
+router.delete('/person/:personId/location/:locationId', requireAuth, writeLimiter, locationController.removePersonLocation);
+router.get('/person/:personId/locations', requireAuth, locationController.getPersonLocations);
+
+
 
 // Export routes
 const exportRoutes = require('./export');

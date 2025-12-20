@@ -264,6 +264,41 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 ---
 
+### ✅ Phase Q: Location-Story Enhancements (95%) - **COMPLETE**
+**Timeline:** Completed Dec 2024 | **Normalized Location System**
+
+**Goal:** Expand location system beyond photos to include stories and people, with manual location creation and comprehensive linking.
+
+#### Completed Features
+- [x] Normalized `locations` table (name, address, coordinates, date range, notes)
+- [x] `story_locations` join table for story-location links
+- [x] `person_locations` join table for person migration/travel history
+- [x] 14 Location API endpoints (CRUD + linking)
+- [x] LocationModal with full validation and toast notifications
+- [x] LocationSelector component (search, create, chips)
+- [x] PersonLocations widget ("Places Lived/Visited")
+- [x] Story Editor integration (attach locations)
+- [x] PhotoLightbox displays locations for events & stories
+- [x] RLS policies for secure location access
+
+#### Components Created
+- `LocationModal.jsx` - Create/edit form with validation
+- `LocationSelector.jsx` - Search and selection interface
+- `PersonLocations.jsx` - Person location management
+
+#### API Endpoints (14)
+- Location CRUD: Create, Read, Update, Delete, List, Details
+- Story linking: Add, Remove, Get story locations
+- Person linking: Add, Remove, Get person locations
+- Stories endpoint includes locations
+
+#### Optional Future Work
+- Map integration for story/person locations
+- Location hierarchies (Country → State → City)
+- Shared places insights between people
+
+---
+
 ### ✅ Phase L: Dual OAuth Architecture (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Critical for Google Integration Reliability**
 

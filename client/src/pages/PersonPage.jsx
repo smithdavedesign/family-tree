@@ -13,6 +13,7 @@ import RelationshipMap from '../components/RelationshipMap';
 import PersonDocuments from '../components/PersonDocuments';
 import SidePanel from '../components/SidePanel';
 import PersonHeatmap from '../components/PersonHeatmap';
+import PersonLocations from '../components/PersonLocations';
 import { Map as MapIcon } from 'lucide-react';
 
 // Fetch aggregated person data
@@ -176,6 +177,9 @@ const PersonPage = () => {
 
                 {/* Stories */}
                 <PersonStories personId={personId} treeId={treeId} />
+
+                {/* Person Locations */}
+                <PersonLocations personId={personId} isEditor={isEditor} />
 
                 {/* Documents */}
                 <PersonDocuments personId={personId} />

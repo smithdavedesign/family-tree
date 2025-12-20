@@ -60,7 +60,18 @@ exports.getStories = async (req, res) => {
     try {
         let query = supabaseAdmin
             .from('stories')
-            .select('*');
+            .select(`
+                *,
+                story_locations (
+                    locations (
+                        id,
+                        name,
+                        address,
+                        latitude,
+                        longitude
+                    )
+                )
+            `);
 
         if (tree_id) {
             query = query.eq('tree_id', tree_id);
@@ -98,7 +109,16 @@ exports.getStories = async (req, res) => {
 
         if (error) throw error;
 
-        res.json(data);
+        // Transform the data to flatten locations
+        const storiesWithLocations = data.map(story => ({
+            ...story,
+            locations: story.story_locations?.map(sl => sl.locations).filter(Boolean) || []
+        }));
+
+        // Remove the story_locations join field
+        storiesWithLocations.forEach(story => delete story.story_locations);
+
+        res.json(storiesWithLocations);
     } catch (error) {
         console.error('Error fetching stories:', error);
         res.status(500).json({ error: error.message });

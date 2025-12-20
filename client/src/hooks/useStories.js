@@ -27,7 +27,7 @@ export const useStories = (treeId, personId) => {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
-        const response = await fetch('/api/stories', {
+        const response = await fetch('/api/story', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export const useStories = (treeId, personId) => {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
-        const response = await fetch(`/api/stories/${id}`, {
+        const response = await fetch(`/api/story/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export const useStories = (treeId, personId) => {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
-        const response = await fetch(`/api/stories/${id}`, {
+        const response = await fetch(`/api/story/${id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });

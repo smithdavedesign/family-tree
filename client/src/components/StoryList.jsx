@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, Edit, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { BookOpen, Plus, Edit, Trash2, X, Image as ImageIcon, MapPin } from 'lucide-react';
 import { useStories } from '../hooks/useStories';
 import StoryEditor from './StoryEditor';
 import PhotoSelector from './PhotoSelector';
+import LocationSelector from './LocationSelector';
 import { Button, useToast } from './ui';
 
 const StoryList = ({ personId, treeId, isEditor }) => {
@@ -11,18 +12,22 @@ const StoryList = ({ personId, treeId, isEditor }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [showPhotoSelector, setShowPhotoSelector] = useState(false);
     const [currentStory, setCurrentStory] = useState(null);
+    const [selectedLocations, setSelectedLocations] = useState([]);
     const [formData, setFormData] = useState({
         title: '',
         content: { type: 'doc', content: [{ type: 'paragraph' }] },
-        photo_ids: []
+        photo_ids: [],
+        location_ids: []
     });
 
     const handleCreate = () => {
         setCurrentStory(null);
+        setSelectedLocations([]);
         setFormData({
             title: '',
             content: { type: 'doc', content: [{ type: 'paragraph' }] },
-            photo_ids: []
+            photo_ids: [],
+            location_ids: []
         });
         setIsEditing(true);
     };
@@ -81,10 +86,12 @@ const StoryList = ({ personId, treeId, isEditor }) => {
         setIsEditing(false);
         setShowPhotoSelector(false);
         setCurrentStory(null);
+        setSelectedLocations([]);
         setFormData({
             title: '',
             content: { type: 'doc', content: [{ type: 'paragraph' }] },
-            photo_ids: []
+            photo_ids: [],
+            location_ids: []
         });
     };
 
@@ -140,6 +147,25 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                         onChange={(content) => setFormData({ ...formData, content })}
                     />
 
+                    {/* Location Selector */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-slate-700 flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            Locations
+                        </label>
+                        <LocationSelector
+                            selectedLocations={selectedLocations}
+                            onAdd={(location) => {
+                                setSelectedLocations([...selectedLocations, location]);
+                                setFormData({ ...formData, location_ids: [...(formData.location_ids || []), location.id] });
+                            }}
+                            onRemove={(locationId) => {
+                                setSelectedLocations(selectedLocations.filter(l => l.id !== locationId));
+                                setFormData({ ...formData, location_ids: (formData.location_ids || []).filter(id => id !== locationId) });
+                            }}
+                        />
+                    </div>
+
                     <div className="flex gap-2">
                         <Button variant="primary" onClick={handleSave}>
                             Save Story
@@ -152,6 +178,7 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                             Cancel
                         </Button>
                     </div>
+
 
                     {showPhotoSelector && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -178,7 +205,8 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                         </div>
                     )}
                 </div>
-            )}
+            )
+            }
 
             {/* Story List */}
             <div className="space-y-2">
@@ -219,7 +247,7 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 };
 

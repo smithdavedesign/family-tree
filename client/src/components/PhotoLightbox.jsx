@@ -185,6 +185,12 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                             >
                                                 <p className="text-sm font-medium text-white">{story.title}</p>
                                                 <p className="text-xs text-white/60 truncate">{preview}</p>
+                                                {story.locations && story.locations.length > 0 && (
+                                                    <p className="text-xs text-teal-300 flex items-center gap-1 mt-1">
+                                                        <MapPin className="w-3 h-3" />
+                                                        {story.locations.map(loc => loc.name).join(', ')}
+                                                    </p>
+                                                )}
                                             </Link>
                                         );
                                     })}
@@ -202,13 +208,20 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                 <div className="pl-8 space-y-2">
                                     {events.map(event => (
                                         <div key={event.id} className="p-2 bg-white/10 rounded-md">
-                                            <p className="text-sm font-medium text-white">{event.title}</p>
-                                            <p className="text-xs text-white/60">
-                                                {new Date(event.date || event.start_date).toLocaleDateString()}
-                                            </p>
+                                            <p className="text-sm font-medium text-white">{event.event_type.replace('_', ' ')}</p>
+                                            {event.event_date && (
+                                                <p className="text-xs text-white/60">
+                                                    {new Date(event.event_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                                                </p>
+                                            )}
+                                            {event.location_name && (
+                                                <p className="text-xs text-teal-300 flex items-center gap-1 mt-1">
+                                                    <MapPin className="w-3 h-3" />
+                                                    {event.location_name}
+                                                </p>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
+                                    ))}</div>
                             </div>
                         )}
 

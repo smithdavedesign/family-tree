@@ -35,6 +35,7 @@ Build a web-based Family Tree application where users log in via Google SSO, ema
 - ✅ **Phase M:** User Registration & Auth (100%)
 - ✅ **Phase O:** Albums & Collections (100%)
 - ✅ **Phase P:** Map & Geo-Intelligence (100%)
+- ✅ **Phase Q:** Location-Story Enhancements (95%)
 
 ### In Progress / Upcoming:
 - 🚀 **Phase K:** Production Readiness (Testing, Monitoring, Validation) (90%)
