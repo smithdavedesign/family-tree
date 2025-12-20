@@ -97,12 +97,12 @@ const CommentSection = ({ resourceType, resourceId, treeId }) => {
     if (isLoading) return <div className="p-4 text-center text-slate-500">Loading comments...</div>;
 
     return (
-        <div className="flex flex-col h-full bg-white border-l border-slate-200 w-80">
-            <div className="p-4 border-b border-slate-200">
+        <div className="flex flex-col h-full bg-white w-full">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 px-8">
                 <h3 className="font-semibold text-slate-800">Comments ({comments.length})</h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 px-8">
                 {comments.length === 0 ? (
                     <div className="text-center text-slate-500 py-8">
                         No comments yet. Be the first!
@@ -111,15 +111,15 @@ const CommentSection = ({ resourceType, resourceId, treeId }) => {
                     comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3 group">
                             <Avatar
-                                url={comment.user?.google_picture}
-                                name={comment.user?.google_name || comment.user?.email}
+                                url={comment.user?.avatar_url}
+                                name={comment.user?.email}
                                 size="sm"
                             />
                             <div className="flex-1">
                                 <div className="bg-slate-50 rounded-lg p-3">
                                     <div className="flex justify-between items-start mb-1">
                                         <span className="font-medium text-sm text-slate-900">
-                                            {comment.user?.google_name || 'User'}
+                                            {comment.user?.email || 'User'}
                                         </span>
                                         <span className="text-xs text-slate-500">
                                             {formatDate(comment.created_at)}
@@ -141,14 +141,14 @@ const CommentSection = ({ resourceType, resourceId, treeId }) => {
                 )}
             </div>
 
-            <div className="p-4 border-t border-slate-200 bg-slate-50">
+            <div className="p-4 border-t border-slate-200 bg-slate-50 px-8">
                 <form onSubmit={handleSubmit} className="flex gap-2">
                     <input
                         type="text"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Write a comment..."
-                        className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="flex-1 px-3 py-2 text-sm text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                     />
                     <Button
                         type="submit"

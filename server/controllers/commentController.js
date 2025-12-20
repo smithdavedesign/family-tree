@@ -22,7 +22,7 @@ const getComments = async (req, res) => {
             .from('comments')
             .select(`
                 *,
-                user:users(id, email, google_name, google_picture)
+                user:users(id, email, avatar_url)
             `)
             .eq('resource_type', resourceType)
             .eq('resource_id', resourceId)
@@ -81,7 +81,7 @@ const addComment = async (req, res) => {
             })
             .select(`
                 *,
-                user:users(id, email, google_name, google_picture)
+                user:users(id, email, avatar_url)
             `)
             .single();
 

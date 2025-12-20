@@ -212,16 +212,13 @@ const StoryPage = () => {
                             </section>
                         )}
                     </div>
-                    <div className="mt-8 pt-8 border-t border-slate-200">
-                        <h2 className="text-xl font-bold text-slate-800 mb-6">Comments</h2>
-                        <div className="max-w-2xl">
-                            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden h-[500px]">
-                                <CommentSection
-                                    resourceType="story"
-                                    resourceId={story.id}
-                                    treeId={story.tree_id}
-                                />
-                            </div>
+                    <div className="mt-8 pt-8">
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden h-[500px]">
+                            <CommentSection
+                                resourceType="story"
+                                resourceId={story.id}
+                                treeId={story.tree_id}
+                            />
                         </div>
                     </div>
                 </article>
