@@ -781,7 +781,7 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                     className={`flex flex-col gap-2 transition-all duration-700 pointer-events-none ${isZenMode ? 'opacity-0 -translate-x-4' : 'opacity-100'}`}
                 >
                     {/* Main Toolbar */}
-                    <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 pointer-events-auto">
+                    <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 pointer-events-auto z-[20]">
                         <button
                             onClick={handleLayoutToggle}
                             className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-700 transition-all active:scale-95"
@@ -840,14 +840,16 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
 
                     {/* Edit Controls (Only in Edit Mode) */}
                     {isEditMode && (userRole === 'owner' || userRole === 'editor') && (
-                        <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 animate-slideIn pointer-events-auto">
+                        <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 animate-slideIn pointer-events-auto z-10 w-fit">
                             <button onClick={handleUndo} disabled={history.past.length === 0} className="p-2.5 rounded-xl hover:bg-slate-100 disabled:opacity-30 transition-all text-slate-700 active:scale-95">
                                 <Undo className="w-5 h-5" />
                             </button>
                             <button onClick={handleRedo} disabled={history.future.length === 0} className="p-2.5 rounded-xl hover:bg-slate-100 disabled:opacity-30 transition-all text-slate-700 active:scale-95">
                                 <Redo className="w-5 h-5" />
                             </button>
-                            {!isMobile && (
+                            {isMobile ? (
+                                <div className="hidden" />
+                            ) : (
                                 <>
                                     <div className="w-px bg-slate-200 mx-1" />
                                     <button onClick={() => handleMenuAction('add_root')} className="px-4 py-2 rounded-xl bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-md flex items-center gap-2 font-bold text-sm active:scale-95">
