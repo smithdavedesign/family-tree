@@ -87,7 +87,40 @@ const AccountSettings = () => {
         }
     };
 
-    // ... (handleDeleteAccount)
+    const handleDeleteAccount = async () => {
+        if (!confirm('Are you certain you want to delete your account? This action cannot be undone and all your data will be permanently lost.')) {
+            return;
+        }
+
+        const confirmation = prompt('To confirm deletion, please type "DELETE" below:');
+        if (confirmation !== 'DELETE') {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch('/api/account', {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to delete account');
+            }
+
+            await supabase.auth.signOut();
+            toast.success('Account deleted successfully');
+            navigate('/');
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            toast.error(error.message || 'Error deleting account');
+            setLoading(false);
+        }
+    };
 
     if (loading) {
         // ... (loading state)
