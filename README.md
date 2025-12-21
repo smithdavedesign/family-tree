@@ -264,6 +264,36 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 ---
 
+### ✅ Phase R: Onboarding & Comments (100%) - **COMPLETE**
+**Timeline:** Completed Dec 2024 | **User Engagement & Interaction**
+
+**Goal:** Enhance user onboarding experience and add commenting system for collaborative storytelling.
+
+#### Completed Features
+- [x] Welcome Wizard for new users
+- [x] Comments system for photos, stories, and people
+- [x] Database table (`comments`) with RLS policies
+- [x] CommentSection component with real-time updates
+- [x] Comment CRUD operations (create, read, delete)
+- [x] User attribution with avatars and timestamps
+- [x] Comments integrated into PhotoLightbox, StoryPage, and PersonPage
+- [x] MessageCircle icon for consistent UI
+- [x] Proper section ordering (Stories → Events → Albums → Comments)
+- [x] Permission system (authors and tree owners can delete)
+
+#### Components Created
+- `CommentSection.jsx` - Reusable comment interface
+- `WelcomeWizard.jsx` - Onboarding flow
+
+#### API Endpoints (3)
+- `GET /api/comments/:resourceType/:resourceId` - Fetch comments
+- `POST /api/comments` - Add comment
+- `DELETE /api/comments/:commentId` - Delete comment
+
+**UX Enhancement:** Comments encourage family collaboration and storytelling around photos and memories.
+
+---
+
 ### ✅ Phase L: Dual OAuth Architecture (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Critical for Google Integration Reliability**
 
