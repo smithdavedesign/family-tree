@@ -98,8 +98,7 @@ exports.getPersonLocationStats = async (req, res) => {
                     name,
                     latitude,
                     longitude,
-                    city,
-                    country
+                    address
                 )
             `)
             .eq('person_id', personId);
@@ -130,8 +129,7 @@ exports.getPersonLocationStats = async (req, res) => {
                     start: pl.start_date,
                     end: pl.end_date,
                     is_current: pl.is_current,
-                    city: pl.locations.city,
-                    country: pl.locations.country
+                    address: pl.locations.address
                 }
             }));
 
