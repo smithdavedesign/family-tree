@@ -106,14 +106,14 @@ const PersonHeatmap = ({ personId }) => {
                                         {isLived ? (
                                             <div className="text-xs text-slate-600">
                                                 <p>
-                                                    {loc.details.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                    {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
                                                     {' - '}
-                                                    {loc.details.is_current ? 'Present' : (loc.details.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                    {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
                                                 </p>
                                             </div>
                                         ) : (
                                             <p className="text-xs text-slate-500">
-                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details.year || 'Unknown Date')}
+                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
                                             </p>
                                         )}
                                     </div>
