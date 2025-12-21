@@ -51,7 +51,7 @@ const TreeMapPage = () => {
         queryKey: ['tree-map', treeId],
         queryFn: async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`/api/stats/global-travel?treeId=${treeId}`, {
+            const res = await fetch(`/api/map/global-stats?treeId=${treeId}`, {
                 headers: { Authorization: `Bearer ${session?.access_token}` }
             });
             if (!res.ok) throw new Error('Failed to fetch map data');
