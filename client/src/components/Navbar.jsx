@@ -32,7 +32,7 @@ const Navbar = ({
     };
 
     return (
-        <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <nav className="sticky top-0 z-[10001] w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
             <div className="max-w-[1600px] mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Left Side */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../auth';
 import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder, MessageCircle, Edit, Save, Check } from 'lucide-react';
@@ -19,12 +20,18 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
             setEditData({
                 caption: photo.caption || '',
                 date: photo.date ? new Date(photo.date).toISOString().split('T')[0] : '',
-                location: photo.location || '',
+                location: photo.location_name || photo.location || '',
                 latitude: photo.latitude || null,
                 longitude: photo.longitude || null,
                 location_name: photo.location_name || photo.location || ''
             });
             setIsEditing(false);
+
+            // Disable background scrolling when lightbox is open
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = 'unset';
+            };
         }
     }, [photo]);
 
@@ -90,12 +97,15 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
 
     if (!photo) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn group">
-            {/* Close Button */}
+    return createPortal(
+        <div
+            className="fixed inset-0 md:top-16 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn group"
+            onClick={onClose}
+        >
+            {/* Close Button (Mobile Only) */}
             <button
-                onClick={onClose}
-                className="absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50"
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                className="absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-[110] md:hidden"
                 aria-label="Close lightbox"
             >
                 <X className="w-8 h-8" />
@@ -122,7 +132,10 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                 </button>
             )}
 
-            <div className="flex flex-col md:flex-row w-full h-full max-w-[1600px] mx-auto overflow-hidden">
+            <div
+                className="flex flex-col md:flex-row w-full h-full max-w-[1700px] mx-auto overflow-hidden relative"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Image Area */}
                 <div className="flex-1 relative flex items-center justify-center p-4 bg-black/20 h-full min-h-0">
                     <img
@@ -132,29 +145,28 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                     />
                 </div>
 
-                {/* Info Sidebar (Desktop) / Bottom Sheet (Mobile) */}
-                <div className="w-full md:w-[400px] lg:w-[500px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 md:pt-16 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
-                    <div>
-                        <div className="flex items-start justify-between gap-4">
-                            {isEditing ? (
-                                <div className="w-full space-y-2">
+                <div className="w-full md:w-[400px] lg:w-[450px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 flex flex-col gap-6 text-white overflow-y-auto shrink-0 relative custom-scrollbar">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                                {isEditing ? (
                                     <Input
                                         value={editData.caption}
                                         onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
                                         placeholder="Add a caption..."
-                                        className="bg-white/10 border-white/20 text-white placeholder-white/40"
+                                        className="bg-white/10 border-white/20 text-white placeholder-white/40 w-full"
                                     />
-                                </div>
-                            ) : (
-                                <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
-                            )}
+                                ) : (
+                                    <h2 className="text-xl font-bold break-words pr-2 leading-tight">{photo.caption || 'Untitled Photo'}</h2>
+                                )}
+                            </div>
 
-                            <div className="flex gap-1">
+                            <div className="flex items-center gap-2 shrink-0">
                                 {!isEditing ? (
                                     <>
                                         <button
                                             onClick={() => setIsEditing(true)}
-                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
+                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/80 hover:text-white"
                                             title="Edit Photo"
                                         >
                                             <Edit className="w-5 h-5" />
@@ -162,25 +174,33 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                         {onAddToAlbum && (
                                             <button
                                                 onClick={() => onAddToAlbum(photo.id)}
-                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
+                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/80 hover:text-white"
                                                 title="Add to Album"
                                             >
                                                 <FolderPlus className="w-5 h-5" />
                                             </button>
                                         )}
+                                        {/* Desktop Close Button - Perfectly aligned and safe from scrollbar */}
+                                        <button
+                                            onClick={onClose}
+                                            className="hidden md:flex p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/80 hover:text-white border border-white/10 mr-1"
+                                            title="Close"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
                                     </>
                                 ) : (
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
                                         <button
                                             onClick={handleSave}
-                                            className="p-2 bg-teal-600 hover:bg-teal-500 rounded-full transition-colors text-white"
+                                            className="p-2 bg-teal-600 hover:bg-teal-50 rounded-lg transition-colors text-white shadow-lg"
                                             title="Save Changes"
                                         >
                                             <Check className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => setIsEditing(false)}
-                                            className="p-2 bg-red-500/80 hover:bg-red-500 rounded-full transition-colors text-white"
+                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/80"
                                             title="Cancel"
                                         >
                                             <X className="w-5 h-5" />
@@ -189,7 +209,6 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                 )}
                             </div>
                         </div>
-
                     </div>
 
                     {/* Associated Person (Primary) */}
@@ -263,12 +282,12 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                 </div>
                             </div>
                         ) : (
-                            photo.location && (
+                            (photo.location_name || photo.location) && (
                                 <div className="flex items-center gap-3 text-white/80">
                                     <MapPin className="w-5 h-5 text-teal-400 shrink-0" />
                                     <div>
                                         <p className="text-xs text-white/50">Location</p>
-                                        <span>{photo.location}</span>
+                                        <span>{photo.location_name || photo.location}</span>
                                     </div>
                                 </div>
                             )
@@ -437,7 +456,8 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                     background-color: #475569 !important;
                 }
              `}</style>
-        </div>
+        </div>,
+        document.body
     );
 };
 

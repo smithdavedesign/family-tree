@@ -167,9 +167,9 @@ const PersonPage = () => {
                 <PersonPhotoGallery personId={personId} />
 
                 {/* Location History (Map) */}
-                <section>
-                    <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <MapIcon className="w-5 h-5 text-teal-600" />
+                <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                        <MapIcon className="w-6 h-6 text-teal-600" />
                         Location History
                     </h2>
                     <PersonHeatmap personId={personId} />
@@ -193,9 +193,8 @@ const PersonPage = () => {
                 />
             </main>
 
-            {/* Side Panel for Editing */}
             {showSidePanel && (
-                <div className="fixed inset-0 z-50 flex items-start justify-end">
+                <div className="fixed inset-0 z-[10000] flex items-start justify-end">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"

@@ -92,23 +92,23 @@ const PersonHeatmap = ({ personId }) => {
         <div className="space-y-4">
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Locations</p>
                     <p className="text-2xl font-bold text-slate-900">{stats.unique_locations}</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Places Lived</p>
                     <p className="text-2xl font-bold text-orange-600">{stats.total_places_lived || 0}</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Life Events</p>
                     <p className="text-2xl font-bold text-violet-600">{stats.total_life_events || 0}</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Stories</p>
                     <p className="text-2xl font-bold text-amber-600">{stats.total_stories || 0}</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Mapped Photos</p>
                     <p className="text-2xl font-bold text-teal-600">{stats.total_photos_with_location}</p>
                 </div>
