@@ -119,15 +119,19 @@ const TreeMapPage = () => {
                     <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm shrink-0">
                         <div className="flex gap-6 overflow-x-auto no-scrollbar">
                             <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
-                                <span className="text-lg font-bold text-slate-900">{mapData?.total_locations || 0}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
+                                <span className="text-xs font-medium text-slate-500 uppercase">Lives Lived</span>
                                 <span className="text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Photo Spots</span>
+                                <span className="text-xs font-medium text-slate-500 uppercase">Life Events</span>
+                                <span className="text-lg font-bold text-blue-600">{mapData?.total_events_mapped || 0}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Stories</span>
+                                <span className="text-lg font-bold text-purple-600">{mapData?.total_stories_mapped || 0}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Photos</span>
                                 <span className="text-lg font-bold text-teal-600">{mapData?.total_photos_mapped || 0}</span>
                             </div>
                             <div className="flex flex-col">
@@ -200,6 +204,8 @@ const TreeMapPage = () => {
                                 {filteredLocations.map((loc, index) => {
                                     const isLived = loc.type === 'lived';
                                     const isStory = loc.type === 'story';
+                                    const isEvent = loc.type === 'event';
+                                    const isPhoto = loc.type === 'photo';
 
                                     let color = '#14b8a6'; // Default teal (photo)
                                     let fillColor = '#14b8a6';
@@ -210,13 +216,16 @@ const TreeMapPage = () => {
                                     } else if (isStory) {
                                         color = '#9333ea'; // Purple
                                         fillColor = '#a855f7';
+                                    } else if (isEvent) {
+                                        color = '#2563eb'; // Blue
+                                        fillColor = '#3b82f6';
                                     }
 
                                     return (
                                         <CircleMarker
                                             key={`${loc.type}-${index}`}
                                             center={[loc.latitude, loc.longitude]}
-                                            radius={isLived ? 8 : (isStory ? 7 : 5)}
+                                            radius={isLived ? 8 : (isStory ? 7 : (isEvent ? 7 : 5))}
                                             pathOptions={{
                                                 color: color,
                                                 fillColor: fillColor,
@@ -247,7 +256,7 @@ const TreeMapPage = () => {
                                                                 {isStory ? loc.storyTitle : loc.personName}
                                                             </p>
                                                             <p className="text-xs font-medium uppercase tracking-wider mt-0.5" style={{ color }}>
-                                                                {isLived ? 'Location' : (isStory ? 'Story Event' : 'Photo Location')}
+                                                                {isLived ? 'Location' : (isStory ? 'Story Event' : (isEvent ? (loc.details?.eventType || 'Life Event') : 'Photo Location'))}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -280,6 +289,16 @@ const TreeMapPage = () => {
                                                             >
                                                                 Read Story
                                                             </button>
+                                                        </div>
+                                                    ) : isEvent ? (
+                                                        <div className="text-xs text-slate-600">
+                                                            <p className="font-semibold text-slate-900">{loc.details?.title}</p>
+                                                            {loc.date && (
+                                                                <p className="mt-0.5">{new Date(loc.date).toLocaleDateString()}</p>
+                                                            )}
+                                                            {loc.details?.description && (
+                                                                <p className="mt-1 text-slate-500 italic">{loc.details.description}</p>
+                                                            )}
                                                         </div>
                                                     ) : (
                                                         <div className="text-xs text-slate-500">

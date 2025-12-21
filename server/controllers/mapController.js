@@ -327,193 +327,251 @@ exports.getPersonLocationStats = async (req, res) => {
 exports.getGlobalTravelStats = async (req, res) => {
     const { treeId } = req.query;
 
+    if (!treeId) {
+        return res.status(400).json({ error: 'treeId is required' });
+    }
+
     try {
-        // 1. Fetch Photo Locations
-        let photoQuery = supabaseAdmin
-            .from('photos')
-            .select(`
-                latitude, 
-                longitude, 
-                location_name, 
-                year,
-                taken_date,
-                url,
-                persons!inner (
-                    id,
-                    first_name,
-                    last_name,
-                    tree_id,
-                    profile_photo_url,
-                    gender
-                )
-            `)
+        // 1. Fetch all people in the tree (for vitals mapping and lookups)
+        const { data: persons, error: personsError } = await supabaseAdmin
+            .from('persons')
+            .select('*')
+            .eq('tree_id', treeId);
+
+        if (personsError) throw personsError;
+
+        const personMap = new Map(persons.map(p => [p.id, p]));
+
+        // 2. Fetch all known locations (for vitals string matching)
+        const { data: allLocationsRef } = await supabaseAdmin
+            .from('locations')
+            .select('*')
             .not('latitude', 'is', null);
 
-        if (treeId) {
-            photoQuery = photoQuery.eq('persons.tree_id', treeId);
-        }
+        const locationNameMap = new Map(allLocationsRef?.map(l => [l.name.toLowerCase(), l]) || []);
 
-        const { data: photoData, error: photoError } = await photoQuery;
+        // 3. Fetch Photo Locations
+        const { data: photoData, error: photoError } = await supabaseAdmin
+            .from('photos')
+            .select(`
+                *,
+                persons!inner (id, first_name, last_name, profile_photo_url, gender)
+            `)
+            .eq('persons.tree_id', treeId)
+            .not('latitude', 'is', null);
+
         if (photoError) throw photoError;
 
-        // 2. Fetch Person Locations (Places Lived)
-        let personLocQuery = supabaseAdmin
+        // 4. Fetch Person Locations (Places Lived)
+        const { data: personLocData, error: personLocError } = await supabaseAdmin
             .from('person_locations')
             .select(`
-                start_date,
-                end_date,
-                locations!inner (
-                    id,
-                    name,
-                    latitude,
-                    longitude,
-                    address
-                ),
-                persons!inner (
-                    id,
-                    first_name,
-                    last_name,
-                    tree_id,
-                    profile_photo_url,
-                    gender
-                )
-            `);
+                *,
+                locations!inner (*),
+                persons!inner (id, first_name, last_name, profile_photo_url, gender)
+            `)
+            .eq('persons.tree_id', treeId);
 
-        if (treeId) {
-            personLocQuery = personLocQuery.eq('persons.tree_id', treeId);
-        }
-
-        const { data: personLocData, error: personLocError } = await personLocQuery;
         if (personLocError) throw personLocError;
 
-        // 3. Fetch Story Locations
-        let storyLocQuery = supabaseAdmin
+        // 5. Fetch Story Locations (joined with story_people for filtering)
+        const { data: storyLocData, error: storyLocError } = await supabaseAdmin
             .from('story_locations')
             .select(`
-                locations!inner (
-                    id,
-                    name,
-                    latitude,
-                    longitude,
-                    start_date,
-                    address
-                ),
+                locations!inner (*),
                 stories!inner (
-                    id,
+                    id, 
                     title,
-                    content,
-                    tree_id
+                    story_people (person_id)
                 )
-            `);
+            `)
+            .eq('stories.tree_id', treeId);
 
-        if (treeId) {
-            storyLocQuery = storyLocQuery.eq('stories.tree_id', treeId);
-        }
-
-        const { data: storyLocData, error: storyLocError } = await storyLocQuery;
         if (storyLocError) throw storyLocError;
 
-        // Combine and Format Data
-        const photoLocations = photoData.map(p => ({
-            type: 'photo',
-            latitude: parseFloat(p.latitude),
-            longitude: parseFloat(p.longitude),
-            name: p.location_name,
-            date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
-            personId: p.persons.id,
-            personName: `${p.persons.first_name} ${p.persons.last_name || ''}`.trim(),
-            personImage: p.persons.profile_photo_url,
-            personGender: p.persons.gender,
-            photoUrl: p.url,
-            details: { year: p.year || (p.taken_date ? new Date(p.taken_date).getFullYear() : null) }
-        }));
+        // 6. Fetch Life Event Locations
+        const { data: eventLocData, error: eventLocError } = await supabaseAdmin
+            .from('life_event_locations')
+            .select(`
+                locations!inner (*),
+                life_events!inner (
+                    id, 
+                    title, 
+                    event_type, 
+                    date, 
+                    description, 
+                    person_id
+                )
+            `)
+            .eq('life_events.persons.tree_id', treeId); // Note: Nested join check might be complex in Supabase, let's verify later.
 
-        const livedLocations = personLocData
-            .filter(pl => pl.locations && pl.locations.latitude && pl.locations.longitude)
-            .map(pl => ({
-                type: 'lived',
-                latitude: parseFloat(pl.locations.latitude),
-                longitude: parseFloat(pl.locations.longitude),
-                name: pl.locations.name,
-                date: pl.start_date,
-                personId: pl.persons.id,
-                personName: `${pl.persons.first_name} ${pl.persons.last_name || ''}`.trim(),
-                personImage: pl.persons.profile_photo_url,
-                personGender: pl.persons.gender,
-                details: {
-                    start: pl.start_date,
-                    end: pl.end_date,
-                    address: pl.locations.address
-                }
-            }));
+        // Actually, better to fetch life_events and join manually if needed, or join through persons.
+        // Let's try the direct join first. 
+        if (eventLocError) {
+            // Fallback: Fetch by person IDs if complex join fails
+            const personIds = persons.map(p => p.id);
+            const { data: eventData } = await supabaseAdmin
+                .from('life_events')
+                .select(`
+                    *,
+                    life_event_locations (
+                        locations (*)
+                    )
+                `)
+                .in('person_id', personIds);
 
-        const storyLocations = storyLocData
-            .filter(sl => sl.locations && sl.locations.latitude && sl.locations.longitude)
-            .map(sl => ({
-                type: 'story',
-                latitude: parseFloat(sl.locations.latitude),
-                longitude: parseFloat(sl.locations.longitude),
-                name: sl.locations.name,
-                date: sl.locations.start_date,
-                storyId: sl.stories.id,
-                storyTitle: sl.stories.title,
-                details: {
-                    content: sl.stories.content,
-                    address: sl.locations.address,
-                    year: sl.locations.start_date ? new Date(sl.locations.start_date).getFullYear() : null
-                }
-            }));
+            // Re-map to match expected structure
+            const reshapedEvents = [];
+            eventData?.forEach(e => {
+                e.life_event_locations?.forEach(lel => {
+                    if (lel.locations) {
+                        reshapedEvents.push({
+                            locations: lel.locations,
+                            life_events: e
+                        });
+                    }
+                });
+            });
+            eventLocData.push(...reshapedEvents);
+        }
 
-        const allLocations = [...photoLocations, ...livedLocations, ...storyLocations];
+        // --- Formatting and Aggregation ---
 
-        // --- Existing Stats Calculation Logic (Updated to use allLocations where appropriate) ---
+        const formattedLocations = [];
 
-        // 1. Total locations visited
-        const uniqueLocations = new Set(allLocations.map(p => p.name).filter(Boolean));
-
-        // 2. Top Cities (using all locations)
-        const cityCounts = {};
-        allLocations.forEach(p => {
-            if (p.name) {
-                cityCounts[p.name] = (cityCounts[p.name] || 0) + 1;
-            }
-        });
-
-        const topCities = Object.entries(cityCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([city, count]) => ({ city, count }));
-
-        // 3. Most global family member
-        const personLocationSets = {};
-        allLocations.forEach(p => {
-            if (!personLocationSets[p.personName]) {
-                personLocationSets[p.personName] = new Set();
-            }
-            if (p.name) {
-                personLocationSets[p.personName].add(p.name);
-            }
-        });
-
-        let mostGlobalMember = { name: 'N/A', count: 0 };
-        Object.entries(personLocationSets).forEach(([name, locations]) => {
-            if (locations.size > mostGlobalMember.count) {
-                mostGlobalMember = { name, count: locations.size };
-            }
-        });
-
-        // 4. Photos per decade (Keep strictly for photos)
-        const decadeCounts = {};
+        // A. Photos
         photoData.forEach(p => {
-            if (p.year) {
-                const decade = Math.floor(p.year / 10) * 10;
-                decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
+            formattedLocations.push({
+                type: 'photo',
+                latitude: parseFloat(p.latitude),
+                longitude: parseFloat(p.longitude),
+                name: p.location_name,
+                date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
+                personId: p.persons.id,
+                personName: `${p.persons.first_name} ${p.persons.last_name || ''}`.trim(),
+                personImage: p.persons.profile_photo_url,
+                photoUrl: p.url,
+                details: { year: p.year }
+            });
+        });
+
+        // B. Places Lived
+        personLocData.forEach(pl => {
+            if (pl.locations?.latitude && pl.locations?.longitude) {
+                formattedLocations.push({
+                    type: 'lived',
+                    latitude: parseFloat(pl.locations.latitude),
+                    longitude: parseFloat(pl.locations.longitude),
+                    name: pl.locations.name,
+                    date: pl.start_date,
+                    personId: pl.persons.id,
+                    personName: `${pl.persons.first_name} ${pl.persons.last_name || ''}`.trim(),
+                    personImage: pl.persons.profile_photo_url,
+                    details: {
+                        start: pl.start_date,
+                        end: pl.end_date,
+                        address: pl.locations.address
+                    }
+                });
             }
         });
 
-        // 5. Countries covered
+        // C. Story Locations (Flattened for filtering)
+        storyLocData.forEach(sl => {
+            if (sl.locations?.latitude && sl.locations?.longitude) {
+                const associatedPersonIds = sl.stories.story_people?.map(sp => sp.person_id) || [];
+
+                // If no people linked, add as generic tree location
+                if (associatedPersonIds.length === 0) {
+                    formattedLocations.push({
+                        type: 'story',
+                        latitude: parseFloat(sl.locations.latitude),
+                        longitude: parseFloat(sl.locations.longitude),
+                        name: sl.locations.name,
+                        date: null,
+                        storyId: sl.stories.id,
+                        storyTitle: sl.stories.title,
+                        personId: 'tree',
+                        details: { address: sl.locations.address }
+                    });
+                } else {
+                    // Duplicate for each person (so filtering by person works)
+                    associatedPersonIds.forEach(pid => {
+                        const person = personMap.get(pid);
+                        formattedLocations.push({
+                            type: 'story',
+                            latitude: parseFloat(sl.locations.latitude),
+                            longitude: parseFloat(sl.locations.longitude),
+                            name: sl.locations.name,
+                            date: null,
+                            storyId: sl.stories.id,
+                            storyTitle: sl.stories.title,
+                            personId: pid,
+                            personName: person ? `${person.first_name} ${person.last_name || ''}`.trim() : null,
+                            personImage: person?.profile_photo_url,
+                            details: { address: sl.locations.address }
+                        });
+                    });
+                }
+            }
+        });
+
+        // D. Life Events
+        eventLocData?.forEach(el => {
+            if (el.locations?.latitude && el.locations?.longitude) {
+                const person = personMap.get(el.life_events.person_id);
+                formattedLocations.push({
+                    type: 'event',
+                    latitude: parseFloat(el.locations.latitude),
+                    longitude: parseFloat(el.locations.longitude),
+                    name: el.locations.name,
+                    date: el.life_events.date,
+                    personId: el.life_events.person_id,
+                    personName: person ? `${person.first_name} ${person.last_name || ''}`.trim() : null,
+                    personImage: person?.profile_photo_url,
+                    details: {
+                        title: el.life_events.title,
+                        eventType: el.life_events.event_type,
+                        description: el.life_events.description
+                    }
+                });
+            }
+        });
+
+        // E. Vitals (POB, Burial, etc. as Events)
+        persons.forEach(p => {
+            const processVital = (locString, date, type, title) => {
+                if (!locString) return;
+                const lowerLoc = locString.toLowerCase();
+                const loc = locationNameMap.get(lowerLoc);
+                if (loc) {
+                    formattedLocations.push({
+                        type: 'event',
+                        latitude: parseFloat(loc.latitude),
+                        longitude: parseFloat(loc.longitude),
+                        name: loc.name,
+                        date: date,
+                        personId: p.id,
+                        personName: `${p.first_name} ${p.last_name || ''}`.trim(),
+                        personImage: p.profile_photo_url,
+                        details: {
+                            title: title,
+                            eventType: type,
+                            description: `${title} for ${p.first_name}`
+                        }
+                    });
+                }
+            };
+
+            processVital(p.pob, p.dob, 'birth', 'Birth Place');
+            processVital(p.place_of_death, p.dod, 'death', 'Death Place');
+            processVital(p.burial_place, p.dod, 'burial', 'Burial Place');
+        });
+
+        // --- Calculate Stats ---
+        const uniqueLocationNames = new Set(formattedLocations.map(l => l.name));
         const countries = new Set();
-        allLocations.forEach(p => {
+        formattedLocations.forEach(p => {
             if (p.name && p.name.includes(',')) {
                 const parts = p.name.split(',');
                 const country = parts[parts.length - 1].trim();
@@ -522,14 +580,13 @@ exports.getGlobalTravelStats = async (req, res) => {
         });
 
         res.json({
-            total_locations: uniqueLocations.size,
-            top_cities: topCities,
-            most_global_member: mostGlobalMember,
-            photos_per_decade: decadeCounts,
+            total_locations: uniqueLocationNames.size,
             countries_count: countries.size,
-            total_photos_mapped: photoLocations.length,
-            total_places_lived: livedLocations.length,
-            all_locations: allLocations // Return the full list for the map
+            total_photos_mapped: formattedLocations.filter(l => l.type === 'photo').length,
+            total_places_lived: formattedLocations.filter(l => l.type === 'lived').length,
+            total_stories_mapped: new Set(formattedLocations.filter(l => l.type === 'story').map(l => l.storyId)).size,
+            total_events_mapped: formattedLocations.filter(l => l.type === 'event').length,
+            all_locations: formattedLocations
         });
 
     } catch (error) {
