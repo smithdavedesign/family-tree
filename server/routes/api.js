@@ -101,6 +101,7 @@ router.post('/comments', requireAuth, writeLimiter, auditLog('CREATE', 'comment'
 router.delete('/comments/:commentId', requireAuth, writeLimiter, auditLog('DELETE', 'comment'), commentController.deleteComment);
 
 // Account routes
+router.put('/account', requireAuth, writeLimiter, auditLog('UPDATE', 'account'), accountController.updateAccount);
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);
 
 // Config route (Runtime configuration)

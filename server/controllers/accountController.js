@@ -118,3 +118,28 @@ exports.deleteAccount = async (req, res) => {
         res.status(500).json({ error: error.message || 'Failed to delete account' });
     }
 };
+
+exports.updateAccount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { avatar_url } = req.body;
+
+        if (!avatar_url) {
+            return res.status(400).json({ error: 'Avatar URL is required' });
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('users')
+            .update({ avatar_url })
+            .eq('id', userId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        console.error('Error updating account:', error);
+        res.status(500).json({ error: 'Failed to update account' });
+    }
+};

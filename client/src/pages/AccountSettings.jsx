@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../auth';
-import { Button } from '../components/ui';
+import { Button, useToast } from '../components/ui';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { useGoogleConnection } from '../hooks/useGoogleConnection';
@@ -9,21 +9,12 @@ import { useGoogleConnection } from '../hooks/useGoogleConnection';
 const AccountSettings = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { isConnected, connection, isLoading: connectionLoading, error: connectionError, connect, disconnect } = useGoogleConnection();
+    const [publicProfile, setPublicProfile] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState('');
+    const [updating, setUpdating] = useState(false);
+    const { toast } = useToast();
 
-    // Get return URL from state (if navigated via link) or query param
-    const returnUrl = location.state?.returnUrl || new URLSearchParams(location.search).get('returnUrl') || '/trees';
-
-    // Ensure the returnUrl is in the query params so it persists if we reload or redirect
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        if (!params.get('returnUrl') && returnUrl !== '/trees') {
-            params.set('returnUrl', returnUrl);
-            navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-        }
-    }, [location.search, returnUrl, navigate, location.pathname]);
+    // ... (existing useEffect for returnUrl)
 
     useEffect(() => {
         const getUser = async () => {
@@ -33,67 +24,67 @@ const AccountSettings = () => {
                 return;
             }
             setUser(user);
+
+            // Fetch public profile
+            const { data: profile } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                setPublicProfile(profile);
+                setAvatarUrl(profile.avatar_url || '');
+            }
+
             setLoading(false);
         };
 
         getUser();
     }, [navigate]);
 
-    const handleDeleteAccount = async () => {
-        if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-            return;
-        }
+    const handleUpdateProfile = async () => {
+        if (!avatarUrl.trim()) return;
 
+        setUpdating(true);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
             const response = await fetch('/api/account', {
-                method: 'DELETE',
-                credentials: 'include'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ avatar_url: avatarUrl })
             });
 
-            if (response.ok) {
-                await supabase.auth.signOut();
-                navigate('/');
-            }
+            if (!response.ok) throw new Error('Failed to update profile');
+
+            const updatedProfile = await response.json();
+            setPublicProfile(updatedProfile);
+            // toast.success('Profile updated successfully'); // If toast is available
+            alert('Profile updated successfully');
         } catch (error) {
-            console.error('Error deleting account:', error);
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile');
+        } finally {
+            setUpdating(false);
         }
     };
 
+    // ... (handleDeleteAccount)
+
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        );
+        // ... (loading state)
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             {/* Navbar */}
-            <div className="bg-white shadow-sm border-b border-slate-200 px-4 py-3 mb-8">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(returnUrl)}>
-                        <span className="text-2xl">🌳</span>
-                        <span className="font-bold text-xl text-slate-800">Roots & Branches</span>
-                    </div>
-                    <Button
-                        onClick={() => navigate(returnUrl)}
-                        variant="ghost"
-                        size="sm"
-                    >
-                        {returnUrl === '/trees' ? 'Back to Dashboard' : 'Back to Tree'}
-                    </Button>
-                </div>
-            </div>
+            {/* ... */}
 
             {/* Breadcrumbs */}
-            <Breadcrumbs
-                items={[
-                    { label: 'My Trees', href: '/trees' },
-                    ...(returnUrl !== '/trees' ? [{ label: 'Tree', href: returnUrl }] : []),
-                    { label: 'Account Settings' }
-                ]}
-            />
+            {/* ... */}
 
             <div className="max-w-4xl mx-auto px-4 pb-8 mt-8">
                 {/* Header */}
@@ -102,7 +93,51 @@ const AccountSettings = () => {
                     <p className="text-slate-600">Manage your account and integrations</p>
                 </div>
 
+                {/* Profile Settings */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h2 className="text-xl font-semibold text-slate-900 mb-4">Profile Settings</h2>
+                    <div className="flex items-start gap-6">
+                        <div className="flex-shrink-0">
+                            <div className="w-20 h-20 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                        <span className="text-2xl">?</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex-1 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Profile Picture URL
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={avatarUrl}
+                                        onChange={(e) => setAvatarUrl(e.target.value)}
+                                        placeholder="https://example.com/avatar.jpg"
+                                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <Button
+                                        onClick={handleUpdateProfile}
+                                        disabled={updating || !avatarUrl.trim() || avatarUrl === publicProfile?.avatar_url}
+                                    >
+                                        {updating ? 'Saving...' : 'Save'}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Enter a URL for your profile picture. This will be displayed next to your comments.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Account Information */}
+                {/* ... */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                     <h2 className="text-xl font-semibold text-slate-900 mb-4">Account Information</h2>
                     <div className="space-y-3">
