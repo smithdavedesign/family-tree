@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import 'leaflet.heat';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { Loader, MapPin, Filter, X, User, BookOpen } from 'lucide-react';
+import { Loader, MapPin, Filter, X, User, BookOpen, Layers, Flame } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import './TreeMapPage.css'; // I'll create this for cluster styling
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -24,6 +27,37 @@ const TreeMapPage = () => {
     const [selectedPersonId, setSelectedPersonId] = useState('all');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
+    const [viewMode, setViewMode] = useState('pins'); // 'pins' or 'heatmap'
+
+    // Heatmap Layer Component
+    const HeatmapLayer = ({ points }) => {
+        const map = useMap();
+
+        React.useEffect(() => {
+            if (!points || points.length === 0) return;
+
+            const heatPoints = points.map(p => [p.latitude, p.longitude, 1.0]); // Increased intensity
+            const heatLayer = L.heatLayer(heatPoints, {
+                radius: 30, // Slightly larger radius
+                blur: 18,   // Adjusted blur
+                maxZoom: 17,
+                minOpacity: 0.2, // Added min opacity for better visibility
+                gradient: {
+                    0.4: '#3b82f6', // Bright Blue
+                    0.6: '#10b981', // Emerald
+                    0.7: '#f59e0b', // Amber
+                    0.8: '#ef4444', // Red
+                    1.0: '#7f1d1d'  // Dark Red for intense hotspots
+                }
+            }).addTo(map);
+
+            return () => {
+                map.removeLayer(heatLayer);
+            };
+        }, [map, points]);
+
+        return null;
+    };
 
     React.useEffect(() => {
         const fetchUser = async () => {
@@ -140,17 +174,42 @@ const TreeMapPage = () => {
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
-                                ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-                                }`}
-                        >
-                            <Filter className="w-4 h-4" />
-                            Filter
-                            {selectedPersonId !== 'all' && <span className="ml-1 flex h-2 w-2 rounded-full bg-teal-600" />}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {/* View Mode Toggle */}
+                            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-2">
+                                <button
+                                    onClick={() => setViewMode('pins')}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${viewMode === 'pins'
+                                        ? 'bg-white text-teal-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    Pins
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('heatmap')}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${viewMode === 'heatmap'
+                                        ? 'bg-white text-orange-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <Flame className="w-3.5 h-3.5" />
+                                    Heatmap
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
+                                    ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                                    : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Filter className="w-4 h-4" />
+                                Filter
+                                {selectedPersonId !== 'all' && <span className="ml-1 flex h-2 w-2 rounded-full bg-teal-600" />}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Filter Sidebar (Overlay) */}
@@ -201,146 +260,158 @@ const TreeMapPage = () => {
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
-                                {filteredLocations.map((loc, index) => {
-                                    const isLived = loc.type === 'lived';
-                                    const isStory = loc.type === 'story';
-                                    const isEvent = loc.type === 'event';
-                                    const isPhoto = loc.type === 'photo';
 
-                                    let color = '#14b8a6'; // Default teal (photo)
-                                    let fillColor = '#14b8a6';
+                                {viewMode === 'heatmap' ? (
+                                    <HeatmapLayer points={filteredLocations} />
+                                ) : (
+                                    <MarkerClusterGroup
+                                        chunkedLoading
+                                        maxClusterRadius={40}
+                                        spiderfyOnMaxZoom={true}
+                                        showCoverageOnHover={false}
+                                    >
+                                        {filteredLocations.map((loc, index) => {
+                                            const isLived = loc.type === 'lived';
+                                            const isStory = loc.type === 'story';
+                                            const isEvent = loc.type === 'event';
+                                            const isPhoto = loc.type === 'photo';
 
-                                    if (isLived) {
-                                        color = '#ea580c'; // Orange
-                                        fillColor = '#f97316';
-                                    } else if (isStory) {
-                                        color = '#9333ea'; // Purple
-                                        fillColor = '#a855f7';
-                                    } else if (isEvent) {
-                                        color = '#2563eb'; // Blue
-                                        fillColor = '#3b82f6';
-                                    }
+                                            let color = '#14b8a6'; // Default teal (photo)
+                                            let fillColor = '#14b8a6';
 
-                                    return (
-                                        <CircleMarker
-                                            key={`${loc.type}-${index}`}
-                                            center={[loc.latitude, loc.longitude]}
-                                            radius={isLived ? 8 : (isStory ? 7 : (isEvent ? 7 : 5))}
-                                            pathOptions={{
-                                                color: color,
-                                                fillColor: fillColor,
-                                                fillOpacity: 0.6,
-                                                weight: 2
-                                            }}
-                                        >
-                                            <Popup>
-                                                <div className="text-sm min-w-[200px]">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        {loc.personImage ? (
-                                                            <img
-                                                                src={loc.personImage}
-                                                                alt={loc.personName}
-                                                                className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
-                                                            />
-                                                        ) : (
-                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 ${isStory ? 'bg-purple-50' : 'bg-slate-100'}`}>
-                                                                {isStory ? (
-                                                                    <BookOpen className="w-5 h-5 text-purple-500" />
-                                                                ) : (
-                                                                    <User className="w-5 h-5 text-slate-400" />
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <p className="font-bold text-slate-900 leading-tight">
-                                                                {isStory ? loc.storyTitle : loc.personName}
-                                                            </p>
-                                                            <p className="text-xs font-medium uppercase tracking-wider mt-0.5" style={{ color }}>
-                                                                {isLived ? 'Location' : (isStory ? 'Story Event' : (isEvent ? (loc.details?.eventType || 'Life Event') : 'Photo Location'))}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                            if (isLived) {
+                                                color = '#ea580c'; // Orange
+                                                fillColor = '#f97316';
+                                            } else if (isStory) {
+                                                color = '#9333ea'; // Purple
+                                                fillColor = '#a855f7';
+                                            } else if (isEvent) {
+                                                color = '#2563eb'; // Blue
+                                                fillColor = '#3b82f6';
+                                            }
 
-                                                    <p className="font-medium text-slate-800 mb-1">{loc.name}</p>
-
-                                                    {isLived ? (
-                                                        <div className="text-xs text-slate-600">
-                                                            {(loc.details?.start || loc.details?.end) ? (
-                                                                <p>
-                                                                    {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
-                                                                    {' - '}
-                                                                    {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
-                                                                </p>
-                                                            ) : (
-                                                                <p className="italic text-slate-400">No date recorded</p>
-                                                            )}
-                                                            {loc.details?.address && (
-                                                                <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
-                                                            )}
-                                                        </div>
-                                                    ) : isStory ? (
-                                                        <div className="text-xs text-slate-600">
-                                                            <p>
-                                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
-                                                            </p>
-                                                            <button
-                                                                onClick={() => navigate(`/story/${loc.storyId}`)}
-                                                                className="mt-2 text-xs text-purple-600 hover:underline font-medium"
-                                                            >
-                                                                Read Story
-                                                            </button>
-                                                        </div>
-                                                    ) : isEvent ? (
-                                                        <div className="text-xs text-slate-600">
-                                                            <p className="font-semibold text-slate-900">{loc.details?.title}</p>
-                                                            {loc.date && (
-                                                                <p className="mt-0.5">{new Date(loc.date).toLocaleDateString()}</p>
-                                                            )}
-                                                            {loc.details?.description && (
-                                                                <p className="mt-1 text-slate-500 italic">{loc.details.description}</p>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-xs text-slate-500">
-                                                            <p className="mb-2">
-                                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
-                                                            </p>
-                                                            {loc.photoUrl && (
-                                                                <div
-                                                                    className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-200"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setSelectedPhoto({ url: loc.photoUrl, caption: loc.name });
-                                                                    }}
-                                                                >
+                                            return (
+                                                <CircleMarker
+                                                    key={`${loc.type}-${index}`}
+                                                    center={[loc.latitude, loc.longitude]}
+                                                    radius={isLived ? 8 : (isStory ? 7 : (isEvent ? 7 : 5))}
+                                                    pathOptions={{
+                                                        color: color,
+                                                        fillColor: fillColor,
+                                                        fillOpacity: 0.6,
+                                                        weight: 2
+                                                    }}
+                                                >
+                                                    <Popup>
+                                                        <div className="text-sm min-w-[200px]">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                {loc.personImage ? (
                                                                     <img
-                                                                        src={loc.photoUrl}
-                                                                        alt={loc.name}
-                                                                        className="w-full h-32 object-cover transition-transform group-hover:scale-105"
+                                                                        src={loc.personImage}
+                                                                        alt={loc.personName}
+                                                                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
                                                                     />
-                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                                                        <div className="bg-black/50 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                            View Photo
-                                                                        </div>
+                                                                ) : (
+                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 ${isStory ? 'bg-purple-50' : 'bg-slate-100'}`}>
+                                                                        {isStory ? (
+                                                                            <BookOpen className="w-5 h-5 text-purple-500" />
+                                                                        ) : (
+                                                                            <User className="w-5 h-5 text-slate-400" />
+                                                                        )}
                                                                     </div>
+                                                                )}
+                                                                <div>
+                                                                    <p className="font-bold text-slate-900 leading-tight">
+                                                                        {isStory ? loc.storyTitle : loc.personName}
+                                                                    </p>
+                                                                    <p className="text-xs font-medium uppercase tracking-wider mt-0.5" style={{ color }}>
+                                                                        {isLived ? 'Location' : (isStory ? 'Story Event' : (isEvent ? (loc.details?.eventType || 'Life Event') : 'Photo Location'))}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <p className="font-medium text-slate-800 mb-1">{loc.name}</p>
+
+                                                            {isLived ? (
+                                                                <div className="text-xs text-slate-600">
+                                                                    {(loc.details?.start || loc.details?.end) ? (
+                                                                        <p>
+                                                                            {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                                            {' - '}
+                                                                            {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                                        </p>
+                                                                    ) : (
+                                                                        <p className="italic text-slate-400">No date recorded</p>
+                                                                    )}
+                                                                    {loc.details?.address && (
+                                                                        <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
+                                                                    )}
+                                                                </div>
+                                                            ) : isStory ? (
+                                                                <div className="text-xs text-slate-600">
+                                                                    <p>
+                                                                        {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
+                                                                    </p>
+                                                                    <button
+                                                                        onClick={() => navigate(`/story/${loc.storyId}`)}
+                                                                        className="mt-2 text-xs text-purple-600 hover:underline font-medium"
+                                                                    >
+                                                                        Read Story
+                                                                    </button>
+                                                                </div>
+                                                            ) : isEvent ? (
+                                                                <div className="text-xs text-slate-600">
+                                                                    <p className="font-semibold text-slate-900">{loc.details?.title}</p>
+                                                                    {loc.date && (
+                                                                        <p className="mt-0.5">{new Date(loc.date).toLocaleDateString()}</p>
+                                                                    )}
+                                                                    {loc.details?.description && (
+                                                                        <p className="mt-1 text-slate-500 italic">{loc.details.description}</p>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-xs text-slate-500">
+                                                                    <p className="mb-2">
+                                                                        {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
+                                                                    </p>
+                                                                    {loc.photoUrl && (
+                                                                        <div
+                                                                            className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-200"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedPhoto({ url: loc.photoUrl, caption: loc.name });
+                                                                            }}
+                                                                        >
+                                                                            <img
+                                                                                src={loc.photoUrl}
+                                                                                alt={loc.name}
+                                                                                className="w-full h-32 object-cover transition-transform group-hover:scale-105"
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                                                <div className="bg-black/50 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                    View Photo
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             )}
-                                                        </div>
-                                                    )}
 
-                                                    {!isStory && (
-                                                        <button
-                                                            onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
-                                                            className="mt-2 text-xs text-teal-600 hover:underline font-medium"
-                                                        >
-                                                            View Profile
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </Popup>
-                                        </CircleMarker>
-                                    );
-                                })}
+                                                            {!isStory && (
+                                                                <button
+                                                                    onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
+                                                                    className="mt-2 text-xs text-teal-600 hover:underline font-medium"
+                                                                >
+                                                                    View Profile
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </Popup>
+                                                </CircleMarker>
+                                            );
+                                        })}
+                                    </MarkerClusterGroup>
+                                )}
                             </MapContainer>
                         ) : (
                             <div className="flex items-center justify-center h-full text-slate-500">

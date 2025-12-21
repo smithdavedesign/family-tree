@@ -1,0 +1,50 @@
+/* TreeMapPage.css */
+
+.marker-cluster-small {
+    background-color: rgba(20, 184, 166, 0.6);
+}
+
+.marker-cluster-small div {
+    background-color: rgba(20, 184, 166, 0.85);
+    color: white;
+    font-weight: 700;
+}
+
+.marker-cluster-medium {
+    background-color: rgba(13, 148, 136, 0.6);
+}
+
+.marker-cluster-medium div {
+    background-color: rgba(13, 148, 136, 0.85);
+    color: white;
+    font-weight: 700;
+}
+
+.marker-cluster-large {
+    background-color: rgba(15, 118, 110, 0.6);
+}
+
+.marker-cluster-large div {
+    background-color: rgba(15, 118, 110, 0.85);
+    color: white;
+    font-weight: 700;
+}
+
+.marker-cluster {
+    background-clip: padding-box;
+    border-radius: 20px;
+}
+
+.marker-cluster div {
+    width: 30px;
+    height: 30px;
+    margin-left: 5px;
+    margin-top: 5px;
+    text-align: center;
+    border-radius: 15px;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    line-height: 30px;
+}
+
+/* Custom Marker Cluster Styles for Different Types (if we eventually want color-coded clusters) */
+/* For now, unified teal is cleaner */
