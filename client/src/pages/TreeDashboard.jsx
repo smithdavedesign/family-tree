@@ -9,6 +9,7 @@ import Sidebar from '../components/Sidebar';
 import AccountSettings from '../components/AccountSettings';
 import EventsWidget from '../components/dashboard/EventsWidget';
 import GlobalTravelDashboard from '../components/GlobalTravelDashboard';
+import WelcomeWizard from '../components/onboarding/WelcomeWizard';
 
 const TreeDashboard = (props) => {
     const [user, setUser] = useState(props.user || null);
@@ -138,6 +139,18 @@ const TreeDashboard = (props) => {
         activeView === 'owned' ? ownedTrees :
             activeView === 'shared' ? sharedTrees :
                 []; // Add logic for recent, favorites, archived if needed
+
+    // Show Welcome Wizard if no trees and not loading
+    if (!loading && allTrees.length === 0) {
+        return (
+            <div className="min-h-screen bg-slate-50 py-12 px-4">
+                <Navbar user={user} onOpenSettings={() => setShowSettings(true)} />
+                <div className="mt-8">
+                    <WelcomeWizard onComplete={fetchTrees} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">

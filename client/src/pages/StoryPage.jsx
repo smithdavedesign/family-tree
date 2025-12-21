@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, User, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../auth';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import CommentSection from '../components/comments/CommentSection';
 
 const fetchStory = async (id) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -210,6 +211,15 @@ const StoryPage = () => {
                                 </div>
                             </section>
                         )}
+                    </div>
+                    <div className="mt-8 pt-8">
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden h-[500px]">
+                            <CommentSection
+                                resourceType="story"
+                                resourceId={story.id}
+                                treeId={story.tree_id}
+                            />
+                        </div>
                     </div>
                 </article>
             </main>

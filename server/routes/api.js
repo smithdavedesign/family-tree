@@ -19,6 +19,7 @@ const storyController = require('../controllers/storyController');
 const albumController = require('../controllers/albumController');
 const mapController = require('../controllers/mapController');
 const locationController = require('../controllers/locationController');
+const commentController = require('../controllers/commentController');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -93,6 +94,11 @@ router.delete('/album/:albumId/photos/:photoId', requireAuth, writeLimiter, albu
 router.put('/album/:albumId/photos/reorder', requireAuth, validate(reorderPhotosSchema), writeLimiter, albumController.reorderAlbumPhotos);
 router.get('/person/:personId/albums', requireAuth, albumController.getPersonAlbums);
 router.get('/photo/:photoId/albums', requireAuth, albumController.getPhotoAlbums);
+
+// Comment routes
+router.get('/comments/:resourceType/:resourceId', requireAuth, commentController.getComments);
+router.post('/comments', requireAuth, writeLimiter, auditLog('CREATE', 'comment'), commentController.addComment);
+router.delete('/comments/:commentId', requireAuth, writeLimiter, auditLog('DELETE', 'comment'), commentController.deleteComment);
 
 // Account routes
 router.delete('/account', requireAuth, accountDeletionLimiter, auditLog('DELETE', 'account'), accountController.deleteAccount);

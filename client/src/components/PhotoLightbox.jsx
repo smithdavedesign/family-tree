@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../auth';
-import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder } from 'lucide-react';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePhotoDetails } from '../hooks/usePhotoDetails';
+import CommentSection from './comments/CommentSection';
 
 const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAddToAlbum }) => {
     const { stories, events } = usePhotoDetails(photo?.id);
@@ -246,6 +247,23 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                 </div>
                             </div>
                         )}
+
+                        {/* Comments */}
+                        <div className="space-y-2 pt-4 border-t border-white/10">
+                            <div className="flex items-center gap-3 text-white/80 mb-1">
+                                <MessageCircle className="w-5 h-5 text-teal-400 shrink-0" />
+                                <span className="font-medium">Comments</span>
+                            </div>
+                            <div className="pl-8">
+                                <div className="bg-white rounded-lg overflow-hidden h-96">
+                                    <CommentSection
+                                        resourceType="photo"
+                                        resourceId={photo.id}
+                                        treeId={photo.tree_id}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Metadata (Optional) */}
