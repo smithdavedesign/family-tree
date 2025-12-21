@@ -228,6 +228,33 @@ exports.getGlobalTravelStats = async (req, res) => {
         const { data: personLocData, error: personLocError } = await personLocQuery;
         if (personLocError) throw personLocError;
 
+        // 3. Fetch Story Locations
+        let storyLocQuery = supabaseAdmin
+            .from('story_locations')
+            .select(`
+                locations!inner (
+                    id,
+                    name,
+                    latitude,
+                    longitude,
+                    start_date,
+                    address
+                ),
+                stories!inner (
+                    id,
+                    title,
+                    content,
+                    tree_id
+                )
+            `);
+
+        if (treeId) {
+            storyLocQuery = storyLocQuery.eq('stories.tree_id', treeId);
+        }
+
+        const { data: storyLocData, error: storyLocError } = await storyLocQuery;
+        if (storyLocError) throw storyLocError;
+
         // Combine and Format Data
         const photoLocations = photoData.map(p => ({
             type: 'photo',
@@ -261,7 +288,24 @@ exports.getGlobalTravelStats = async (req, res) => {
                 }
             }));
 
-        const allLocations = [...photoLocations, ...livedLocations];
+        const storyLocations = storyLocData
+            .filter(sl => sl.locations && sl.locations.latitude && sl.locations.longitude)
+            .map(sl => ({
+                type: 'story',
+                latitude: parseFloat(sl.locations.latitude),
+                longitude: parseFloat(sl.locations.longitude),
+                name: sl.locations.name,
+                date: sl.locations.start_date,
+                storyId: sl.stories.id,
+                storyTitle: sl.stories.title,
+                details: {
+                    content: sl.stories.content,
+                    address: sl.locations.address,
+                    year: sl.locations.start_date ? new Date(sl.locations.start_date).getFullYear() : null
+                }
+            }));
+
+        const allLocations = [...photoLocations, ...livedLocations, ...storyLocations];
 
         // --- Existing Stats Calculation Logic (Updated to use allLocations where appropriate) ---
 

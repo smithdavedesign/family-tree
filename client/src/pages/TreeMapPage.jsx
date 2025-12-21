@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { Loader, MapPin, Filter, X, User } from 'lucide-react';
+import { Loader, MapPin, Filter, X, User, BookOpen } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -198,14 +198,24 @@ const TreeMapPage = () => {
                                 />
                                 {filteredLocations.map((loc, index) => {
                                     const isLived = loc.type === 'lived';
-                                    const color = isLived ? '#ea580c' : '#14b8a6';
-                                    const fillColor = isLived ? '#f97316' : '#14b8a6';
+                                    const isStory = loc.type === 'story';
+
+                                    let color = '#14b8a6'; // Default teal (photo)
+                                    let fillColor = '#14b8a6';
+
+                                    if (isLived) {
+                                        color = '#ea580c'; // Orange
+                                        fillColor = '#f97316';
+                                    } else if (isStory) {
+                                        color = '#9333ea'; // Purple
+                                        fillColor = '#a855f7';
+                                    }
 
                                     return (
                                         <CircleMarker
                                             key={`${loc.type}-${index}`}
                                             center={[loc.latitude, loc.longitude]}
-                                            radius={isLived ? 8 : 5}
+                                            radius={isLived ? 8 : (isStory ? 7 : 5)}
                                             pathOptions={{
                                                 color: color,
                                                 fillColor: fillColor,
@@ -223,14 +233,20 @@ const TreeMapPage = () => {
                                                                 className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
                                                             />
                                                         ) : (
-                                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                                                                <User className="w-5 h-5 text-slate-400" />
+                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 ${isStory ? 'bg-purple-50' : 'bg-slate-100'}`}>
+                                                                {isStory ? (
+                                                                    <BookOpen className="w-5 h-5 text-purple-500" />
+                                                                ) : (
+                                                                    <User className="w-5 h-5 text-slate-400" />
+                                                                )}
                                                             </div>
                                                         )}
                                                         <div>
-                                                            <p className="font-bold text-slate-900 leading-tight">{loc.personName}</p>
+                                                            <p className="font-bold text-slate-900 leading-tight">
+                                                                {isStory ? loc.storyTitle : loc.personName}
+                                                            </p>
                                                             <p className="text-xs font-medium uppercase tracking-wider mt-0.5" style={{ color }}>
-                                                                {isLived ? 'Location' : 'Photo Location'}
+                                                                {isLived ? 'Location' : (isStory ? 'Story Event' : 'Photo Location')}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -252,17 +268,32 @@ const TreeMapPage = () => {
                                                                 <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
                                                             )}
                                                         </div>
+                                                    ) : isStory ? (
+                                                        <div className="text-xs text-slate-600">
+                                                            <p>
+                                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
+                                                            </p>
+                                                            <button
+                                                                onClick={() => navigate(`/story/${loc.storyId}`)}
+                                                                className="mt-2 text-xs text-purple-600 hover:underline font-medium"
+                                                            >
+                                                                Read Story
+                                                            </button>
+                                                        </div>
                                                     ) : (
                                                         <p className="text-xs text-slate-500">
                                                             {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
                                                         </p>
                                                     )}
-                                                    <button
-                                                        onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
-                                                        className="mt-2 text-xs text-teal-600 hover:underline font-medium"
-                                                    >
-                                                        View Profile
-                                                    </button>
+
+                                                    {!isStory && (
+                                                        <button
+                                                            onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
+                                                            className="mt-2 text-xs text-teal-600 hover:underline font-medium"
+                                                        >
+                                                            View Profile
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </Popup>
                                         </CircleMarker>
