@@ -119,45 +119,53 @@ const TreePage = () => {
             <div className="absolute inset-0 z-0">
                 {/* Main Content Area */}
                 <div className="h-full w-full relative">
-                    {/* Tree Visualizer - Conditional Rendering based on ViewMode */}
-                    <div className="h-full w-full relative">
+                    {/* Main Visualization Area */}
+                    <div className={`h-full w-full relative transition-all duration-700 ${isZenMode ? 'pt-0' : 'pt-[140px]'}`}>
                         {viewMode === 'standard' && (
-                            <TreeVisualizer
-                                treeId={id}
-                                onNodeClick={handleNodeClick}
-                                highlightedNodes={highlightedNodes}
-                                key={refreshTrigger}
-                                userRole={userRole}
-                                isEditMode={isEditMode}
-                                isZenMode={isZenMode}
-                                onInteraction={(active) => setIsZenMode(active)}
-                                onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
-                                isSearchOpen={isSearchOpen}
-                            />
+                            <div className="absolute inset-0 -mt-[140px] transition-all duration-700" style={{ marginTop: isZenMode ? '0px' : '-140px' }}>
+                                <TreeVisualizer
+                                    treeId={id}
+                                    onNodeClick={handleNodeClick}
+                                    highlightedNodes={highlightedNodes}
+                                    key={refreshTrigger}
+                                    userRole={userRole}
+                                    isEditMode={isEditMode}
+                                    isZenMode={isZenMode}
+                                    onInteraction={(active) => setIsZenMode(active)}
+                                    onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+                                    isSearchOpen={isSearchOpen}
+                                />
+                            </div>
                         )}
                         {viewMode === 'fan' && (
-                            <FanChart
-                                persons={persons}
-                                relationships={relationships}
-                                centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                                onPersonClick={handleNodeClick}
-                            />
+                            <div className="h-full w-full">
+                                <FanChart
+                                    persons={persons}
+                                    relationships={relationships}
+                                    centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                    onPersonClick={handleNodeClick}
+                                />
+                            </div>
                         )}
                         {viewMode === 'descendant' && (
-                            <DescendantChart
-                                persons={persons}
-                                relationships={relationships}
-                                rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                                onNodeClick={handleNodeClick}
-                            />
+                            <div className="h-full w-full">
+                                <DescendantChart
+                                    persons={persons}
+                                    relationships={relationships}
+                                    rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                    onNodeClick={handleNodeClick}
+                                />
+                            </div>
                         )}
                         {viewMode === 'timeline' && (
-                            <TimelineView
-                                persons={persons}
-                                relationships={relationships}
-                                lifeEvents={lifeEvents}
-                                onEventClick={handleNodeClick}
-                            />
+                            <div className="h-full w-full">
+                                <TimelineView
+                                    persons={persons}
+                                    relationships={relationships}
+                                    lifeEvents={lifeEvents}
+                                    onEventClick={handleNodeClick}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
