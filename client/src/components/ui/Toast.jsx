@@ -76,9 +76,9 @@ const ToastContainer = ({ toasts, removeToast }) => {
     });
 
     const positionStyles = {
-        'top-left': 'top-4 left-4',
-        'top-center': 'top-4 left-1/2 -translate-x-1/2',
-        'top-right': 'top-4 right-4',
+        'top-left': 'top-20 left-4',
+        'top-center': 'top-20 left-1/2 -translate-x-1/2',
+        'top-right': 'top-20 right-4',
         'bottom-left': 'bottom-4 left-4',
         'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
         'bottom-right': 'bottom-4 right-4',
@@ -90,7 +90,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
                 positionToasts.length > 0 && (
                     <div
                         key={position}
-                        className={`fixed z-[10000] flex flex-col gap-2 ${positionStyles[position]}`}
+                        className={`fixed z-[11000] flex flex-col gap-2 ${positionStyles[position]}`}
                     >
                         {positionToasts.map((toast) => (
                             <Toast
