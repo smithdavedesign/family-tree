@@ -92,7 +92,6 @@ exports.getPersonLocationStats = async (req, res) => {
                 location_id,
                 start_date,
                 end_date,
-                is_current,
                 locations (
                     id,
                     name,
@@ -128,7 +127,6 @@ exports.getPersonLocationStats = async (req, res) => {
                 details: {
                     start: pl.start_date,
                     end: pl.end_date,
-                    is_current: pl.is_current,
                     address: pl.locations.address
                 }
             }));
