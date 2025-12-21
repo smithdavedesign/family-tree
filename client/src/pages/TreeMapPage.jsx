@@ -427,7 +427,7 @@ const TreeMapPage = () => {
 
             {selectedPhoto && (
                 <div
-                    className="fixed inset-0 z-[2000] bg-black/90 flex items-center justify-center p-4"
+                    className="fixed inset-x-0 bottom-0 top-16 z-[11000] bg-black/90 flex items-center justify-center p-4"
                     onClick={() => setSelectedPhoto(null)}
                 >
                     <button
