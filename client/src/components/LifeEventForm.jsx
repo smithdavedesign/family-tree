@@ -17,6 +17,7 @@ const EVENT_TYPES = [
 
 const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
     const [showPhotoSelector, setShowPhotoSelector] = useState(false);
+    const [selectedLocations, setSelectedLocations] = useState([]);
     const [formData, setFormData] = useState({
         event_type: 'other',
         title: '',
@@ -25,7 +26,8 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
         end_date: '',
         location: '',
         description: '',
-        media_ids: []
+        media_ids: [],
+        location_ids: []
     });
 
     useEffect(() => {
@@ -38,8 +40,10 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
                 end_date: event.end_date || '',
                 location: event.location || '',
                 description: event.description || '',
-                media_ids: event.media_ids || []
+                media_ids: event.media_ids || [],
+                location_ids: event.locations?.map(l => l.id) || []
             });
+            setSelectedLocations(event.locations || []);
         }
     }, [event]);
 
@@ -147,12 +151,21 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
                     <span className="text-xs font-normal text-slate-400 ml-1">(Select from known locations to show on map)</span>
                 </label>
                 <LocationSelector
-                    selectedLocations={formData.location ? [{ id: 'current', name: formData.location }] : []}
+                    selectedLocations={selectedLocations}
                     onAdd={(location) => {
-                        setFormData(prev => ({ ...prev, location: location.name }));
+                        setSelectedLocations(prev => [...prev, location]);
+                        setFormData(prev => ({
+                            ...prev,
+                            location: !prev.location ? location.name : prev.location,
+                            location_ids: [...prev.location_ids, location.id]
+                        }));
                     }}
-                    onRemove={() => {
-                        setFormData(prev => ({ ...prev, location: '' }));
+                    onRemove={(locationId) => {
+                        setSelectedLocations(prev => prev.filter(l => l.id !== locationId));
+                        setFormData(prev => ({
+                            ...prev,
+                            location_ids: prev.location_ids.filter(id => id !== locationId)
+                        }));
                     }}
                 />
             </div>

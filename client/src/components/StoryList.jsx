@@ -224,6 +224,20 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                                 <p className="text-xs text-slate-500 mt-1">
                                     {new Date(story.created_at).toLocaleDateString()}
                                 </p>
+                                {/* Display story locations */}
+                                {story.locations && story.locations.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {story.locations.map(location => (
+                                            <span
+                                                key={location.id}
+                                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-100 text-teal-700 rounded text-xs font-medium"
+                                            >
+                                                <MapPin className="w-3 h-3" />
+                                                {location.name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             {isEditor && (
                                 <div className="flex gap-1">

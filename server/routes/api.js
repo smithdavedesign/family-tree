@@ -139,8 +139,9 @@ router.post('/person/:personId/locations', requireAuth, writeLimiter, locationCo
 router.delete('/person/:personId/location/:locationId', requireAuth, writeLimiter, locationController.removePersonLocation);
 router.get('/person/:personId/locations', requireAuth, locationController.getPersonLocations);
 
-
-
+// Event-Location linking (Phase 2)
+router.post('/event/:eventId/locations', requireAuth, requireEventEditor, writeLimiter, locationController.addEventLocation);
+router.delete('/event/:eventId/location/:locationId', requireAuth, requireEventEditor, writeLimiter, locationController.removeEventLocation);
 
 // Log routes
 const logController = require('../controllers/logController');

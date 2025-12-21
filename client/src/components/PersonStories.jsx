@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Calendar, User, ArrowRight } from 'lucide-react';
+import { BookOpen, Calendar, User, ArrowRight, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '../auth';
@@ -101,6 +101,12 @@ const PersonStories = ({ personId, treeId }) => {
                                             <span className="flex items-center gap-1">
                                                 <BookOpen className="w-4 h-4" />
                                                 {story.linked_photos.length} {story.linked_photos.length === 1 ? 'photo' : 'photos'}
+                                            </span>
+                                        )}
+                                        {story.locations && story.locations.length > 0 && (
+                                            <span className="flex items-center gap-1 text-teal-600 font-medium">
+                                                <MapPin className="w-4 h-4" />
+                                                {story.locations.map(l => l.name).join(', ')}
                                             </span>
                                         )}
                                     </div>

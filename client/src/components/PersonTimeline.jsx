@@ -138,11 +138,21 @@ const PersonTimeline = ({ person, personId }) => {
                                                     {age !== null && (
                                                         <span className="text-slate-500">• Age {age}</span>
                                                     )}
-                                                    {event.location && (
+                                                    {event.location && !event.locations?.length && (
                                                         <span className="flex items-center gap-1">
                                                             <MapPin className="w-3 h-3" />
                                                             {event.location}
                                                         </span>
+                                                    )}
+                                                    {event.locations && event.locations.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {event.locations.map(loc => (
+                                                                <span key={loc.id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-100 text-teal-700 rounded text-xs font-medium">
+                                                                    <MapPin className="w-3 h-3" />
+                                                                    {loc.name}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
                                                 {event.description && (

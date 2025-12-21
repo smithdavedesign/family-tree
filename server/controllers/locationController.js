@@ -354,3 +354,42 @@ exports.getPersonLocations = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Add location to life event
+exports.addEventLocation = async (req, res) => {
+    const { eventId } = req.params;
+    const { location_id } = req.body;
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('life_event_locations')
+            .insert([{ event_id: eventId, location_id }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.status(201).json(data);
+    } catch (error) {
+        console.error('Error adding event location:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Remove location from life event
+exports.removeEventLocation = async (req, res) => {
+    const { eventId, locationId } = req.params;
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('life_event_locations')
+            .delete()
+            .eq('event_id', eventId)
+            .eq('location_id', locationId);
+
+        if (error) throw error;
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error removing event location:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

@@ -28,16 +28,25 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
     const [galleryRefreshTrigger, setGalleryRefreshTrigger] = useState(0);
 
     useEffect(() => {
-        console.log("SidePanel received person:", person);
         if (person) {
             fetchMedia();
             fetchRelationships();
             setProfilePhotoUrl(person.data.profile_photo_url);
-            // Initialize form data from person data
-            // Note: person.data contains the visual label/subline, but we need the raw fields.
-            // Ideally, the parent component should pass the full person object, or we fetch it here.
-            // For now, we'll try to parse what we have or assume the parent passed raw data in 'data' too.
-            // Let's assume person.data has the raw fields mixed in for now (we updated TreeVisualizer earlier).
+
+            // Helper to handle either raw array or JSON string from server
+            const getArrayValue = (val) => {
+                if (!val) return [];
+                if (Array.isArray(val)) return val;
+                if (typeof val === 'string' && val.startsWith('[') && val.endsWith(']')) {
+                    try {
+                        const parsed = JSON.parse(val);
+                        if (Array.isArray(parsed)) return parsed;
+                    } catch (e) { }
+                }
+                if (typeof val === 'string') return val.split('\n').filter(Boolean);
+                return [];
+            };
+
             setFormData({
                 first_name: person.data.first_name || person.data.label.split(' ')[0],
                 last_name: person.data.last_name || person.data.label.split(' ').slice(1).join(' '),
@@ -47,12 +56,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 dod: person.data.dod || '',
                 occupation: person.data.occupation || '',
                 pob: person.data.pob || '',
-                // New Phase H fields
                 place_of_death: person.data.place_of_death || '',
                 cause_of_death: person.data.cause_of_death || '',
                 burial_place: person.data.burial_place || '',
-                occupation_history: person.data.occupation_history || '',
-                education: person.data.education || '',
+                occupation_history: getArrayValue(person.data.occupation_history),
+                education: getArrayValue(person.data.education),
             });
             setIsEditing(false);
         }
@@ -279,7 +287,17 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const payload = updates || formData;
+            const dataToSave = updates || { ...formData };
+
+            // Ensure array fields are formatted correctly if they came from textareas
+            if (!updates) {
+                if (typeof dataToSave.occupation_history === 'string') {
+                    dataToSave.occupation_history = dataToSave.occupation_history.split('\n').map(s => s.trim()).filter(Boolean);
+                }
+                if (typeof dataToSave.education === 'string') {
+                    dataToSave.education = dataToSave.education.split('\n').map(s => s.trim()).filter(Boolean);
+                }
+            }
 
             const response = await fetch(`/api/person/${person.id}`, {
                 method: 'PUT',
@@ -287,7 +305,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(dataToSave)
             });
 
             if (response.ok) {
@@ -379,6 +397,35 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
     if (!person) return null;
 
     const canEdit = userRole === 'owner' || userRole === 'editor';
+
+    const renderList = (data) => {
+        if (!data) return null;
+        let items = [];
+        if (Array.isArray(data)) {
+            items = data;
+        } else if (typeof data === 'string') {
+            if (data.startsWith('[') && data.endsWith(']')) {
+                try {
+                    const parsed = JSON.parse(data);
+                    items = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    items = data.split('\n').filter(Boolean);
+                }
+            } else {
+                items = data.split('\n').filter(Boolean);
+            }
+        }
+
+        if (items.length === 0) return null;
+
+        return (
+            <ul className="list-disc list-inside space-y-1">
+                {items.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                ))}
+            </ul>
+        );
+    };
 
     return (
         <>
@@ -581,11 +628,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Occupation History</label>
                                         <textarea
                                             name="occupation_history"
-                                            value={formData.occupation_history}
+                                            value={Array.isArray(formData.occupation_history) ? formData.occupation_history.join('\n') : formData.occupation_history}
                                             onChange={handleChange}
                                             rows={3}
                                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                            placeholder="List other jobs, dates, companies..."
+                                            placeholder="Enter one job per line..."
                                         />
                                     </div>
 
@@ -593,11 +640,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Education</label>
                                         <textarea
                                             name="education"
-                                            value={formData.education}
+                                            value={Array.isArray(formData.education) ? formData.education.join('\n') : formData.education}
                                             onChange={handleChange}
                                             rows={2}
                                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                            placeholder="Schools, degrees, years..."
+                                            placeholder="Enter one school/degree per line..."
                                         />
                                     </div>
                                 </div>
@@ -659,7 +706,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                             {(formData.occupation || formData.occupation_history || formData.education) && (
                                 <div>
                                     <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b pb-2 mb-4">Life & Work</h4>
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         {formData.occupation && (
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Primary Occupation</label>
@@ -667,15 +714,19 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                             </div>
                                         )}
                                         {formData.occupation_history && (
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">History</label>
-                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">{formData.occupation_history}</div>
+                                            <div className="mb-4">
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Work History</label>
+                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">
+                                                    {renderList(formData.occupation_history) || <div>{formData.occupation_history}</div>}
+                                                </div>
                                             </div>
                                         )}
                                         {formData.education && (
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Education</label>
-                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">{formData.education}</div>
+                                                <div className="text-sm text-slate-800 whitespace-pre-wrap">
+                                                    {renderList(formData.education) || <div>{formData.education}</div>}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

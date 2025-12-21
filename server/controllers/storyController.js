@@ -158,6 +158,16 @@ exports.getStory = async (req, res) => {
 
         story.linked_photos = photos.map(p => p.photos);
 
+        // Get linked locations
+        const { data: locationLinks, error: locationsError } = await supabaseAdmin
+            .from('story_locations')
+            .select('location_id, locations(*)')
+            .eq('story_id', id);
+
+        if (locationsError) throw locationsError;
+
+        story.locations = locationLinks?.map(l => l.locations).filter(Boolean) || [];
+
         res.json(story);
     } catch (error) {
         console.error('Error fetching story:', error);

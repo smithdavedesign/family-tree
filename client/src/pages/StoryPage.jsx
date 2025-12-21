@@ -1,11 +1,12 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, User, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../auth';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import CommentSection from '../components/comments/CommentSection';
+import StoryLocationSection from '../components/StoryLocationSection';
 
 const fetchStory = async (id) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -96,6 +97,25 @@ const StoryPage = () => {
         queryFn: () => fetchStory(id),
         enabled: !!id,
     });
+
+    // Fetch user's role in the tree to determine edit permissions
+    const { data: userRole } = useQuery({
+        queryKey: ['tree-role', story?.tree_id],
+        queryFn: async () => {
+            if (!story?.tree_id) return null;
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`/api/tree/${story.tree_id}/members`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            if (!response.ok) return 'viewer'; // Default to viewer if error
+            const members = await response.json();
+            const currentUser = members.find(m => m.user_id === session.user.id);
+            return currentUser?.role || 'viewer';
+        },
+        enabled: !!story?.tree_id
+    });
+
+    const canEdit = userRole === 'owner' || userRole === 'editor';
 
     if (isLoading) {
         return (
@@ -211,6 +231,9 @@ const StoryPage = () => {
                                 </div>
                             </section>
                         )}
+
+                        {/* Story Locations */}
+                        <StoryLocationSection story={story} canEdit={canEdit} />
                     </div>
                     <div className="mt-8 pt-8">
                         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden h-[500px]">

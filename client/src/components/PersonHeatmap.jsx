@@ -91,7 +91,7 @@ const PersonHeatmap = ({ personId }) => {
     return (
         <div className="space-y-4">
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Locations</p>
                     <p className="text-2xl font-bold text-slate-900">{stats.unique_locations}</p>
@@ -103,6 +103,10 @@ const PersonHeatmap = ({ personId }) => {
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Life Events</p>
                     <p className="text-2xl font-bold text-violet-600">{stats.total_life_events || 0}</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Stories</p>
+                    <p className="text-2xl font-bold text-amber-600">{stats.total_stories || 0}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Mapped Photos</p>
@@ -184,7 +188,7 @@ const PersonHeatmap = ({ personId }) => {
                         const isEvent = loc.type === 'event';
 
                         let color, fillColor, label;
-                        if (isLived) {
+                        if (isLived || loc.type === 'residence') {
                             color = '#ea580c'; // orange
                             fillColor = '#f97316';
                             label = 'Location';
@@ -192,6 +196,10 @@ const PersonHeatmap = ({ personId }) => {
                             color = '#7c3aed'; // violet
                             fillColor = '#8b5cf6';
                             label = loc.details?.eventType || 'Life Event';
+                        } else if (loc.type === 'story') {
+                            color = '#d97706'; // amber-600
+                            fillColor = '#fbbf24'; // amber-400
+                            label = 'Story Location';
                         } else {
                             color = '#14b8a6'; // teal
                             fillColor = '#2dd4bf';
@@ -235,6 +243,11 @@ const PersonHeatmap = ({ personId }) => {
                                                 {loc.details?.description && (
                                                     <p className="mt-1 italic text-slate-500 line-clamp-2">{loc.details.description}</p>
                                                 )}
+                                            </div>
+                                        ) : loc.type === 'story' ? (
+                                            <div className="text-xs text-slate-600">
+                                                <p className="font-medium text-amber-700">Story: {loc.details?.storyTitle}</p>
+                                                <p className="mt-1 text-slate-400">View story on person page</p>
                                             </div>
                                         ) : (
                                             <div className="text-xs text-slate-600">

@@ -10,7 +10,8 @@ const eventSchema = Joi.object({
     end_date: Joi.string().isoDate().allow(null, ''),
     location: Joi.string().max(255).allow(null, ''),
     description: Joi.string().allow(null, ''),
-    media_ids: Joi.array().items(Joi.string().uuid()).default([])
+    media_ids: Joi.array().items(Joi.string().uuid()).default([]),
+    location_ids: Joi.array().items(Joi.string().uuid()).default([])
 });
 
 exports.getPersonEvents = async (req, res) => {
@@ -19,7 +20,12 @@ exports.getPersonEvents = async (req, res) => {
     try {
         const { data: events, error } = await supabaseAdmin
             .from('life_events')
-            .select('*')
+            .select(`
+                *,
+                life_event_locations (
+                    locations (*)
+                )
+            `)
             .eq('person_id', id)
             .order('date', { ascending: true })
             .order('start_date', { ascending: true });
@@ -56,11 +62,16 @@ exports.getPersonEvents = async (req, res) => {
                     event.photos = [];
                 }
             });
-        } else {
             events.forEach(event => {
                 event.photos = [];
             });
         }
+
+        // Process locations
+        events.forEach(event => {
+            event.locations = event.life_event_locations?.map(l => l.locations).filter(Boolean) || [];
+            delete event.life_event_locations;
+        });
 
         res.json(events);
     } catch (error) {
@@ -87,13 +98,30 @@ exports.addEvent = async (req, res) => {
     if (payload.end_date === '') payload.end_date = null;
 
     try {
+        const { location_ids, ...rawFields } = payload;
         const { data, error } = await supabaseAdmin
             .from('life_events')
-            .insert([{ ...payload, person_id: id }])
+            .insert([{ ...rawFields, person_id: id }])
             .select()
             .single();
 
         if (error) throw error;
+
+        // Handle linked locations (multiple)
+        if (location_ids && Array.isArray(location_ids) && location_ids.length > 0) {
+            const locationLinks = location_ids.map(locId => ({
+                event_id: data.id,
+                location_id: locId
+            }));
+
+            const { error: linkError } = await supabaseAdmin
+                .from('life_event_locations')
+                .insert(locationLinks);
+
+            if (linkError) {
+                console.error('Error linking locations to event:', linkError);
+            }
+        }
 
         res.status(201).json(data);
     } catch (error) {
@@ -116,10 +144,10 @@ exports.updateEvent = async (req, res) => {
         if (payload.date === '') payload.date = null;
         if (payload.start_date === '') payload.start_date = null;
         if (payload.end_date === '') payload.end_date = null;
-
+        const { location_ids, ...rawFields } = payload;
         const { data, error } = await supabaseAdmin
             .from('life_events')
-            .update(payload)
+            .update(rawFields)
             .eq('id', id)
             .select()
             .single();
@@ -128,6 +156,30 @@ exports.updateEvent = async (req, res) => {
 
         if (!data) {
             return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Handle linked locations (multiple) - Full replacement (sync)
+        if (location_ids && Array.isArray(location_ids)) {
+            // Remove old links
+            await supabaseAdmin
+                .from('life_event_locations')
+                .delete()
+                .eq('event_id', id);
+
+            if (location_ids.length > 0) {
+                const locationLinks = location_ids.map(locId => ({
+                    event_id: id,
+                    location_id: locId
+                }));
+
+                const { error: linkError } = await supabaseAdmin
+                    .from('life_event_locations')
+                    .insert(locationLinks);
+
+                if (linkError) {
+                    console.error('Error syncing locations for event:', linkError);
+                }
+            }
         }
 
         res.json(data);
@@ -191,6 +243,43 @@ exports.getTreeEvents = async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error('Error fetching tree events:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+// Link a location to an event
+exports.addEventLocation = async (req, res) => {
+    const { id } = req.params;
+    const { location_id } = req.body;
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('life_event_locations')
+            .insert([{ event_id: id, location_id }])
+            .select();
+
+        if (error) throw error;
+        res.status(201).json(data);
+    } catch (error) {
+        console.error('Error linking location to event:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Unlink a location from an event
+exports.removeEventLocation = async (req, res) => {
+    const { id, locationId } = req.params;
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('life_event_locations')
+            .delete()
+            .eq('event_id', id)
+            .eq('location_id', locationId);
+
+        if (error) throw error;
+        res.json({ message: 'Location unlinked from event' });
+    } catch (error) {
+        console.error('Error unlinking location from event:', error);
         res.status(500).json({ error: error.message });
     }
 };

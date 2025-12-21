@@ -121,7 +121,23 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (eventError) throw eventError;
 
-        // 5. Fetch all known locations (MOVED UP - needed for photo processing)
+        // 5. Fetch Story Locations
+        const { data: storyPeopleData, error: storyError } = await supabaseAdmin
+            .from('story_people')
+            .select(`
+                story_id,
+                stories (
+                    title,
+                    story_locations (
+                        locations (*)
+                    )
+                )
+            `)
+            .eq('person_id', personId);
+
+        if (storyError) throw storyError;
+
+        // 6. Fetch all known locations (MOVED UP - needed for photo processing)
         const { data: allKnownLocations } = await supabaseAdmin
             .from('locations')
             .select('*')
@@ -214,30 +230,51 @@ exports.getPersonLocationStats = async (req, res) => {
                 }
             };
 
-            processVital(person.pob, person.dob, 'Birth', 'Birthplace');
-            processVital(person.place_of_death, person.dod, 'Death', 'Place of death');
-            processVital(person.burial_place, person.dod, 'Burial', 'Burial place');
+            processVital(person.pob, person.dob, 'birth', 'Birth Place');
+            processVital(person.place_of_death, person.dod, 'death', `Death Place (${person.cause_of_death || 'Unknown cause'})`);
+            processVital(person.burial_place, person.dod, 'burial', 'Burial Place');
         }
 
-
-        // C. Process Places Lived (person_locations)
-        // These are linked to 'locations' table, so they should generally be mapped if the location record has coords.
+        // C. Process Places Lived (Person Locations)
         personLocData.forEach(pl => {
             if (pl.locations && pl.locations.latitude && pl.locations.longitude) {
                 mappedLocations.push({
-                    type: 'lived',
+                    type: 'residence',
                     latitude: parseFloat(pl.locations.latitude),
                     longitude: parseFloat(pl.locations.longitude),
                     name: pl.locations.name,
                     date: pl.start_date,
                     details: {
-                        start: pl.start_date,
-                        end: pl.end_date,
-                        address: pl.locations.address
+                        endDate: pl.end_date,
+                        notes: pl.notes,
+                        locationName: pl.locations.name
                     }
                 });
             } else if (pl.locations && pl.locations.name) {
                 unmappedLocations.add(pl.locations.name);
+            }
+        });
+
+        // D. Process Story Locations
+        storyPeopleData.forEach(sp => {
+            if (sp.stories && sp.stories.story_locations) {
+                sp.stories.story_locations.forEach(sl => {
+                    const loc = sl.locations;
+                    if (loc && loc.latitude && loc.longitude) {
+                        mappedLocations.push({
+                            type: 'story',
+                            latitude: parseFloat(loc.latitude),
+                            longitude: parseFloat(loc.longitude),
+                            name: loc.name,
+                            date: null, // Stories might not have a single "event date" besides creation
+                            details: {
+                                storyTitle: sp.stories.title,
+                                storyId: sp.story_id,
+                                locationName: loc.name
+                            }
+                        });
+                    }
+                });
             }
         });
 
@@ -269,15 +306,18 @@ exports.getPersonLocationStats = async (req, res) => {
             }
         });
 
-        res.json({
-            total_photos_with_location: photoData.filter(p => p.latitude).length,
-            total_places_lived: personLocData.length, // total records, not just mapped
-            total_life_events: eventData.length, // total events
-            unique_locations: totalUniqueCount, // Includes unmapped unique names
+        const stats = {
+            total_photos_with_location: photoData.filter(p => p.latitude && p.longitude).length,
+            total_places_lived: personLocData.length,
+            total_life_events: eventData.filter(e => e.location || knownLocationsMap.has(e.location?.toLowerCase())).length,
+            total_stories: mappedLocations.filter(loc => loc.type === 'story').length,
+            unique_locations: totalUniqueCount,
             most_visited_location: mostVisited,
-            locations: allLocations, // Only mapped points for the Heatmap/CircleMarkers
-            unmapped_locations: Array.from(unmappedLocations).sort() // New field for UI
-        });
+            locations: mappedLocations,
+            unmapped_locations: Array.from(unmappedLocations)
+        };
+
+        res.json(stats);
     } catch (error) {
         console.error('Error fetching person location stats:', error);
         res.status(500).json({ error: error.message });

@@ -133,13 +133,14 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [ ] Connect trees between users
 - [ ] Mark private/sensitive profiles
 
-### ✅ Phase H: Data Structure Enhancements (95%)
+### ✅ Phase H: Data Structure Enhancements (100%)
 - [x] Expand person details (birthplace, deathplace, cause of death, burial place)
 - [x] Photo gallery per person (local file upload)
 - [x] Extended occupation fields (occupation history, education)
 - [x] Biography/notes expansion
 - [x] Sources/documents (Google Drive & Local Upload)
 - [x] Document management with Google Drive integration
+- [x] High-fidelity display of array-like fields (Work History, Education)
 - 🚧 Google Photos integration (pending Google verification)
 - [ ] Half-siblings support
 - [x] Detect impossible relationships (Validation)
@@ -265,7 +266,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 ---
 
 <<<<<<< HEAD
-### ✅ Phase Q: Location-Story Enhancements (95%) - **COMPLETE**
+### ✅ Phase Q: Location-Story Enhancements (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Normalized Location System**
 
 **Goal:** Expand location system beyond photos to include stories and people, with manual location creation and comprehensive linking.
@@ -274,30 +275,24 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Normalized `locations` table (name, address, coordinates, date range, notes)
 - [x] `story_locations` join table for story-location links
 - [x] `person_locations` join table for person migration/travel history
-- [x] 14 Location API endpoints (CRUD + linking)
+- [x] `life_event_locations` join table for linking multiple locations to life events
+- [x] 16 Location API endpoints (CRUD + linking)
 - [x] LocationModal with full validation and toast notifications
 - [x] LocationSelector component (search, create, chips)
 - [x] Hybrid geocoding (Dev: Nominatim Docker, Prod: Google Maps API)
 - [x] PersonLocations widget ("Places Lived/Visited")
 - [x] Story Editor integration (attach locations)
 - [x] PhotoLightbox displays locations for events & stories
+- [x] Story locations integrated into Map Stats & Heatmap
+- [x] Life Event multi-location support in LifeEventForm & PersonTimeline
 - [x] RLS policies for secure location access
 
-#### Components Created
-- `LocationModal.jsx` - Create/edit form with validation
-- `LocationSelector.jsx` - Search and selection interface
-- `PersonLocations.jsx` - Person location management
-
-#### API Endpoints (14)
+#### API Endpoints (16)
 - Location CRUD: Create, Read, Update, Delete, List, Details
 - Story linking: Add, Remove, Get story locations
 - Person linking: Add, Remove, Get person locations
-- Stories endpoint includes locations
-
-#### Optional Future Work
-- Map integration for story/person locations
-- Location hierarchies (Country → State → City)
-- Shared places insights between people
+- Life Event linking: Add, Remove, Get event locations
+- Full location aggregation for map statistics (Photos + Stories + Events + Places Lived)
 
 ---
 
