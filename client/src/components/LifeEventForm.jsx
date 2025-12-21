@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input } from './ui';
 import { X, Image as ImageIcon } from 'lucide-react';
 import PhotoSelector from './PhotoSelector';
+import LocationSelector from './LocationSelector';
 
 const EVENT_TYPES = [
     { value: 'education', label: 'Education' },
@@ -141,12 +142,18 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
             </div>
 
             <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Location</label>
-                <Input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="City, Country"
+                <label className="block text-xs font-medium text-slate-500 mb-1">
+                    Location
+                    <span className="text-xs font-normal text-slate-400 ml-1">(Select from known locations to show on map)</span>
+                </label>
+                <LocationSelector
+                    selectedLocations={formData.location ? [{ id: 'current', name: formData.location }] : []}
+                    onAdd={(location) => {
+                        setFormData(prev => ({ ...prev, location: location.name }));
+                    }}
+                    onRemove={() => {
+                        setFormData(prev => ({ ...prev, location: '' }));
+                    }}
                 />
             </div>
 
