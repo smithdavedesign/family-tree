@@ -13,7 +13,7 @@ import ViewModeSelector from '../components/ViewModeSelector';
 import FanChart from '../components/visualizations/FanChart';
 import DescendantChart from '../components/visualizations/DescendantChart';
 import TimelineView from '../components/visualizations/EventChartView';
-import { Share2, Settings } from 'lucide-react';
+import { Share2, Settings, Image, Book, Calendar as CalendarIcon, Map as MapIcon, Menu, X as CloseIcon } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
 
@@ -34,6 +34,9 @@ const TreePage = () => {
     const [photoSelectHandler, setPhotoSelectHandler] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [user, setUser] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
+    const [isZenMode, setIsZenMode] = useState(false);
 
     // View mode state with localStorage persistence - default to 'standard'
     const [viewMode, setViewMode] = useState(() => {
@@ -111,82 +114,81 @@ const TreePage = () => {
     if (loading) return <div>Loading tree...</div>;
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-teal-50 to-blue-50">
+        <div className="h-screen flex flex-col bg-gradient-to-br from-teal-50 to-blue-50 overflow-hidden">
             {/* Navbar */}
-            <Navbar
-                user={user}
-                onOpenSettings={() => setShowSettings(true)}
-                leftContent={
-                    <div className="flex items-center gap-2">
-                        <TreeSwitcher currentTreeId={id} />
-                        {selectedPerson && (
-                            <>
-                                <span className="text-slate-300">/</span>
-                                <Breadcrumbs
-                                    inline
-                                    showHome={false}
-                                    items={[
-                                        { label: selectedPerson.data.label }
-                                    ]}
-                                />
-                            </>
-                        )}
-                    </div>
-                }
-                rightContent={
-                    <>
-                        {userRole === 'owner' && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<Share2 className="w-4 h-4" />}
-                                onClick={() => setIsShareModalOpen(true)}
-                            >
-                                <span className="hidden sm:inline">Share</span>
-                            </Button>
-                        )}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.location.href = `/tree/${id}/gallery`}
-                            className="p-2"
-                            title="View Photo Gallery"
-                        >
-                            <span className="text-xl">🖼️</span>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.location.href = `/tree/${id}/albums`}
-                            className="p-2"
-                            title="View Albums"
-                        >
-                            <span className="text-xl">📚</span>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.location.href = `/tree/${id}/timeline`}
-                            className="p-2"
-                            title="View Timeline"
-                        >
-                            <span className="text-xl">📅</span>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.location.href = `/tree/${id}/map`}
-                            className="p-2"
-                            title="View Map"
-                        >
-                            <span className="text-xl">🗺️</span>
-                        </Button>
-                    </>
-                }
-            />
+            <div className={`transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+                <Navbar
+                    user={user}
+                    onOpenSettings={() => setShowSettings(true)}
+                    leftContent={
+                        <div className="flex items-center gap-2">
+                            <TreeSwitcher currentTreeId={id} />
+                            {selectedPerson && (
+                                <>
+                                    <span className="text-slate-300">/</span>
+                                    <Breadcrumbs
+                                        inline
+                                        showHome={false}
+                                        items={[
+                                            { label: selectedPerson.data.label }
+                                        ]}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    }
+                    rightContent={
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            {/* Edit Mode Toggle (Only for owners/editors) */}
+                            {(userRole === 'owner' || userRole === 'editor') && (
+                                <button
+                                    onClick={() => setIsEditMode(!isEditMode)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-sm font-medium border ${isEditMode
+                                        ? 'bg-teal-600 text-white border-teal-600 shadow-md'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
+                                        }`}
+                                >
+                                    <span className="hidden xs:inline">{isEditMode ? 'Editing' : 'View Only'}</span>
+                                    <div className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
+                                </button>
+                            )}
 
-            {/* View Mode Selector */}
-            < div className="bg-white border-b border-slate-200">
+                            <div className="h-6 w-px bg-slate-200 mx-1 hidden xs:block" />
+
+                            {/* Desktop Icons */}
+                            <div className="hidden lg:flex items-center gap-2">
+                                {userRole === 'owner' && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        leftIcon={<Share2 className="w-4 h-4" />}
+                                        onClick={() => setIsShareModalOpen(true)}
+                                    >
+                                        Share
+                                    </Button>
+                                )}
+                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/gallery`} className="p-2" title="Gallery"><span className="text-xl">🖼️</span></Button>
+                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/albums`} className="p-2" title="Albums"><span className="text-xl">📚</span></Button>
+                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/timeline`} className="p-2" title="Timeline"><span className="text-xl">📅</span></Button>
+                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/map`} className="p-2" title="Map"><span className="text-xl">🗺️</span></Button>
+                            </div>
+
+                            {/* Mobile Menu Toggle (Icons) */}
+                            <div className="lg:hidden">
+                                <button
+                                    onClick={() => setIsNavMenuOpen(true)}
+                                    className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                                >
+                                    <Menu className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+                    }
+                />
+            </div>
+
+            {/* View Mode Selector - Fades in Zen Mode */}
+            < div className={`bg-white border-b border-slate-200 transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                 <div className="max-w-[1600px] mx-auto px-4 py-3">
                     <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
                 </div>
@@ -217,6 +219,9 @@ const TreePage = () => {
                             highlightedNodes={highlightedNodes}
                             key={refreshTrigger}
                             userRole={userRole}
+                            isEditMode={isEditMode}
+                            isZenMode={isZenMode}
+                            onInteraction={(active) => setIsZenMode(active)}
                             onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
                             isSearchOpen={isSearchOpen}
                         />
@@ -274,6 +279,64 @@ const TreePage = () => {
                 treeName={treeName}
                 currentUserRole={userRole}
             />
+
+            {/* Mobile Navigation Drawer */}
+            {
+                isNavMenuOpen && (
+                    <div className="fixed inset-0 z-[10002] lg:hidden">
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsNavMenuOpen(false)} />
+                        <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl shadow-2xl p-6 animate-slideUp">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-slate-900">Tree Navigation</h3>
+                                <button onClick={() => setIsNavMenuOpen(false)} className="p-2 bg-slate-100 rounded-full text-slate-500">
+                                    <CloseIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => window.location.href = `/tree/${id}/gallery`}
+                                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50 hover:border-teal-200 transition-all"
+                                >
+                                    <div className="p-3 bg-white rounded-xl shadow-sm"><Image className="w-6 h-6 text-teal-600" /></div>
+                                    <span className="text-sm font-semibold text-slate-700">Gallery</span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = `/tree/${id}/albums`}
+                                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50 hover:border-teal-200 transition-all"
+                                >
+                                    <div className="p-3 bg-white rounded-xl shadow-sm"><Book className="w-6 h-6 text-teal-600" /></div>
+                                    <span className="text-sm font-semibold text-slate-700">Albums</span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = `/tree/${id}/timeline`}
+                                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50 hover:border-teal-200 transition-all"
+                                >
+                                    <div className="p-3 bg-white rounded-xl shadow-sm"><CalendarIcon className="w-6 h-6 text-teal-600" /></div>
+                                    <span className="text-sm font-semibold text-slate-700">Timeline</span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = `/tree/${id}/map`}
+                                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50 hover:border-teal-200 transition-all"
+                                >
+                                    <div className="p-3 bg-white rounded-xl shadow-sm"><MapIcon className="w-6 h-6 text-teal-600" /></div>
+                                    <span className="text-sm font-semibold text-slate-700">Map</span>
+                                </button>
+                                {userRole === 'owner' && (
+                                    <button
+                                        onClick={() => { setIsNavMenuOpen(false); setIsShareModalOpen(true); }}
+                                        className="flex flex-col items-center gap-2 p-4 bg-teal-600 rounded-2xl shadow-lg shadow-teal-200 col-span-2 mt-2 transition-all active:scale-95"
+                                    >
+                                        <div className="flex items-center gap-2 text-white">
+                                            <Share2 className="w-5 h-5" />
+                                            <span className="font-bold">Share Tree</span>
+                                        </div>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
 
             <PhotoPicker
                 isOpen={isPhotoPickerOpen}

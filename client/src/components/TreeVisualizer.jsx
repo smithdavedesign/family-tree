@@ -64,7 +64,9 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: layoutedNodes, edges };
 };
 
-const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen }) => {
+const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen, isEditMode, isZenMode, onInteraction }) => {
+    const isMobile = window.innerWidth < 768;
+    const [isToolsOpen, setIsToolsOpen] = useState(false);
     const { toast } = useToast();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -754,9 +756,14 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                onNodeClick={handleNodeClickInternal}
-                onNodeContextMenu={onNodeContextMenu}
-                onPaneClick={onPaneClick}
+                onPaneClick={(e) => {
+                    if (onInteraction) onInteraction(false);
+                    onPaneClick(e);
+                }}
+                onMoveStart={() => onInteraction && onInteraction(true)}
+                onMoveEnd={() => onInteraction && onInteraction(false)}
+                onNodeDragStart={() => onInteraction && onInteraction(true)}
+                onNodeDragStop={() => onInteraction && onInteraction(false)}
                 nodeTypes={nodeTypes}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 fitView
@@ -768,79 +775,119 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 zoomOnDoubleClick={!isViewLocked}
                 panOnScroll={!isViewLocked}
             >
-                <Panel position="top-left" className="flex flex-col gap-2">
-                    {/* Edit Controls */}
-                    {(userRole === 'owner' || userRole === 'editor') && (
-                        <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
-                            <button onClick={handleUndo} disabled={history.past.length === 0} className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 transition-colors text-slate-700" title="Undo">
-                                <Undo className="w-5 h-5" />
-                            </button>
-                            <button onClick={handleRedo} disabled={history.future.length === 0} className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 transition-colors text-slate-700" title="Redo">
-                                <Redo className="w-5 h-5" />
-                            </button>
-                            <div className="w-px bg-slate-200 mx-1" />
-                            <button onClick={() => handleMenuAction('add_root')} className="p-2 rounded-lg hover:bg-teal-50 text-teal-600 transition-colors flex items-center gap-2 font-medium text-sm" title="Add Root Person">
-                                <Plus className="w-4 h-4" />
-                                <span>Add Root</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Visualization Controls */}
-                    <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-slate-200 flex gap-2">
+                {/* Desktop Panels (Top Left) */}
+                <Panel
+                    position="top-left"
+                    className={`flex flex-col gap-2 transition-all duration-700 pointer-events-none ${isZenMode ? 'opacity-0 -translate-x-4' : 'opacity-100'}`}
+                >
+                    {/* Main Toolbar */}
+                    <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 pointer-events-auto">
                         <button
                             onClick={handleLayoutToggle}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
-                            title={`Switch to ${layoutDirection === 'TB' ? 'Horizontal' : 'Vertical'} Layout`}
+                            className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-700 transition-all active:scale-95"
+                            title="Switch Layout"
                         >
                             {layoutDirection === 'TB' ? <ArrowLeftRight className="w-5 h-5" /> : <ArrowDownUp className="w-5 h-5" />}
                         </button>
                         <button
                             onClick={handleCenterOnMe}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
-                            title="Center on 'Me'"
+                            className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-700 transition-all active:scale-95"
+                            title="Center View"
                         >
                             <LocateFixed className="w-5 h-5" />
                         </button>
-                        <button
-                            onClick={handleFocusModeToggle}
-                            className={`p-2 rounded-lg transition-colors ${isFocusMode ? 'bg-amber-100 text-amber-700' : 'hover:bg-slate-100 text-slate-700'}`}
-                            title={isFocusMode ? "Exit Focus Mode" : "Focus on Selected Lineage"}
-                        >
-                            {isFocusMode ? <X className="w-5 h-5" /> : <Scan className="w-5 h-5" />}
-                        </button>
-                        <button
-                            onClick={() => setIsViewLocked(!isViewLocked)}
-                            className={`p-2 rounded-lg transition-colors ${isViewLocked ? 'bg-red-100 text-red-700' : 'hover:bg-slate-100 text-slate-700'}`}
-                            title={isViewLocked ? "Unlock View" : "Lock View (Prevent Panning/Zooming)"}
-                        >
-                            {isViewLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
-                        </button>
+
+                        {/* Tools Toggle (Consolidated) */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsToolsOpen(!isToolsOpen)}
+                                className={`p-2.5 rounded-xl transition-all active:scale-95 ${isToolsOpen ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-100 text-slate-700'}`}
+                                title="Visual Tools"
+                            >
+                                <Scan className="w-5 h-5" />
+                            </button>
+
+                            {isToolsOpen && (
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 animate-scaleIn origin-top-left flex flex-col gap-1">
+                                    <button
+                                        onClick={() => { handleFocusModeToggle(); setIsToolsOpen(false); }}
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${isFocusMode ? 'bg-amber-100 text-amber-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                        <Scan className="w-4 h-4" />
+                                        {isFocusMode ? 'Exit Focus Mode' : 'Focus Lineage'}
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsViewLocked(!isViewLocked); setIsToolsOpen(false); }}
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${isViewLocked ? 'bg-red-100 text-red-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                        {isViewLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                        {isViewLocked ? 'Unlock View' : 'Lock View'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="w-px bg-slate-200 mx-1" />
+
                         <button
                             onClick={onSearchToggle}
-                            className={`p-2 rounded-lg transition-colors ${isSearchOpen ? 'bg-teal-100 text-teal-700' : 'hover:bg-slate-100 text-slate-700'}`}
-                            title={isSearchOpen ? "Close Search" : "Open Search"}
+                            className={`p-2.5 rounded-xl transition-all active:scale-95 ${isSearchOpen ? 'bg-teal-100 text-teal-700' : 'hover:bg-slate-100 text-slate-700'}`}
+                            title="Search"
                         >
                             <Search className="w-5 h-5" />
                         </button>
                     </div>
+
+                    {/* Edit Controls (Only in Edit Mode) */}
+                    {isEditMode && (userRole === 'owner' || userRole === 'editor') && (
+                        <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 animate-slideIn pointer-events-auto">
+                            <button onClick={handleUndo} disabled={history.past.length === 0} className="p-2.5 rounded-xl hover:bg-slate-100 disabled:opacity-30 transition-all text-slate-700 active:scale-95">
+                                <Undo className="w-5 h-5" />
+                            </button>
+                            <button onClick={handleRedo} disabled={history.future.length === 0} className="p-2.5 rounded-xl hover:bg-slate-100 disabled:opacity-30 transition-all text-slate-700 active:scale-95">
+                                <Redo className="w-5 h-5" />
+                            </button>
+                            {!isMobile && (
+                                <>
+                                    <div className="w-px bg-slate-200 mx-1" />
+                                    <button onClick={() => handleMenuAction('add_root')} className="px-4 py-2 rounded-xl bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-md flex items-center gap-2 font-bold text-sm active:scale-95">
+                                        <Plus className="w-4 h-4 stroke-[3px]" />
+                                        <span>Add Root</span>
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </Panel>
 
+                {isMobile && isEditMode && (userRole === 'owner' || userRole === 'editor') && (
+                    <Panel position="bottom-right" className={`!mb-6 !mr-4 transition-all duration-700 ${isZenMode ? 'opacity-0 translate-y-4' : 'opacity-100'}`}>
+                        <button
+                            onClick={() => handleMenuAction('add_root')}
+                            className="w-16 h-16 bg-teal-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-teal-700 active:scale-90 transition-all border-4 border-white"
+                        >
+                            <Plus className="w-8 h-8 stroke-[3px]" />
+                        </button>
+                    </Panel>
+                )}
+
                 <Controls
-                    className="bg-white border-slate-200 shadow-lg rounded-lg overflow-hidden !left-4 !bottom-4"
+                    className={`bg-white border-slate-200 shadow-xl rounded-2xl overflow-hidden !left-4 !bottom-4 transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}
                     showInteractive={false}
                     showFitView={false}
                 />
 
-                <MiniMap
-                    className="bg-white border-2 border-slate-200 shadow-lg rounded-lg overflow-hidden !bottom-4 !right-4"
-                    nodeStrokeColor={(node) => node.data.highlighted ? '#b45309' : '#0f766e'}
-                    nodeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
-                    nodeBorderRadius={8}
-                    maskColor="rgb(248, 250, 252, 0.6)"
-                    pannable
-                    zoomable
-                />
+                {!isMobile && (
+                    <MiniMap
+                        className={`bg-white border-2 border-slate-200 shadow-xl rounded-2xl overflow-hidden !bottom-4 !right-4 transition-all duration-700 ${isZenMode ? 'opacity-0 translate-y-4 translate-x-4' : 'opacity-100'}`}
+                        nodeStrokeColor={(node) => node.data.highlighted ? '#b45309' : '#0f766e'}
+                        nodeColor={(node) => node.data.highlighted ? '#f59e0b' : '#14b8a6'}
+                        nodeBorderRadius={8}
+                        maskColor="rgb(248, 250, 252, 0.6)"
+                        pannable
+                        zoomable
+                    />
+                )}
 
                 <Background color="#cbd5e1" gap={16} />
 
