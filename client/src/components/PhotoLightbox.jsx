@@ -80,7 +80,7 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                 </div>
 
                 {/* Info Sidebar (Desktop) / Bottom Sheet (Mobile) */}
-                <div className="w-full md:w-80 lg:w-96 bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 md:pt-16 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
+                <div className="w-full md:w-[400px] lg:w-[500px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 md:pt-16 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
                     <div>
                         <div className="flex items-start justify-between gap-4">
                             <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>

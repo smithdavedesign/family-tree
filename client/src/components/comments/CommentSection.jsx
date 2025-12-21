@@ -121,7 +121,7 @@ const CommentSection = ({ resourceType, resourceId, treeId }) => {
                                         <span className="font-medium text-sm text-slate-900">
                                             {comment.user?.email || 'User'}
                                         </span>
-                                        <span className="text-xs text-slate-500">
+                                        <span className="text-xs text-slate-500 whitespace-nowrap ml-2">
                                             {formatDate(comment.created_at)}
                                         </span>
                                     </div>
