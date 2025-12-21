@@ -1,13 +1,56 @@
-import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../auth';
-import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder, MessageCircle } from 'lucide-react';
+import { X, Calendar, MapPin, User, Info, ChevronLeft, ChevronRight, BookOpen, Flag, FolderPlus, Folder, MessageCircle, Edit, Save, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePhotoDetails } from '../hooks/usePhotoDetails';
 import CommentSection from './comments/CommentSection';
+import LocationSelector from './LocationSelector';
+import { Input, Button } from './ui';
 
 const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAddToAlbum }) => {
     const { stories, events } = usePhotoDetails(photo?.id);
+    const queryClient = useQueryClient();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({});
+
+    useEffect(() => {
+        if (photo) {
+            setEditData({
+                caption: photo.caption || '',
+                description: photo.description || '',
+                date: photo.date ? new Date(photo.date).toISOString().split('T')[0] : '',
+                location: photo.location || '',
+                latitude: photo.latitude || null,
+                longitude: photo.longitude || null,
+                location_name: photo.location_name || photo.location || ''
+            });
+            setIsEditing(false);
+        }
+    }, [photo]);
+
+    // Update Mutation
+    const updateMutation = useMutation({
+        mutationFn: async (updates) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`/api/photos/${photo.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify(updates)
+            });
+
+            if (!response.ok) throw new Error('Failed to update photo');
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['photos']);
+            queryClient.invalidateQueries(['tree-photos']);
+            setIsEditing(false);
+        }
+    });
 
     // Fetch albums this photo is in
     const { data: photoAlbums } = useQuery({
@@ -24,16 +67,28 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
         enabled: !!photo?.id
     });
 
+    const handleSave = () => {
+        updateMutation.mutate({
+            caption: editData.caption,
+            description: editData.description,
+            taken_date: editData.date || null,
+            location_name: editData.location, // Use location string
+            latitude: editData.latitude,
+            longitude: editData.longitude
+        });
+    };
+
     // Handle keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
+            if (isEditing) return; // Disable shortcuts while editing
             if (e.key === 'Escape') onClose();
             if (e.key === 'ArrowRight' && onNext) onNext();
             if (e.key === 'ArrowLeft' && onPrev) onPrev();
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [onClose, onNext, onPrev]);
+    }, [onClose, onNext, onPrev, isEditing]);
 
     if (!photo) return null;
 
@@ -49,7 +104,7 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
             </button>
 
             {/* Navigation Buttons */}
-            {hasPrev && (
+            {hasPrev && !isEditing && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onPrev(); }}
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
@@ -59,7 +114,7 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                 </button>
             )}
 
-            {hasNext && (
+            {hasNext && !isEditing && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onNext(); }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
@@ -83,19 +138,68 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                 <div className="w-full md:w-[400px] lg:w-[500px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 md:pt-16 flex flex-col gap-6 text-white overflow-y-auto shrink-0">
                     <div>
                         <div className="flex items-start justify-between gap-4">
-                            <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
-                            {onAddToAlbum && (
-                                <button
-                                    onClick={() => onAddToAlbum(photo.id)}
-                                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
-                                    title="Add to Album"
-                                >
-                                    <FolderPlus className="w-5 h-5" />
-                                </button>
+                            {isEditing ? (
+                                <div className="w-full space-y-2">
+                                    <Input
+                                        value={editData.caption}
+                                        onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
+                                        placeholder="Add a caption..."
+                                        className="bg-white/10 border-white/20 text-white placeholder-white/40"
+                                    />
+                                    <textarea
+                                        value={editData.description}
+                                        onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                                        placeholder="Add a description..."
+                                        rows={3}
+                                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder-white/40"
+                                    />
+                                </div>
+                            ) : (
+                                <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
                             )}
+
+                            <div className="flex gap-1">
+                                {!isEditing ? (
+                                    <>
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
+                                            title="Edit Photo"
+                                        >
+                                            <Edit className="w-5 h-5" />
+                                        </button>
+                                        {onAddToAlbum && (
+                                            <button
+                                                onClick={() => onAddToAlbum(photo.id)}
+                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white"
+                                                title="Add to Album"
+                                            >
+                                                <FolderPlus className="w-5 h-5" />
+                                            </button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={handleSave}
+                                            className="p-2 bg-teal-600 hover:bg-teal-500 rounded-full transition-colors text-white"
+                                            title="Save Changes"
+                                        >
+                                            <Check className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsEditing(false)}
+                                            className="p-2 bg-red-500/80 hover:bg-red-500 rounded-full transition-colors text-white"
+                                            title="Cancel"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        {photo.description && (
-                            <p className="text-white/70 text-sm leading-relaxed">{photo.description}</p>
+                        {!isEditing && photo.description && (
+                            <p className="text-white/70 text-sm leading-relaxed mt-2">{photo.description}</p>
                         )}
                     </div>
 
@@ -120,24 +224,65 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                     )}
 
                     <div className="space-y-4">
-                        {photo.date && (
-                            <div className="flex items-center gap-3 text-white/80">
-                                <Calendar className="w-5 h-5 text-teal-400 shrink-0" />
-                                <div>
-                                    <p className="text-xs text-white/50">Date Taken</p>
-                                    <span>{new Date(photo.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                </div>
+                        {/* Date Field */}
+                        {isEditing ? (
+                            <div>
+                                <label className="block text-xs font-medium text-white/50 mb-1">Date Taken</label>
+                                <Input
+                                    type="date"
+                                    value={editData.date}
+                                    onChange={(e) => setEditData({ ...editData, date: e.target.value })}
+                                    className="bg-white/10 border-white/20 text-white"
+                                />
                             </div>
+                        ) : (
+                            photo.date && (
+                                <div className="flex items-center gap-3 text-white/80">
+                                    <Calendar className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <div>
+                                        <p className="text-xs text-white/50">Date Taken</p>
+                                        <span>{new Date(photo.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                    </div>
+                                </div>
+                            )
                         )}
 
-                        {photo.location && (
-                            <div className="flex items-center gap-3 text-white/80">
-                                <MapPin className="w-5 h-5 text-teal-400 shrink-0" />
-                                <div>
-                                    <p className="text-xs text-white/50">Location</p>
-                                    <span>{photo.location}</span>
+                        {/* Location Field */}
+                        {isEditing ? (
+                            <div>
+                                <label className="block text-xs font-medium text-white/50 mb-1">Location</label>
+                                <div className="lightbox-location-selector">
+                                    <LocationSelector
+                                        selectedLocations={editData.location ? [{ id: 'current', name: editData.location }] : []}
+                                        onAdd={(location) => {
+                                            setEditData({
+                                                ...editData,
+                                                location: location.name,
+                                                latitude: location.latitude,
+                                                longitude: location.longitude
+                                            });
+                                        }}
+                                        onRemove={() => {
+                                            setEditData({
+                                                ...editData,
+                                                location: '',
+                                                latitude: null,
+                                                longitude: null
+                                            });
+                                        }}
+                                    />
                                 </div>
                             </div>
+                        ) : (
+                            photo.location && (
+                                <div className="flex items-center gap-3 text-white/80">
+                                    <MapPin className="w-5 h-5 text-teal-400 shrink-0" />
+                                    <div>
+                                        <p className="text-xs text-white/50">Location</p>
+                                        <span>{photo.location}</span>
+                                    </div>
+                                </div>
+                            )
                         )}
 
                         {/* Tagged People (Secondary) */}
@@ -275,6 +420,34 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                     </div>
                 </div>
             </div>
+            {/* Custom Styles for overlapping issues */}
+            <style>{`
+                .lightbox-location-selector button, 
+                .lightbox-location-selector input {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    border-color: rgba(255, 255, 255, 0.2);
+                    color: white;
+                }
+                .lightbox-location-selector input::placeholder {
+                    color: rgba(255, 255, 255, 0.4);
+                }
+                .lightbox-location-selector button:hover {
+                    background-color: rgba(255, 255, 255, 0.2);
+                }
+                .lightbox-location-selector .text-slate-900 {
+                    color: white !important;
+                }
+                .lightbox-location-selector .text-slate-400 {
+                    color: rgba(255, 255, 255, 0.5) !important;
+                }
+                .lightbox-location-selector .bg-white {
+                    background-color: #334155 !important;
+                    border-color: #475569 !important;
+                }
+                .lightbox-location-selector .hover\\:bg-slate-50:hover {
+                    background-color: #475569 !important;
+                }
+             `}</style>
         </div>
     );
 };

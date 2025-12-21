@@ -76,7 +76,16 @@ exports.getPersonLocationStats = async (req, res) => {
     const { id: personId } = req.params;
 
     try {
-        // 1. Fetch Photo Locations
+        // 1. Fetch Person Details (for vitals mapping)
+        const { data: person, error: personError } = await supabaseAdmin
+            .from('persons')
+            .select('pob, place_of_death, burial_place, dob, dod')
+            .eq('id', personId)
+            .single();
+
+        if (personError) throw personError;
+
+        // 2. Fetch Photo Locations
         const { data: photoData, error: photoError } = await supabaseAdmin
             .from('photos')
             .select('latitude, longitude, location_name, taken_date, year')
@@ -85,7 +94,7 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (photoError) throw photoError;
 
-        // 2. Fetch Person Locations (Places Lived)
+        // 3. Fetch Person Locations (Places Lived)
         const { data: personLocData, error: personLocError } = await supabaseAdmin
             .from('person_locations')
             .select(`
@@ -104,7 +113,7 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (personLocError) throw personLocError;
 
-        // 3. Fetch Life Events (New feature)
+        // 4. Fetch Life Events (New feature)
         const { data: eventData, error: eventError } = await supabaseAdmin
             .from('life_events')
             .select('*')
@@ -123,17 +132,7 @@ exports.getPersonLocationStats = async (req, res) => {
             details: { year: p.year }
         }));
 
-        // Map life events (try to find location from linked photos or text match)
-        // Note: life_events currently only has 'location' string. 
-        // We can try to geocode or match with existing locations if we had a way.
-        // For now, let's see if we can use linked media? 
-        // Or if the user implies they want us to add mapping support.
-        // Assuming they want us to map it if we can. 
-        // Let's defer complex matching and just return them if we can find coordinates.
-        // For this step, I'll just map them if they happen to have coordinates (if I missed a migration)
-        // OR I'll rely on the frontend to handle 'locations without coords'? No, map needs coords.
-
-        // BETTER STRATEGY: Fetch all 'locations' (from locations table) and see if event.location matches location.name
+        // Map life events and Person Vitals (pob, dod) to known locations
         const { data: allKnownLocations } = await supabaseAdmin
             .from('locations')
             .select('*')
@@ -142,14 +141,13 @@ exports.getPersonLocationStats = async (req, res) => {
         const knownLocationsMap = new Map(allKnownLocations?.map(l => [l.name.toLowerCase(), l]) || []);
 
         const eventLocations = eventData.reduce((acc, event) => {
-            // Strategy 1: Match location string to known locations table
             if (event.location && knownLocationsMap.has(event.location.toLowerCase())) {
                 const loc = knownLocationsMap.get(event.location.toLowerCase());
                 acc.push({
                     type: 'event',
                     latitude: parseFloat(loc.latitude),
                     longitude: parseFloat(loc.longitude),
-                    name: event.title, // Use event title as name (e.g. "Birth")
+                    name: loc.name,
                     date: event.date,
                     details: {
                         description: event.description,
@@ -158,10 +156,60 @@ exports.getPersonLocationStats = async (req, res) => {
                     }
                 });
             }
-            // Strategy 2: If we had lat/long on events, we'd use it here.
-            // Strategy 3: Check linked media (would need another query or join)
             return acc;
         }, []);
+
+        // Add Person Vitals (Birth, Death, Burial) as events if they match known locations
+        if (person) {
+            // Birth
+            if (person.pob && knownLocationsMap.has(person.pob.toLowerCase())) {
+                const loc = knownLocationsMap.get(person.pob.toLowerCase());
+                eventLocations.push({
+                    type: 'event',
+                    latitude: parseFloat(loc.latitude),
+                    longitude: parseFloat(loc.longitude),
+                    name: loc.name,
+                    date: person.dob,
+                    details: {
+                        description: `Birthplace of person`,
+                        locationName: person.pob,
+                        eventType: 'Birth'
+                    }
+                });
+            }
+            // Death
+            if (person.place_of_death && knownLocationsMap.has(person.place_of_death.toLowerCase())) {
+                const loc = knownLocationsMap.get(person.place_of_death.toLowerCase());
+                eventLocations.push({
+                    type: 'event',
+                    latitude: parseFloat(loc.latitude),
+                    longitude: parseFloat(loc.longitude),
+                    name: loc.name,
+                    date: person.dod,
+                    details: {
+                        description: `Place of death`,
+                        locationName: person.place_of_death,
+                        eventType: 'Death'
+                    }
+                });
+            }
+            // Burial
+            if (person.burial_place && knownLocationsMap.has(person.burial_place.toLowerCase())) {
+                const loc = knownLocationsMap.get(person.burial_place.toLowerCase());
+                eventLocations.push({
+                    type: 'event',
+                    latitude: parseFloat(loc.latitude),
+                    longitude: parseFloat(loc.longitude),
+                    name: loc.name,
+                    date: person.dod, // Approximate date as DOD
+                    details: {
+                        description: `Burial place`,
+                        locationName: person.burial_place,
+                        eventType: 'Burial'
+                    }
+                });
+            }
+        }
 
 
         // Map person locations to a common format

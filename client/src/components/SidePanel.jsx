@@ -4,6 +4,7 @@ import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, G
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
 import { Button, Input, useToast, Modal } from './ui';
+import LocationSelector from './LocationSelector';
 import PhotoGallery from './PhotoGallery';
 import DocumentGallery from './DocumentGallery';
 import LifeEventsList from './LifeEventsList';
@@ -503,12 +504,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                         />
                                     </div>
                                     <div>
-                                        <Input
-                                            label="Place of Birth"
-                                            name="pob"
-                                            value={formData.pob}
-                                            onChange={handleChange}
-                                            placeholder="e.g. New York, USA"
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Place of Birth</label>
+                                        <LocationSelector
+                                            selectedLocations={formData.pob ? [{ id: 'current', name: formData.pob }] : []}
+                                            onAdd={(loc) => setFormData(prev => ({ ...prev, pob: loc.name }))}
+                                            onRemove={() => setFormData(prev => ({ ...prev, pob: '' }))}
                                         />
                                     </div>
 
@@ -522,12 +522,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                         />
                                     </div>
                                     <div>
-                                        <Input
-                                            label="Place of Death"
-                                            name="place_of_death"
-                                            value={formData.place_of_death}
-                                            onChange={handleChange}
-                                            placeholder="e.g. Hospital, City"
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Place of Death</label>
+                                        <LocationSelector
+                                            selectedLocations={formData.place_of_death ? [{ id: 'current', name: formData.place_of_death }] : []}
+                                            onAdd={(loc) => setFormData(prev => ({ ...prev, place_of_death: loc.name }))}
+                                            onRemove={() => setFormData(prev => ({ ...prev, place_of_death: '' }))}
                                         />
                                     </div>
 
@@ -541,12 +540,11 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                         />
                                     </div>
                                     <div>
-                                        <Input
-                                            label="Burial Place"
-                                            name="burial_place"
-                                            value={formData.burial_place}
-                                            onChange={handleChange}
-                                            placeholder="e.g. Cemetery Name"
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Burial Place</label>
+                                        <LocationSelector
+                                            selectedLocations={formData.burial_place ? [{ id: 'current', name: formData.burial_place }] : []}
+                                            onAdd={(loc) => setFormData(prev => ({ ...prev, burial_place: loc.name }))}
+                                            onRemove={() => setFormData(prev => ({ ...prev, burial_place: '' }))}
                                         />
                                     </div>
 
