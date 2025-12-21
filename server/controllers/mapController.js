@@ -85,12 +85,12 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (personError) throw personError;
 
-        // 2. Fetch Photo Locations
+        // 2. Fetch Photo Locations (Fetch ALL photos to find unmapped ones)
         const { data: photoData, error: photoError } = await supabaseAdmin
             .from('photos')
             .select('latitude, longitude, location_name, taken_date, year')
-            .eq('person_id', personId)
-            .not('latitude', 'is', null);
+            .eq('person_id', personId);
+        // .not('latitude', 'is', null); // Removed to include unmapped photos
 
         if (photoError) throw photoError;
 
@@ -121,18 +121,43 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (eventError) throw eventError;
 
-        // Combine data for the map
-        // Map photo locations to a common format
-        const photoLocations = photoData.map(p => ({
-            type: 'photo',
-            latitude: parseFloat(p.latitude),
-            longitude: parseFloat(p.longitude),
-            name: p.location_name,
-            date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
-            details: { year: p.year }
-        }));
+        // --- Processing Data ---
 
-        // Map life events and Person Vitals (pob, dod) to known locations
+        const mappedLocations = [];
+        const unmappedLocations = new Set(); // Store unique names of unmapped locations
+
+        // A. Process Photos
+        photoData.forEach(p => {
+            if (p.latitude && p.longitude) {
+                mappedLocations.push({
+                    type: 'photo',
+                    latitude: parseFloat(p.latitude),
+                    longitude: parseFloat(p.longitude),
+                    name: p.location_name,
+                    date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
+                    details: { year: p.year }
+                });
+            } else if (p.location_name) {
+                // Try to find in known locations
+                const lowerLoc = p.location_name.toLowerCase();
+                if (knownLocationsMap.has(lowerLoc)) {
+                    const loc = knownLocationsMap.get(lowerLoc);
+                    mappedLocations.push({
+                        type: 'photo',
+                        latitude: parseFloat(loc.latitude),
+                        longitude: parseFloat(loc.longitude),
+                        name: p.location_name, // Keep original string
+                        date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
+                        details: { year: p.year, mappedFrom: loc.name }
+                    });
+                } else {
+                    unmappedLocations.add(p.location_name);
+                }
+            }
+        });
+
+
+        // B. Process Life Events & Vitals
         const { data: allKnownLocations } = await supabaseAdmin
             .from('locations')
             .select('*')
@@ -140,10 +165,14 @@ exports.getPersonLocationStats = async (req, res) => {
 
         const knownLocationsMap = new Map(allKnownLocations?.map(l => [l.name.toLowerCase(), l]) || []);
 
-        const eventLocations = eventData.reduce((acc, event) => {
-            if (event.location && knownLocationsMap.has(event.location.toLowerCase())) {
-                const loc = knownLocationsMap.get(event.location.toLowerCase());
-                acc.push({
+        // Events
+        eventData.forEach(event => {
+            if (!event.location) return;
+
+            const lowerLoc = event.location.toLowerCase();
+            if (knownLocationsMap.has(lowerLoc)) {
+                const loc = knownLocationsMap.get(lowerLoc);
+                mappedLocations.push({
                     type: 'event',
                     latitude: parseFloat(loc.latitude),
                     longitude: parseFloat(loc.longitude),
@@ -151,91 +180,79 @@ exports.getPersonLocationStats = async (req, res) => {
                     date: event.date,
                     details: {
                         description: event.description,
-                        locationName: event.location, // The actual place name
+                        locationName: event.location,
                         eventType: event.event_type
                     }
                 });
+            } else {
+                unmappedLocations.add(event.location);
             }
-            return acc;
-        }, []);
+        });
 
-        // Add Person Vitals (Birth, Death, Burial) as events if they match known locations
+        // Vitals
         if (person) {
-            // Birth
-            if (person.pob && knownLocationsMap.has(person.pob.toLowerCase())) {
-                const loc = knownLocationsMap.get(person.pob.toLowerCase());
-                eventLocations.push({
-                    type: 'event',
-                    latitude: parseFloat(loc.latitude),
-                    longitude: parseFloat(loc.longitude),
-                    name: loc.name,
-                    date: person.dob,
-                    details: {
-                        description: `Birthplace of person`,
-                        locationName: person.pob,
-                        eventType: 'Birth'
-                    }
-                });
-            }
-            // Death
-            if (person.place_of_death && knownLocationsMap.has(person.place_of_death.toLowerCase())) {
-                const loc = knownLocationsMap.get(person.place_of_death.toLowerCase());
-                eventLocations.push({
-                    type: 'event',
-                    latitude: parseFloat(loc.latitude),
-                    longitude: parseFloat(loc.longitude),
-                    name: loc.name,
-                    date: person.dod,
-                    details: {
-                        description: `Place of death`,
-                        locationName: person.place_of_death,
-                        eventType: 'Death'
-                    }
-                });
-            }
-            // Burial
-            if (person.burial_place && knownLocationsMap.has(person.burial_place.toLowerCase())) {
-                const loc = knownLocationsMap.get(person.burial_place.toLowerCase());
-                eventLocations.push({
-                    type: 'event',
-                    latitude: parseFloat(loc.latitude),
-                    longitude: parseFloat(loc.longitude),
-                    name: loc.name,
-                    date: person.dod, // Approximate date as DOD
-                    details: {
-                        description: `Burial place`,
-                        locationName: person.burial_place,
-                        eventType: 'Burial'
-                    }
-                });
-            }
+            // Helper for vitals
+            const processVital = (locString, date, type, desc) => {
+                if (!locString) return;
+                const lowerLoc = locString.toLowerCase();
+                if (knownLocationsMap.has(lowerLoc)) {
+                    const loc = knownLocationsMap.get(lowerLoc);
+                    mappedLocations.push({
+                        type: 'event', // Treat vitals as events on the map
+                        latitude: parseFloat(loc.latitude),
+                        longitude: parseFloat(loc.longitude),
+                        name: loc.name,
+                        date: date,
+                        details: {
+                            description: desc,
+                            locationName: locString,
+                            eventType: type
+                        }
+                    });
+                } else {
+                    unmappedLocations.add(locString);
+                }
+            };
+
+            processVital(person.pob, person.dob, 'Birth', 'Birthplace');
+            processVital(person.place_of_death, person.dod, 'Death', 'Place of death');
+            processVital(person.burial_place, person.dod, 'Burial', 'Burial place');
         }
 
 
-        // Map person locations to a common format
-        const livedLocations = personLocData
-            .filter(pl => pl.locations && pl.locations.latitude && pl.locations.longitude)
-            .map(pl => ({
-                type: 'lived',
-                latitude: parseFloat(pl.locations.latitude),
-                longitude: parseFloat(pl.locations.longitude),
-                name: pl.locations.name,
-                date: pl.start_date,
-                details: {
-                    start: pl.start_date,
-                    end: pl.end_date,
-                    address: pl.locations.address
-                }
-            }));
+        // C. Process Places Lived (person_locations)
+        // These are linked to 'locations' table, so they should generally be mapped if the location record has coords.
+        personLocData.forEach(pl => {
+            if (pl.locations && pl.locations.latitude && pl.locations.longitude) {
+                mappedLocations.push({
+                    type: 'lived',
+                    latitude: parseFloat(pl.locations.latitude),
+                    longitude: parseFloat(pl.locations.longitude),
+                    name: pl.locations.name,
+                    date: pl.start_date,
+                    details: {
+                        start: pl.start_date,
+                        end: pl.end_date,
+                        address: pl.locations.address
+                    }
+                });
+            } else if (pl.locations && pl.locations.name) {
+                unmappedLocations.add(pl.locations.name);
+            }
+        });
 
 
-        const allLocations = [...photoLocations, ...livedLocations, ...eventLocations];
-
-        // Calculate stats
+        // --- Calculate Stats ---
+        const allLocations = mappedLocations; // Ensure backward compat with frontend variable name
         const totalLocations = allLocations.length;
-        const uniqueCities = new Set(allLocations.map(p => p.name).filter(Boolean)).size;
 
-        // Find most visited place (simple frequency map of location_name)
+        // Unique locations count = (Mapped Unique) + (Unmapped Unique)
+        const mappedUniqueNames = new Set(allLocations.map(p => p.name).filter(Boolean));
+        const totalUniqueCount = new Set([...mappedUniqueNames, ...unmappedLocations]).size;
+
+        // Find most visited (only for mapped ones for now, or we could include unmapped frequency?)
+        // Let's stick to mapped for "Most Visited" location on the map, but "Most Frequent" might textually be an unmapped one.
+        // For simplicity, we'll keep the existing logic based on 'allLocations' (mapped ones).
         const locationCounts = {};
         allLocations.forEach(p => {
             if (p.name) {
@@ -253,12 +270,13 @@ exports.getPersonLocationStats = async (req, res) => {
         });
 
         res.json({
-            total_photos_with_location: photoLocations.length,
-            total_places_lived: livedLocations.length,
-            total_life_events: eventLocations.length,
-            unique_locations: uniqueCities,
+            total_photos_with_location: photoData.filter(p => p.latitude).length,
+            total_places_lived: personLocData.length, // total records, not just mapped
+            total_life_events: eventData.length, // total events
+            unique_locations: totalUniqueCount, // Includes unmapped unique names
             most_visited_location: mostVisited,
-            locations: allLocations // Return combined data
+            locations: allLocations, // Only mapped points for the Heatmap/CircleMarkers
+            unmapped_locations: Array.from(unmappedLocations).sort() // New field for UI
         });
     } catch (error) {
         console.error('Error fetching person location stats:', error);

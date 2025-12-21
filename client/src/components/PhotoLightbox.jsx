@@ -18,7 +18,6 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
         if (photo) {
             setEditData({
                 caption: photo.caption || '',
-                description: photo.description || '',
                 date: photo.date ? new Date(photo.date).toISOString().split('T')[0] : '',
                 location: photo.location || '',
                 latitude: photo.latitude || null,
@@ -70,7 +69,6 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
     const handleSave = () => {
         updateMutation.mutate({
             caption: editData.caption,
-            description: editData.description,
             taken_date: editData.date || null,
             location_name: editData.location, // Use location string
             latitude: editData.latitude,
@@ -146,13 +144,6 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                         placeholder="Add a caption..."
                                         className="bg-white/10 border-white/20 text-white placeholder-white/40"
                                     />
-                                    <textarea
-                                        value={editData.description}
-                                        onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                                        placeholder="Add a description..."
-                                        rows={3}
-                                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder-white/40"
-                                    />
                                 </div>
                             ) : (
                                 <h2 className="text-xl font-bold mb-2">{photo.caption || 'Untitled Photo'}</h2>
@@ -198,9 +189,7 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                                 )}
                             </div>
                         </div>
-                        {!isEditing && photo.description && (
-                            <p className="text-white/70 text-sm leading-relaxed mt-2">{photo.description}</p>
-                        )}
+
                     </div>
 
                     {/* Associated Person (Primary) */}
