@@ -780,7 +780,7 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 {/* Desktop Panels (Top Left) */}
                 <Panel
                     position="top-left"
-                    className={`flex flex-col gap-2 transition-all duration-700 pointer-events-none ${isZenMode ? 'opacity-0 -translate-x-4' : 'opacity-100'}`}
+                    className={`flex flex-col gap-2 transition-all duration-700 pointer-events-none ${isZenMode ? 'opacity-0 -translate-x-4 !mt-4' : 'opacity-100 !mt-[140px]'}`}
                 >
                     {/* Main Toolbar */}
                     <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-1 pointer-events-auto z-[20]">
