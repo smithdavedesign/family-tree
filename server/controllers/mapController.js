@@ -390,7 +390,7 @@ exports.getGlobalTravelStats = async (req, res) => {
         if (storyLocError) throw storyLocError;
 
         // 6. Fetch Life Event Locations
-        const { data: eventLocData, error: eventLocError } = await supabaseAdmin
+        let { data: eventLocData, error: eventLocError } = await supabaseAdmin
             .from('life_event_locations')
             .select(`
                 locations!inner (*),
@@ -409,6 +409,7 @@ exports.getGlobalTravelStats = async (req, res) => {
         // Let's try the direct join first. 
         if (eventLocError) {
             // Fallback: Fetch by person IDs if complex join fails
+            eventLocData = [];
             const personIds = persons.map(p => p.id);
             const { data: eventData } = await supabaseAdmin
                 .from('life_events')
