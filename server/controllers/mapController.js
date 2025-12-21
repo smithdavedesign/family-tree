@@ -390,7 +390,8 @@ exports.getGlobalTravelStats = async (req, res) => {
         if (storyLocError) throw storyLocError;
 
         // 6. Fetch Life Event Locations
-        let { data: eventLocData, error: eventLocError } = await supabaseAdmin
+        let eventLocData = [];
+        const { data: primaryEventData, error: eventLocError } = await supabaseAdmin
             .from('life_event_locations')
             .select(`
                 locations!inner (*),
@@ -403,37 +404,41 @@ exports.getGlobalTravelStats = async (req, res) => {
                     person_id
                 )
             `)
-            .eq('life_events.persons.tree_id', treeId); // Note: Nested join check might be complex in Supabase, let's verify later.
+            .eq('life_events.persons.tree_id', treeId);
 
-        // Actually, better to fetch life_events and join manually if needed, or join through persons.
-        // Let's try the direct join first. 
-        if (eventLocError) {
-            // Fallback: Fetch by person IDs if complex join fails
-            eventLocData = [];
+        if (!eventLocError && primaryEventData) {
+            eventLocData = primaryEventData;
+        }
+
+        // Fallback: Fetch by person IDs if complex join fails or returns nothing
+        if (eventLocError || eventLocData.length === 0) {
             const personIds = persons.map(p => p.id);
-            const { data: eventData } = await supabaseAdmin
-                .from('life_events')
-                .select(`
-                    *,
-                    life_event_locations (
-                        locations (*)
-                    )
-                `)
-                .in('person_id', personIds);
+            if (personIds.length > 0) {
+                const { data: fallbackEventData, error: fallbackError } = await supabaseAdmin
+                    .from('life_events')
+                    .select(`
+                        *,
+                        life_event_locations (
+                            locations (*)
+                        )
+                    `)
+                    .in('person_id', personIds);
 
-            // Re-map to match expected structure
-            const reshapedEvents = [];
-            eventData?.forEach(e => {
-                e.life_event_locations?.forEach(lel => {
-                    if (lel.locations) {
-                        reshapedEvents.push({
-                            locations: lel.locations,
-                            life_events: e
+                if (!fallbackError && fallbackEventData) {
+                    const reshapedEvents = [];
+                    fallbackEventData.forEach(e => {
+                        e.life_event_locations?.forEach(lel => {
+                            if (lel.locations) {
+                                reshapedEvents.push({
+                                    locations: lel.locations,
+                                    life_events: e
+                                });
+                            }
                         });
-                    }
-                });
-            });
-            eventLocData.push(...reshapedEvents);
+                    });
+                    eventLocData = reshapedEvents;
+                }
+            }
         }
 
         // --- Formatting and Aggregation ---
