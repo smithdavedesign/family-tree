@@ -62,10 +62,13 @@ const TreeMapPage = () => {
 
     // Filter locations
     const filteredLocations = useMemo(() => {
+        console.log('MapData:', mapData);
         if (!mapData?.all_locations) return [];
         if (selectedPersonId === 'all') return mapData.all_locations;
         return mapData.all_locations.filter(loc => loc.personId === selectedPersonId);
     }, [mapData, selectedPersonId]);
+
+    console.log('Filtered Locations:', filteredLocations);
 
     // Get unique people for filter dropdown
     const peopleList = useMemo(() => {
@@ -109,7 +112,7 @@ const TreeMapPage = () => {
                 ]}
             />
 
-            <main className="flex-1 flex flex-col h-[calc(100vh-120px)] relative">
+            <main className="flex-1 flex flex-col h-[calc(100vh-120px)] min-h-[500px] relative">
                 {/* Stats Header */}
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm">
                     <div className="flex gap-6 overflow-x-auto no-scrollbar">
