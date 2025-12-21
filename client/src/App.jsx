@@ -25,6 +25,7 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const StoryPage = lazy(() => import('./pages/StoryPage'));
 const PersonPage = lazy(() => import('./pages/PersonPage'));
 const AlbumPage = lazy(() => import('./pages/AlbumPage'));
+const TreeMapPage = lazy(() => import('./pages/TreeMapPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -160,6 +161,7 @@ function App() {
             <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
             <Route path="/tree/:treeId/albums" element={<AlbumPage />} />
             <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
+            <Route path="/tree/:treeId/map" element={<TreeMapPage />} />
           </Routes>
         </Suspense>
       </Router>

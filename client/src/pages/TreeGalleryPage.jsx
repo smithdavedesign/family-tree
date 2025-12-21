@@ -4,11 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { supabase } from '../auth';
-import { Loader, Image as ImageIcon, Filter, Calendar, User, Plus, Grid, Map as MapIcon, SlidersHorizontal, X, Search, ChevronDown, FolderPlus } from 'lucide-react';
+import { Loader, Image as ImageIcon, Filter, Calendar, User, FolderPlus, X } from 'lucide-react';
 import { useTreePhotos, useTreeDetails } from '../hooks/useTreePhotos';
 import { groupPhotosByDate, groupPhotosByPerson, filterPhotos, getUniquePersons } from '../utils/photoUtils';
 import VirtualGallery from '../components/VirtualGallery';
-import MapGallery from '../components/MapGallery';
 import AccountSettings from '../components/AccountSettings';
 import PhotoLightbox from '../components/PhotoLightbox';
 import AlbumSelectorModal from '../components/AlbumSelectorModal';
@@ -20,7 +19,6 @@ const TreeGalleryPage = () => {
     const { toast } = useToast();
     const [user, setUser] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'map'
     const [selectedPhoto, setSelectedPhoto] = useState(null);
 
     // Selection State
@@ -199,45 +197,25 @@ const TreeGalleryPage = () => {
                             </div>
                         )}
 
-                        {/* View Mode Toggle */}
-                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'}`}
-                                title="Grid View"
-                            >
-                                <Grid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('map')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-teal-600' : 'text-slate-500 hover:text-slate-700'}`}
-                                title="Map View"
-                            >
-                                <MapIcon className="w-4 h-4" />
-                            </button>
-                        </div>
-
                         {/* Person Filter */}
-                        {viewMode === 'grid' && (
-                            <div className="relative">
-                                <select
-                                    value={filterPerson}
-                                    onChange={(e) => setFilterPerson(e.target.value)}
-                                    className="pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none cursor-pointer hover:bg-slate-50"
-                                >
-                                    <option value="all">All People</option>
-                                    {persons.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                    ))}
-                                </select>
-                                <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            </div>
-                        )}
+                        <div className="relative">
+                            <select
+                                value={filterPerson}
+                                onChange={(e) => setFilterPerson(e.target.value)}
+                                className="pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none cursor-pointer hover:bg-slate-50"
+                            >
+                                <option value="all">All People</option>
+                                {persons.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                            <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Gallery Grid (Virtualized) / Photo Map */}
+            {/* Gallery Grid (Virtualized) */}
             <div className="flex-1 overflow-hidden">
                 <div className="w-full px-4 h-full">
                     {isLoading ? (
@@ -245,29 +223,23 @@ const TreeGalleryPage = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
                         </div>
                     ) : (
-                        viewMode === 'map' ? (
-                            <div className="h-full w-full py-4">
-                                <MapGallery photos={filteredPhotos} onPhotoClick={handlePhotoClick} />
+                        groupedPhotos.length === 0 ? (
+                            <div className="text-center py-20">
+                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-slate-900">No photos found</h3>
+                                <p className="text-slate-500 mt-1">Try adjusting your filters or upload some photos to your tree.</p>
                             </div>
                         ) : (
-                            groupedPhotos.length === 0 ? (
-                                <div className="text-center py-20">
-                                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <ImageIcon className="w-8 h-8 text-slate-400" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-slate-900">No photos found</h3>
-                                    <p className="text-slate-500 mt-1">Try adjusting your filters or upload some photos to your tree.</p>
-                                </div>
-                            ) : (
-                                <VirtualGallery
-                                    groups={groupedPhotos}
-                                    groupBy={groupBy}
-                                    onPhotoClick={handlePhotoClick}
-                                    selectedIds={selectedPhotoIds}
-                                    onToggleSelect={handleToggleSelect}
-                                    onAddToAlbum={handleAddToAlbum}
-                                />
-                            )
+                            <VirtualGallery
+                                groups={groupedPhotos}
+                                groupBy={groupBy}
+                                onPhotoClick={handlePhotoClick}
+                                selectedIds={selectedPhotoIds}
+                                onToggleSelect={handleToggleSelect}
+                                onAddToAlbum={handleAddToAlbum}
+                            />
                         )
                     )}
                 </div>

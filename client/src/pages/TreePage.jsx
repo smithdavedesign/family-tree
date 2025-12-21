@@ -172,6 +172,15 @@ const TreePage = () => {
                         >
                             <span className="text-xl">📅</span>
                         </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.location.href = `/tree/${id}/map`}
+                            className="p-2"
+                            title="View Map"
+                        >
+                            <span className="text-xl">🗺️</span>
+                        </Button>
                     </>
                 }
             />

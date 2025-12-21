@@ -171,13 +171,15 @@ exports.getGlobalTravelStats = async (req, res) => {
     const { treeId } = req.query;
 
     try {
-        let query = supabaseAdmin
+        // 1. Fetch Photo Locations
+        let photoQuery = supabaseAdmin
             .from('photos')
             .select(`
                 latitude, 
                 longitude, 
                 location_name, 
                 year,
+                taken_date,
                 persons!inner (
                     id,
                     first_name,
@@ -188,23 +190,81 @@ exports.getGlobalTravelStats = async (req, res) => {
             .not('latitude', 'is', null);
 
         if (treeId) {
-            query = query.eq('persons.tree_id', treeId);
+            photoQuery = photoQuery.eq('persons.tree_id', treeId);
         }
 
-        const { data, error } = await query;
+        const { data: photoData, error: photoError } = await photoQuery;
+        if (photoError) throw photoError;
 
-        if (error) throw error;
+        // 2. Fetch Person Locations (Places Lived)
+        let personLocQuery = supabaseAdmin
+            .from('person_locations')
+            .select(`
+                start_date,
+                end_date,
+                locations!inner (
+                    id,
+                    name,
+                    latitude,
+                    longitude,
+                    address
+                ),
+                persons!inner (
+                    id,
+                    first_name,
+                    last_name,
+                    tree_id
+                )
+            `);
 
-        // 1. Total locations visited (unique lat/lng pairs approx or unique names)
-        const uniqueLocations = new Set(data.map(p => p.location_name).filter(Boolean));
+        if (treeId) {
+            personLocQuery = personLocQuery.eq('persons.tree_id', treeId);
+        }
 
-        // 2. Top photographed cities
+        const { data: personLocData, error: personLocError } = await personLocQuery;
+        if (personLocError) throw personLocError;
+
+        // Combine and Format Data
+        const photoLocations = photoData.map(p => ({
+            type: 'photo',
+            latitude: parseFloat(p.latitude),
+            longitude: parseFloat(p.longitude),
+            name: p.location_name,
+            date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
+            personId: p.persons.id,
+            personName: `${p.persons.first_name} ${p.persons.last_name || ''}`.trim(),
+            details: { year: p.year }
+        }));
+
+        const livedLocations = personLocData
+            .filter(pl => pl.locations && pl.locations.latitude && pl.locations.longitude)
+            .map(pl => ({
+                type: 'lived',
+                latitude: parseFloat(pl.locations.latitude),
+                longitude: parseFloat(pl.locations.longitude),
+                name: pl.locations.name,
+                date: pl.start_date,
+                personId: pl.persons.id,
+                personName: `${pl.persons.first_name} ${pl.persons.last_name || ''}`.trim(),
+                details: {
+                    start: pl.start_date,
+                    end: pl.end_date,
+                    address: pl.locations.address
+                }
+            }));
+
+        const allLocations = [...photoLocations, ...livedLocations];
+
+        // --- Existing Stats Calculation Logic (Updated to use allLocations where appropriate) ---
+
+        // 1. Total locations visited
+        const uniqueLocations = new Set(allLocations.map(p => p.name).filter(Boolean));
+
+        // 2. Top Cities (using all locations)
         const cityCounts = {};
-        data.forEach(p => {
-            if (p.location_name) {
-                // Simple heuristic: assume location_name is "City, Country" or just "City"
-                // For better accuracy, we'd parse this, but for now use full string
-                cityCounts[p.location_name] = (cityCounts[p.location_name] || 0) + 1;
+        allLocations.forEach(p => {
+            if (p.name) {
+                cityCounts[p.name] = (cityCounts[p.name] || 0) + 1;
             }
         });
 
@@ -213,40 +273,38 @@ exports.getGlobalTravelStats = async (req, res) => {
             .slice(0, 5)
             .map(([city, count]) => ({ city, count }));
 
-        // 3. Most global family member (most unique locations)
-        const personLocations = {};
-        data.forEach(p => {
-            const personName = `${p.persons.first_name} ${p.persons.last_name || ''}`.trim();
-            if (!personLocations[personName]) {
-                personLocations[personName] = new Set();
+        // 3. Most global family member
+        const personLocationSets = {};
+        allLocations.forEach(p => {
+            if (!personLocationSets[p.personName]) {
+                personLocationSets[p.personName] = new Set();
             }
-            if (p.location_name) {
-                personLocations[personName].add(p.location_name);
+            if (p.name) {
+                personLocationSets[p.personName].add(p.name);
             }
         });
 
         let mostGlobalMember = { name: 'N/A', count: 0 };
-        Object.entries(personLocations).forEach(([name, locations]) => {
+        Object.entries(personLocationSets).forEach(([name, locations]) => {
             if (locations.size > mostGlobalMember.count) {
                 mostGlobalMember = { name, count: locations.size };
             }
         });
 
-        // 4. Photos per decade
+        // 4. Photos per decade (Keep strictly for photos)
         const decadeCounts = {};
-        data.forEach(p => {
+        photoData.forEach(p => {
             if (p.year) {
                 const decade = Math.floor(p.year / 10) * 10;
                 decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
             }
         });
 
-        // 5. Countries covered (Naive extraction from location_name)
-        // Assuming location_name format "City, Country"
+        // 5. Countries covered
         const countries = new Set();
-        data.forEach(p => {
-            if (p.location_name && p.location_name.includes(',')) {
-                const parts = p.location_name.split(',');
+        allLocations.forEach(p => {
+            if (p.name && p.name.includes(',')) {
+                const parts = p.name.split(',');
                 const country = parts[parts.length - 1].trim();
                 countries.add(country);
             }
@@ -258,7 +316,9 @@ exports.getGlobalTravelStats = async (req, res) => {
             most_global_member: mostGlobalMember,
             photos_per_decade: decadeCounts,
             countries_count: countries.size,
-            total_photos_mapped: data.length
+            total_photos_mapped: photoLocations.length,
+            total_places_lived: livedLocations.length,
+            all_locations: allLocations // Return the full list for the map
         });
 
     } catch (error) {
