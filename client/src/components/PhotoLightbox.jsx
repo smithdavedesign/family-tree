@@ -13,6 +13,7 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
     const { stories, events } = usePhotoDetails(photo?.id);
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(false);
+    const [showMobileDetails, setShowMobileDetails] = useState(false);
     const [editData, setEditData] = useState({});
 
     useEffect(() => {
@@ -99,38 +100,29 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
 
     return createPortal(
         <div
-            className="fixed inset-0 md:top-16 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn group"
+            className="fixed inset-x-0 bottom-0 top-16 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn group"
             onClick={onClose}
         >
-            {/* Close Button (Mobile Only) */}
-            <button
-                onClick={(e) => { e.stopPropagation(); onClose(); }}
-                className="absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-[110] md:hidden"
-                aria-label="Close lightbox"
-            >
-                <X className="w-8 h-8" />
-            </button>
-
-            {/* Navigation Buttons */}
-            {hasPrev && !isEditing && (
+            {/* Mobile Controls Overlay */}
+            <div className="absolute top-4 right-4 flex items-center gap-3 md:hidden z-[110]">
+                {/* Info Toggle */}
                 <button
-                    onClick={(e) => { e.stopPropagation(); onPrev(); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
-                    aria-label="Previous photo"
+                    onClick={(e) => { e.stopPropagation(); setShowMobileDetails(!showMobileDetails); }}
+                    className={`p-2.5 rounded-full transition-all shadow-lg backdrop-blur-md ${showMobileDetails ? 'bg-teal-600 text-white' : 'bg-black/40 text-white/90 hover:bg-black/60'}`}
+                    aria-label="Toggle details"
                 >
-                    <ChevronLeft className="w-8 h-8" />
+                    <Info className="w-7 h-7" />
                 </button>
-            )}
-
-            {hasNext && !isEditing && (
+                {/* Close Button */}
                 <button
-                    onClick={(e) => { e.stopPropagation(); onNext(); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 hidden md:block"
-                    aria-label="Next photo"
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    className="p-2.5 bg-black/40 text-white/90 hover:bg-black/60 rounded-full transition-all shadow-lg backdrop-blur-md"
+                    aria-label="Close lightbox"
                 >
-                    <ChevronRight className="w-8 h-8" />
+                    <X className="w-7 h-7" />
                 </button>
-            )}
+            </div>
+
 
             <div
                 className="flex flex-col md:flex-row w-full h-full max-w-[1700px] mx-auto overflow-hidden relative"
@@ -138,6 +130,27 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
             >
                 {/* Image Area */}
                 <div className="flex-1 relative flex items-center justify-center p-4 bg-black/20 h-full min-h-0">
+                    {/* Navigation Buttons inside Image Area to avoid sidebar overlap */}
+                    {hasPrev && !isEditing && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onPrev(); }}
+                            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 p-2 md:p-3 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all z-50 group/nav"
+                            aria-label="Previous photo"
+                        >
+                            <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover/nav:-translate-x-1" />
+                        </button>
+                    )}
+
+                    {hasNext && !isEditing && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onNext(); }}
+                            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 p-2 md:p-3 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all z-50 group/nav"
+                            aria-label="Next photo"
+                        >
+                            <ChevronRight className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover/nav:translate-x-1" />
+                        </button>
+                    )}
+
                     <img
                         src={photo.url}
                         alt={photo.caption || 'Family photo'}
@@ -145,7 +158,10 @@ const PhotoLightbox = ({ photo, onClose, onNext, onPrev, hasNext, hasPrev, onAdd
                     />
                 </div>
 
-                <div className="w-full md:w-[400px] lg:w-[450px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 flex flex-col gap-6 text-white overflow-y-auto shrink-0 relative custom-scrollbar">
+                <div className={`
+                    w-full md:w-[400px] lg:w-[450px] bg-white/10 backdrop-blur-md border-t md:border-t-0 md:border-l border-white/10 p-6 flex-col gap-6 text-white overflow-y-auto shrink-0 relative custom-scrollbar
+                    ${showMobileDetails ? 'flex fixed inset-x-0 bottom-0 h-[60vh] z-[120] animate-slideUp' : 'hidden md:flex'}
+                `}>
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
