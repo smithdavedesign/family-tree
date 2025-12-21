@@ -104,6 +104,14 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (personLocError) throw personLocError;
 
+        // 3. Fetch Life Events (New feature)
+        const { data: eventData, error: eventError } = await supabaseAdmin
+            .from('life_events')
+            .select('*')
+            .eq('person_id', personId);
+
+        if (eventError) throw eventError;
+
         // Combine data for the map
         // Map photo locations to a common format
         const photoLocations = photoData.map(p => ({
@@ -114,6 +122,47 @@ exports.getPersonLocationStats = async (req, res) => {
             date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
             details: { year: p.year }
         }));
+
+        // Map life events (try to find location from linked photos or text match)
+        // Note: life_events currently only has 'location' string. 
+        // We can try to geocode or match with existing locations if we had a way.
+        // For now, let's see if we can use linked media? 
+        // Or if the user implies they want us to add mapping support.
+        // Assuming they want us to map it if we can. 
+        // Let's defer complex matching and just return them if we can find coordinates.
+        // For this step, I'll just map them if they happen to have coordinates (if I missed a migration)
+        // OR I'll rely on the frontend to handle 'locations without coords'? No, map needs coords.
+
+        // BETTER STRATEGY: Fetch all 'locations' (from locations table) and see if event.location matches location.name
+        const { data: allKnownLocations } = await supabaseAdmin
+            .from('locations')
+            .select('*')
+            .not('latitude', 'is', null);
+
+        const knownLocationsMap = new Map(allKnownLocations?.map(l => [l.name.toLowerCase(), l]) || []);
+
+        const eventLocations = eventData.reduce((acc, event) => {
+            // Strategy 1: Match location string to known locations table
+            if (event.location && knownLocationsMap.has(event.location.toLowerCase())) {
+                const loc = knownLocationsMap.get(event.location.toLowerCase());
+                acc.push({
+                    type: 'event',
+                    latitude: parseFloat(loc.latitude),
+                    longitude: parseFloat(loc.longitude),
+                    name: event.title, // Use event title as name (e.g. "Birth")
+                    date: event.date,
+                    details: {
+                        description: event.description,
+                        locationName: event.location, // The actual place name
+                        eventType: event.event_type
+                    }
+                });
+            }
+            // Strategy 2: If we had lat/long on events, we'd use it here.
+            // Strategy 3: Check linked media (would need another query or join)
+            return acc;
+        }, []);
+
 
         // Map person locations to a common format
         const livedLocations = personLocData
@@ -131,7 +180,8 @@ exports.getPersonLocationStats = async (req, res) => {
                 }
             }));
 
-        const allLocations = [...photoLocations, ...livedLocations];
+
+        const allLocations = [...photoLocations, ...livedLocations, ...eventLocations];
 
         // Calculate stats
         const totalLocations = allLocations.length;
@@ -157,6 +207,7 @@ exports.getPersonLocationStats = async (req, res) => {
         res.json({
             total_photos_with_location: photoLocations.length,
             total_places_lived: livedLocations.length,
+            total_life_events: eventLocations.length,
             unique_locations: uniqueCities,
             most_visited_location: mostVisited,
             locations: allLocations // Return combined data

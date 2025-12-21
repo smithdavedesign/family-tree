@@ -5,6 +5,7 @@ import { supabase } from '../auth';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapPin, Loader } from 'lucide-react';
+import HeatmapLayer from './HeatmapLayer';
 
 const PersonHeatmap = ({ personId }) => {
     const { data: stats, isLoading } = useQuery({
@@ -43,6 +44,9 @@ const PersonHeatmap = ({ personId }) => {
         bounds.extend([stats.locations[0].latitude - 0.1, stats.locations[0].longitude - 0.1]);
     }
 
+    // Prepare heatmap points
+    const heatPoints = stats.locations.map(loc => [loc.latitude, loc.longitude, 1.0]); // Intensity 1.0
+
     return (
         <div className="space-y-4">
             {/* Stats Cards */}
@@ -56,14 +60,12 @@ const PersonHeatmap = ({ personId }) => {
                     <p className="text-2xl font-bold text-orange-600">{stats.total_places_lived || 0}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Mapped Photos</p>
-                    <p className="text-2xl font-bold text-teal-600">{stats.total_photos_with_location}</p>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Life Events</p>
+                    <p className="text-2xl font-bold text-violet-600">{stats.total_life_events || 0}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Most Visited</p>
-                    <p className="text-lg font-bold text-slate-900 truncate" title={stats.most_visited_location}>
-                        {stats.most_visited_location || 'N/A'}
-                    </p>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Mapped Photos</p>
+                    <p className="text-2xl font-bold text-teal-600">{stats.total_photos_with_location}</p>
                 </div>
             </div>
 
@@ -79,17 +81,33 @@ const PersonHeatmap = ({ personId }) => {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
+                    <HeatmapLayer points={heatPoints} />
+
                     {/* Render points */}
                     {stats.locations.map((loc, index) => {
                         const isLived = loc.type === 'lived';
-                        const color = isLived ? '#ea580c' : '#14b8a6'; // orange-600 vs teal-500
-                        const fillColor = isLived ? '#f97316' : '#14b8a6'; // orange-500 vs teal-500
+                        const isEvent = loc.type === 'event';
+
+                        let color, fillColor, label;
+                        if (isLived) {
+                            color = '#ea580c'; // orange
+                            fillColor = '#f97316';
+                            label = 'Location';
+                        } else if (isEvent) {
+                            color = '#7c3aed'; // violet
+                            fillColor = '#8b5cf6';
+                            label = loc.details?.eventType || 'Life Event';
+                        } else {
+                            color = '#14b8a6'; // teal
+                            fillColor = '#2dd4bf';
+                            label = 'Photo Location';
+                        }
 
                         return (
                             <CircleMarker
                                 key={index}
                                 center={[loc.latitude, loc.longitude]}
-                                radius={isLived ? 10 : 6} // Lived places are slightly larger
+                                radius={isLived ? 10 : (isEvent ? 8 : 6)}
                                 pathOptions={{
                                     color: color,
                                     fillColor: fillColor,
@@ -101,8 +119,9 @@ const PersonHeatmap = ({ personId }) => {
                                     <div className="text-sm">
                                         <p className="font-semibold text-slate-900">{loc.name}</p>
                                         <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
-                                            {isLived ? 'Location' : 'Photo Location'}
+                                            {label}
                                         </p>
+
                                         {isLived ? (
                                             <div className="text-xs text-slate-600">
                                                 {(loc.details?.start || loc.details?.end) ? (
@@ -113,6 +132,13 @@ const PersonHeatmap = ({ personId }) => {
                                                     </p>
                                                 ) : (
                                                     <p className="italic text-slate-400">No date recorded</p>
+                                                )}
+                                            </div>
+                                        ) : isEvent ? (
+                                            <div className="text-xs text-slate-600">
+                                                <p>{loc.date ? new Date(loc.date).toLocaleDateString() : 'Unknown Date'}</p>
+                                                {loc.details?.description && (
+                                                    <p className="mt-1 italic text-slate-500 line-clamp-2">{loc.details.description}</p>
                                                 )}
                                             </div>
                                         ) : (
