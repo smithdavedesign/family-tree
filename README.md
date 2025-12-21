@@ -18,7 +18,7 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - 🚧 **Google Photos Integration** - Coming soon (pending Google verification)
 - ✅ **Real-time Editing** - Add, edit, and link family members instantly
 - ✅ **Multi-Tree Support** - Create and manage multiple family trees
-- ✅ **Responsive Design** - Works seamlessly on desktop and mobile devices
+- ✅ **Responsive Design** - Mobile-first refinements with consolidated menus and FABs
 
 ### Advanced Features
 - ✅ **Role-Based Access Control** - Owner, Editor, and Viewer permissions
@@ -102,6 +102,12 @@ The application uses a relational database (PostgreSQL) with the following key e
   - [x] **UI Consistency** - Uniform padding, stable transitions, no layout shifts
   - [x] **Consistent Navigation** - Unified Navbar across all pages with clickable brand logo
   - [x] **Interactive Controls** - View lock, collapsible search, optimized control grouping
+- [x] **Mobile Optimization** (100%)
+  - [x] Consolidated navigation (bottom sheet menu)
+  - [x] Mobile FAB for tree editing
+  - [x] Interaction-aware Zen Mode (auto-fading UI)
+  - [x] Responsive view mode selector
+  - [x] Strategic tool grouping (Tools menu)
 
 - [x] **Tree Visualization Enhancements** (100%)
   - [x] Interactive mini-map (click/drag to navigate)
@@ -240,15 +246,15 @@ The application uses a relational database (PostgreSQL) with the following key e
 **Goal:** Transform the photo gallery into an interactive map experience with clustering, person attribution, and global travel insights.
 
 #### Completed Features
-- [x] Interactive map gallery with marker clustering
+- [x] Interactive map gallery with marker clustering (Badge Numbers)
 - [x] Layer controls (Street, Satellite, Topographic)
-- [x] Rich map popups with person attribution
-- [x] Album/story links in popups
+- [x] Advanced Visualization Layer: High-Contrast Heatmap
+- [x] Rich map popups with person attribution, photos, and story links
+- [x] Unified Data Aggregation: (Photos + Stories + Events + Vitals)
+- [x] Performance: Chunked loading for clustering large datasets
 - [x] "Nearby Photos" discovery (20km radius)
-- [x] Person Location History heatmap
 - [x] Global Travel Dashboard widget
-- [x] Backend endpoints for location stats
-- [x] Consistent teal color scheme across all maps
+- [x] Consistent teal color scheme for markers and clusters
 
 #### Components Created
 - `MapGallery.jsx` - Interactive map with clustering and layers
