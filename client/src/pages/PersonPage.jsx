@@ -194,7 +194,7 @@ const PersonPage = () => {
             </main>
 
             {showSidePanel && (
-                <div className="fixed inset-0 z-[10000] flex items-start justify-end">
+                <div className="fixed inset-0 z-[10002] flex items-start justify-end">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"

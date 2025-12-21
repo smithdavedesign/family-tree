@@ -151,6 +151,8 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
     };
 
     const handleSelectLocation = async (location) => {
+        let selection = location;
+
         if (location.is_google_prediction && window.google && window.google.maps) {
             // Fetch details for Google prediction to get lat/lng
             try {
@@ -170,7 +172,7 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                 });
 
                 if (details.geometry && details.geometry.location) {
-                    const fullLocation = {
+                    selection = {
                         ...location,
                         name: details.name || location.name,
                         address: details.formatted_address || location.address,
@@ -178,22 +180,25 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                         longitude: details.geometry.location.lng(),
                         is_google_prediction: false // Resolved
                     };
-
-                    if (!selectedLocations.find(l => l.id === fullLocation.id)) {
-                        onAdd(fullLocation);
-                    }
-                    setSearch('');
-                    return;
                 }
             } catch (err) {
                 console.error('Failed to get place details:', err);
-                // Fallback to original (will start with 0,0 but better than crashing)
+                // Fallback to original suggestion
             }
         }
 
-        if (!selectedLocations.find(l => l.id === location.id)) {
-            onAdd(location);
+        // If it's a new external suggestion, save it to our DB first to get a UUID
+        if (selection.is_new) {
+            createMutation.mutate({
+                name: selection.name,
+                address: selection.address,
+                latitude: selection.latitude,
+                longitude: selection.longitude
+            });
+        } else if (!selectedLocations.find(l => l.id === selection.id)) {
+            onAdd(selection);
         }
+
         setSearch('');
     };
 

@@ -3,11 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../auth';
 import { MapPin, Plus, X, Calendar } from 'lucide-react';
 import LocationSelector from './LocationSelector';
-import { Button } from './ui';
+import { Button, useToast } from './ui';
 
 const PersonLocations = ({ personId, isEditor }) => {
     const [showSelector, setShowSelector] = useState(false);
     const queryClient = useQueryClient();
+    const { toast } = useToast();
 
     // Fetch person locations
     const { data: locations = [], isLoading } = useQuery({
@@ -40,6 +41,11 @@ const PersonLocations = ({ personId, isEditor }) => {
         onSuccess: () => {
             queryClient.invalidateQueries(['person-locations', personId]);
             setShowSelector(false);
+            toast.success('Location added successfully');
+        },
+        onError: (error) => {
+            console.error('Error adding location:', error);
+            toast.error(`Failed to add location: ${error.message}`);
         }
     });
 
@@ -55,6 +61,11 @@ const PersonLocations = ({ personId, isEditor }) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['person-locations', personId]);
+            toast.success('Location removed');
+        },
+        onError: (error) => {
+            console.error('Error removing location:', error);
+            toast.error('Failed to remove location');
         }
     });
 
