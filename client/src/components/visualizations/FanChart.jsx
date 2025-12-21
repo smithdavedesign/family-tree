@@ -172,109 +172,115 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full bg-white p-8 relative">
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">
+        <div className="flex flex-col items-center justify-center w-full h-full bg-slate-50 relative overflow-hidden">
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center z-10 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
+                <h3 className="text-xl font-bold text-slate-900">
                     Ancestor Fan Chart
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 hidden sm:block">
                     Click a segment to view person details
                 </p>
             </div>
 
-            <svg width={width} height={height} className="drop-shadow-lg">
-                {/* Background circle */}
-                <circle
-                    cx={centerX}
-                    cy={centerY}
-                    r={maxRadius + 10}
-                    fill="#f8fafc"
-                    stroke="#e2e8f0"
-                    strokeWidth="2"
-                />
+            <div className="w-full h-full flex items-center justify-center p-4">
+                <svg
+                    viewBox={`0 0 ${width} ${height}`}
+                    className="w-full h-full max-w-[min(90vw,90vh)] max-h-[min(90vw,90vh)] drop-shadow-2xl transition-all duration-500"
+                    preserveAspectRatio="xMidYMid meet"
+                >
+                    {/* Background circle */}
+                    <circle
+                        cx={centerX}
+                        cy={centerY}
+                        r={maxRadius + 10}
+                        fill="#f8fafc"
+                        stroke="#e2e8f0"
+                        strokeWidth="2"
+                    />
 
-                {/* Render segments */}
-                {segments.map((segment, index) => {
-                    const isHovered = hoveredPerson === segment.person.id;
-                    const color = getGenerationColor(segment.generation);
+                    {/* Render segments */}
+                    {segments.map((segment, index) => {
+                        const isHovered = hoveredPerson === segment.person.id;
+                        const color = getGenerationColor(segment.generation);
 
-                    if (segment.isCenter) {
+                        if (segment.isCenter) {
+                            return (
+                                <g key={`segment-${index}`}>
+                                    <circle
+                                        cx={segment.cx}
+                                        cy={segment.cy}
+                                        r={segment.r}
+                                        fill={color}
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        className="cursor-pointer transition-opacity"
+                                        opacity={isHovered ? 1 : 0.9}
+                                        onMouseEnter={() => setHoveredPerson(segment.person.id)}
+                                        onMouseLeave={() => setHoveredPerson(null)}
+                                        onClick={() => handleSegmentClick(segment)}
+                                    />
+                                    <text
+                                        x={segment.cx}
+                                        y={segment.cy}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        className="text-xs font-medium fill-white pointer-events-none"
+                                    >
+                                        {segment.person.first_name}
+                                    </text>
+                                </g>
+                            );
+                        }
+
                         return (
                             <g key={`segment-${index}`}>
-                                <circle
-                                    cx={segment.cx}
-                                    cy={segment.cy}
-                                    r={segment.r}
+                                <path
+                                    d={segment.path}
                                     fill={color}
                                     stroke="white"
                                     strokeWidth="2"
                                     className="cursor-pointer transition-opacity"
-                                    opacity={isHovered ? 1 : 0.9}
+                                    opacity={isHovered ? 1 : 0.85}
                                     onMouseEnter={() => setHoveredPerson(segment.person.id)}
                                     onMouseLeave={() => setHoveredPerson(null)}
                                     onClick={() => handleSegmentClick(segment)}
                                 />
-                                <text
-                                    x={segment.cx}
-                                    y={segment.cy}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                    className="text-xs font-medium fill-white pointer-events-none"
-                                >
-                                    {segment.person.first_name}
-                                </text>
+                                {/* Text label */}
+                                {segment.endAngle - segment.startAngle > 15 && (
+                                    <text
+                                        x={centerX + ((segment.innerRadius + segment.outerRadius) / 2) * Math.cos((segment.midAngle - 90) * Math.PI / 180)}
+                                        y={centerY + ((segment.innerRadius + segment.outerRadius) / 2) * Math.sin((segment.midAngle - 90) * Math.PI / 180)}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        className="text-xs font-medium fill-white pointer-events-none"
+                                        transform={`rotate(${segment.midAngle}, ${centerX + ((segment.innerRadius + segment.outerRadius) / 2) * Math.cos((segment.midAngle - 90) * Math.PI / 180)}, ${centerY + ((segment.innerRadius + segment.outerRadius) / 2) * Math.sin((segment.midAngle - 90) * Math.PI / 180)})`}
+                                    >
+                                        {segment.person.first_name}
+                                    </text>
+                                )}
                             </g>
                         );
-                    }
+                    })}
+                </svg>
 
-                    return (
-                        <g key={`segment-${index}`}>
-                            <path
-                                d={segment.path}
-                                fill={color}
-                                stroke="white"
-                                strokeWidth="2"
-                                className="cursor-pointer transition-opacity"
-                                opacity={isHovered ? 1 : 0.85}
-                                onMouseEnter={() => setHoveredPerson(segment.person.id)}
-                                onMouseLeave={() => setHoveredPerson(null)}
-                                onClick={() => handleSegmentClick(segment)}
-                            />
-                            {/* Text label */}
-                            {segment.endAngle - segment.startAngle > 15 && (
-                                <text
-                                    x={centerX + ((segment.innerRadius + segment.outerRadius) / 2) * Math.cos((segment.midAngle - 90) * Math.PI / 180)}
-                                    y={centerY + ((segment.innerRadius + segment.outerRadius) / 2) * Math.sin((segment.midAngle - 90) * Math.PI / 180)}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                    className="text-xs font-medium fill-white pointer-events-none"
-                                    transform={`rotate(${segment.midAngle}, ${centerX + ((segment.innerRadius + segment.outerRadius) / 2) * Math.cos((segment.midAngle - 90) * Math.PI / 180)}, ${centerY + ((segment.innerRadius + segment.outerRadius) / 2) * Math.sin((segment.midAngle - 90) * Math.PI / 180)})`}
-                                >
-                                    {segment.person.first_name}
-                                </text>
-                            )}
-                        </g>
-                    );
-                })}
-            </svg>
-
-            {/* Tooltip - Positioned absolutely to prevent layout shift */}
-            {hoveredPerson && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 p-3 bg-slate-800 text-white rounded-lg shadow-lg z-10">
-                    {(() => {
-                        const person = segments.find(s => s.person.id === hoveredPerson)?.person;
-                        if (!person) return null;
-                        return (
-                            <div className="text-sm whitespace-nowrap">
-                                <p className="font-semibold">{person.first_name} {person.last_name || ''}</p>
-                                <p className="text-slate-300 text-xs">
-                                    {person.dob ? new Date(person.dob).getFullYear() : '?'} - {person.dod ? new Date(person.dod).getFullYear() : 'Present'}
-                                </p>
-                            </div>
-                        );
-                    })()}
-                </div>
-            )}
+                {/* Tooltip - Positioned absolutely to prevent layout shift */}
+                {hoveredPerson && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 p-3 bg-slate-800 text-white rounded-lg shadow-lg z-10">
+                        {(() => {
+                            const person = segments.find(s => s.person.id === hoveredPerson)?.person;
+                            if (!person) return null;
+                            return (
+                                <div className="text-sm whitespace-nowrap">
+                                    <p className="font-semibold">{person.first_name} {person.last_name || ''}</p>
+                                    <p className="text-slate-300 text-xs">
+                                        {person.dob ? new Date(person.dob).getFullYear() : '?'} - {person.dod ? new Date(person.dod).getFullYear() : 'Present'}
+                                    </p>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
