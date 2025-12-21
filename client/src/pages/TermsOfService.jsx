@@ -39,35 +39,51 @@ const TermsOfService = () => {
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-bold text-gray-900 mb-3">4. User Content</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">4. User Content and Responsibilities</h2>
                         <p>
                             You retain all rights to the data, text, and images you upload to the Service ("User Content"). By uploading User Content, you grant us a license to use, store, and display your User Content solely for the purpose of providing the Service to you.
                         </p>
-                    </section>
-
-                    <section>
-                        <h2 className="text-xl font-bold text-gray-900 mb-3">5. Google Photos Integration</h2>
-                        <p>
-                            Our Service integrates with Google Photos. By using this feature, you acknowledge and agree to be bound by the Google Photos API Terms of Service.
+                        <p className="mt-2">
+                            You are responsible for ensuring that you have the right to upload any names, dates, or media to the Service, and that your User Content does not violate any third-party rights.
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-bold text-gray-900 mb-3">6. Termination</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">5. Google Services Integration</h2>
+                        <div className="space-y-3">
+                            <p>
+                                Our Service integrates with Google Photos and Google Drive. By using these features, you acknowledge and agree to be bound by:
+                            </p>
+                            <ul className="list-disc pl-5 space-y-1">
+                                <li>The <a href="https://www.google.com/policies/terms/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Terms of Service</a>.</li>
+                                <li>The <a href="https://developers.google.com/photos/library/guides/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Photos API Terms of Service</a>.</li>
+                                <li>The <a href="https://developers.google.com/drive/api/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Drive API Terms of Service</a>.</li>
+                            </ul>
+                            <p className="mt-2 text-sm italic">
+                                We explicitly adhere to the Google API Services User Data Policy, ensuring that your data is only used for the functional purposes of our genealogical research application.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">6. Account Termination</h2>
                         <p>
                             We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.
+                        </p>
+                        <p className="mt-2 underline font-medium">
+                            Upon termination, your right to use the Service will immediately cease, and you may request the deletion of all your hosted family tree data via our contact methods.
                         </p>
                     </section>
 
                     <section>
                         <h2 className="text-xl font-bold text-gray-900 mb-3">7. Changes to Terms</h2>
                         <p>
-                            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. What constitutes a material change will be determined at our sole discretion.
+                            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any material changes via the application's dashboard.
                         </p>
                     </section>
 
                     <div className="pt-6 border-t text-sm text-gray-500">
-                        Last updated: November 29, 2025
+                        Last updated: December 21, 2025
                     </div>
                 </div>
             </div>
