@@ -114,161 +114,169 @@ const TreePage = () => {
     if (loading) return <div>Loading tree...</div>;
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-teal-50 to-blue-50 overflow-hidden">
-            {/* Navbar */}
-            <div className={`transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-                <Navbar
-                    user={user}
-                    onOpenSettings={() => setShowSettings(true)}
-                    leftContent={
-                        <div className="flex items-center gap-2">
-                            <TreeSwitcher currentTreeId={id} />
-                            {selectedPerson && (
-                                <>
-                                    <span className="text-slate-300">/</span>
-                                    <Breadcrumbs
-                                        inline
-                                        showHome={false}
-                                        items={[
-                                            { label: selectedPerson.data.label }
-                                        ]}
-                                    />
-                                </>
-                            )}
-                        </div>
-                    }
-                    rightContent={
-                        <div className="flex items-center gap-2 sm:gap-4">
-                            {/* Edit Mode Toggle (Only for owners/editors) */}
-                            {(userRole === 'owner' || userRole === 'editor') && (
-                                <button
-                                    onClick={() => setIsEditMode(!isEditMode)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-sm font-medium border ${isEditMode
-                                        ? 'bg-teal-600 text-white border-teal-600 shadow-md'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
-                                        }`}
-                                >
-                                    <span className="hidden xs:inline">{isEditMode ? 'Editing' : 'View Only'}</span>
-                                    <div className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
-                                </button>
-                            )}
+        <div className="h-screen w-screen bg-slate-50 overflow-hidden relative">
+            {/* Background Tree Layer */}
+            <div className="absolute inset-0 z-0">
+                {/* Main Content Area */}
+                <div className="h-full w-full relative">
+                    {/* Tree Visualizer - Conditional Rendering based on ViewMode */}
+                    <div className="h-full w-full relative">
+                        {viewMode === 'standard' && (
+                            <TreeVisualizer
+                                treeId={id}
+                                onNodeClick={handleNodeClick}
+                                highlightedNodes={highlightedNodes}
+                                key={refreshTrigger}
+                                userRole={userRole}
+                                isEditMode={isEditMode}
+                                isZenMode={isZenMode}
+                                onInteraction={(active) => setIsZenMode(active)}
+                                onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+                                isSearchOpen={isSearchOpen}
+                            />
+                        )}
+                        {viewMode === 'fan' && (
+                            <FanChart
+                                persons={persons}
+                                relationships={relationships}
+                                centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                onPersonClick={handleNodeClick}
+                            />
+                        )}
+                        {viewMode === 'descendant' && (
+                            <DescendantChart
+                                persons={persons}
+                                relationships={relationships}
+                                rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                onNodeClick={handleNodeClick}
+                            />
+                        )}
+                        {viewMode === 'timeline' && (
+                            <TimelineView
+                                persons={persons}
+                                relationships={relationships}
+                                lifeEvents={lifeEvents}
+                                onEventClick={handleNodeClick}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
 
-                            <div className="h-6 w-px bg-slate-200 mx-1 hidden xs:block" />
-
-                            {/* Desktop Icons */}
-                            <div className="hidden lg:flex items-center gap-2">
-                                {userRole === 'owner' && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        leftIcon={<Share2 className="w-4 h-4" />}
-                                        onClick={() => setIsShareModalOpen(true)}
-                                    >
-                                        Share
-                                    </Button>
+            {/* UI Overlays Layer */}
+            <div className="relative z-10 pointer-events-none h-full flex flex-col">
+                {/* Navbar Wrapper */}
+                <div className={`transition-all duration-700 pointer-events-auto ${isZenMode ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+                    <Navbar
+                        user={user}
+                        onOpenSettings={() => setShowSettings(true)}
+                        leftContent={
+                            <div className="flex items-center gap-2">
+                                <TreeSwitcher currentTreeId={id} />
+                                {selectedPerson && (
+                                    <>
+                                        <span className="text-slate-300">/</span>
+                                        <Breadcrumbs
+                                            inline
+                                            showHome={false}
+                                            items={[
+                                                { label: selectedPerson.data.label }
+                                            ]}
+                                        />
+                                    </>
                                 )}
-                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/gallery`} className="p-2" title="Gallery"><span className="text-xl">🖼️</span></Button>
-                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/albums`} className="p-2" title="Albums"><span className="text-xl">📚</span></Button>
-                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/timeline`} className="p-2" title="Timeline"><span className="text-xl">📅</span></Button>
-                                <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/map`} className="p-2" title="Map"><span className="text-xl">🗺️</span></Button>
                             </div>
+                        }
+                        rightContent={
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                {/* Edit Mode Toggle (Only for owners/editors) */}
+                                {(userRole === 'owner' || userRole === 'editor') && (
+                                    <button
+                                        onClick={() => setIsEditMode(!isEditMode)}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-sm font-medium border ${isEditMode
+                                            ? 'bg-teal-600 text-white border-teal-600 shadow-md'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
+                                            }`}
+                                    >
+                                        <span className="hidden xs:inline">{isEditMode ? 'Editing' : 'View Only'}</span>
+                                        <div className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
+                                    </button>
+                                )}
 
-                            {/* Mobile Menu Toggle (Icons) */}
-                            <div className="lg:hidden">
-                                <button
-                                    onClick={() => setIsNavMenuOpen(true)}
-                                    className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                                >
-                                    <Menu className="w-6 h-6" />
-                                </button>
+                                <div className="h-6 w-px bg-slate-200 mx-1 hidden xs:block" />
+
+                                {/* Desktop Icons */}
+                                <div className="hidden lg:flex items-center gap-2">
+                                    {userRole === 'owner' && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            leftIcon={<Share2 className="w-4 h-4" />}
+                                            onClick={() => setIsShareModalOpen(true)}
+                                        >
+                                            Share
+                                        </Button>
+                                    )}
+                                    <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/gallery`} className="p-2" title="Gallery"><span className="text-xl">🖼️</span></Button>
+                                    <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/albums`} className="p-2" title="Albums"><span className="text-xl">📚</span></Button>
+                                    <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/timeline`} className="p-2" title="Timeline"><span className="text-xl">📅</span></Button>
+                                    <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/map`} className="p-2" title="Map"><span className="text-xl">🗺️</span></Button>
+                                </div>
+
+                                {/* Mobile Menu Toggle (Icons) */}
+                                <div className="lg:hidden">
+                                    <button
+                                        onClick={() => setIsNavMenuOpen(true)}
+                                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                                    >
+                                        <Menu className="w-6 h-6" />
+                                    </button>
+                                </div>
                             </div>
+                        }
+                    />
+                </div>
+
+                {/* View Mode Selector - Fades in Zen Mode */}
+                <div className={`bg-white/80 backdrop-blur-md border-b border-slate-200 transition-all duration-700 pointer-events-auto ${isZenMode ? 'opacity-0 -translate-y-full shadow-none' : 'opacity-100 translate-y-0 shadow-sm'}`}>
+                    <div className="max-w-[1600px] mx-auto px-4 py-3">
+                        <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+                    </div>
+                </div>
+
+                {/* Main Interaction Area (Between top UI and bottom UI) */}
+                <div className="flex-1 flex overflow-hidden relative">
+                    {/* Search Bar - Conditionally Rendered */}
+                    {isSearchOpen && (
+                        <div className="absolute top-4 left-4 z-30 w-full max-w-md animate-slideIn pointer-events-auto">
+                            <SearchBar
+                                persons={persons}
+                                onHighlight={setHighlightedNodes}
+                                onClear={() => setHighlightedNodes([])}
+                                onClose={() => setIsSearchOpen(false)}
+                            />
                         </div>
-                    }
-                />
-            </div>
-
-            {/* View Mode Selector - Fades in Zen Mode */}
-            < div className={`bg-white border-b border-slate-200 transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-                <div className="max-w-[1600px] mx-auto px-4 py-3">
-                    <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
-                </div>
-            </div>
-
-            {/* Search Bar - Conditionally Rendered */}
-            {
-                isSearchOpen && (
-                    <div className="absolute top-28 left-4 z-30 w-full max-w-md animate-slideIn">
-                        <SearchBar
-                            persons={persons}
-                            onHighlight={setHighlightedNodes}
-                            onClear={() => setHighlightedNodes([])}
-                            onClose={() => setIsSearchOpen(false)}
-                        />
-                    </div>
-                )
-            }
-
-            {/* Main Content Area */}
-            <div className="flex-1 flex overflow-hidden relative">
-                {/* Tree Visualizer - Conditional Rendering based on ViewMode */}
-                <div className="flex-1 relative">
-                    {viewMode === 'standard' && (
-                        <TreeVisualizer
-                            treeId={id}
-                            onNodeClick={handleNodeClick}
-                            highlightedNodes={highlightedNodes}
-                            key={refreshTrigger}
-                            userRole={userRole}
-                            isEditMode={isEditMode}
-                            isZenMode={isZenMode}
-                            onInteraction={(active) => setIsZenMode(active)}
-                            onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
-                            isSearchOpen={isSearchOpen}
-                        />
                     )}
-                    {viewMode === 'fan' && (
-                        <FanChart
-                            persons={persons}
-                            relationships={relationships}
-                            centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                            onPersonClick={handleNodeClick}
-                        />
-                    )}
-                    {viewMode === 'descendant' && (
-                        <DescendantChart
-                            persons={persons}
-                            relationships={relationships}
-                            rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                            onNodeClick={handleNodeClick}
-                        />
-                    )}
-                    {viewMode === 'timeline' && (
-                        <TimelineView
-                            persons={persons}
-                            relationships={relationships}
-                            lifeEvents={lifeEvents}
-                            onEventClick={handleNodeClick}
-                        />
+
+                    {/* Spacer for the Tree (to allow center clicking) */}
+                    <div className="flex-1" />
+
+                    {/* Side Panel */}
+                    {selectedPerson && (
+                        <div className="fixed md:relative inset-0 md:inset-auto md:w-96 md:border-l bg-white shadow-xl z-50 md:z-0 md:shrink-0 overflow-y-auto pointer-events-auto">
+                            <SidePanel
+                                person={selectedPerson}
+                                onClose={handleClosePanel}
+                                onUpdate={handleUpdate}
+                                onOpenPhotoPicker={(handler) => {
+                                    setPhotoSelectHandler(() => handler);
+                                    setIsPhotoPickerOpen(true);
+                                }}
+                                userRole={userRole}
+                            />
+                        </div>
                     )}
                 </div>
-
-                {/* ... (SidePanel) */}
-
-                {/* Side Panel */}
-                {selectedPerson && (
-                    <div className="fixed md:relative inset-0 md:inset-auto md:w-96 md:border-l bg-white shadow-xl z-50 md:z-0 md:shrink-0 overflow-y-auto">
-                        <SidePanel
-                            person={selectedPerson}
-                            onClose={handleClosePanel}
-                            onUpdate={handleUpdate}
-                            onOpenPhotoPicker={(handler) => {
-                                setPhotoSelectHandler(() => handler);
-                                setIsPhotoPickerOpen(true);
-                            }}
-                            userRole={userRole}
-                        />
-                    </div>
-                )}
             </div>
 
             {/* Modals */}
