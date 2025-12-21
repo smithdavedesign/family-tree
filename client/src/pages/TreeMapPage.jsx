@@ -112,7 +112,7 @@ const TreeMapPage = () => {
                 ]}
             />
 
-            <main className="flex-1 flex flex-col h-[calc(100vh-120px)] min-h-[500px] relative">
+            <main className="flex-1 flex flex-col relative min-h-[500px]">
                 {/* Stats Header */}
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm">
                     <div className="flex gap-6 overflow-x-auto no-scrollbar">
@@ -183,9 +183,10 @@ const TreeMapPage = () => {
                 )}
 
                 {/* Map */}
-                <div className="flex-1 bg-slate-100 relative z-0">
+                <div className="flex-1 bg-slate-100 relative z-0 min-h-0">
                     {filteredLocations.length > 0 ? (
                         <MapContainer
+                            key={treeId}
                             bounds={bounds}
                             style={{ height: '100%', width: '100%' }}
                             scrollWheelZoom={true}
