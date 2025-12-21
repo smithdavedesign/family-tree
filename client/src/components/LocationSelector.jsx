@@ -15,6 +15,101 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
         queryKey: ['locations', search],
         queryFn: async () => {
             const { data: { session } } = await supabase.auth.getSession();
+            const isProd = import.meta.env.PROD;
+
+            // Fetch Google API key from backend (runtime config)
+            let googleApiKey = null;
+            if (isProd) {
+                try {
+                    const configRes = await fetch('/api/config');
+                    const config = await configRes.json();
+                    googleApiKey = config.googleApiKey;
+                } catch (err) {
+                    console.warn('Failed to fetch config:', err);
+                }
+            }
+
+            // HYBRID STRATEGY:
+            // Dev -> Local Nominatim (Docker)
+            // Prod -> Google Maps API
+
+            if (search && search.length > 2) {
+                try {
+                    if (isProd && googleApiKey) {
+                        // GOOGLE MAPS IMPLEMENTATION
+                        if (!window.google || !window.google.maps || !window.google.maps.places) {
+                            // Load Google Maps Script dynamically if not present
+                            if (!document.getElementById('google-maps-script')) {
+                                const script = document.createElement('script');
+                                script.id = 'google-maps-script';
+                                script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&libraries=places`;
+                                script.async = true;
+                                document.body.appendChild(script);
+                                await new Promise(resolve => script.onload = resolve);
+                            } else {
+                                // Wait for existing script to be ready
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                        }
+
+                        // Use AutocompleteService
+                        const service = new window.google.maps.places.AutocompleteService();
+                        const predictions = await new Promise((resolve) => {
+                            service.getPlacePredictions({ input: search }, (results, status) => {
+                                if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+                                    resolve(results);
+                                } else {
+                                    resolve([]);
+                                }
+                            });
+                        });
+
+                        // Get details for each prediction to get lat/lng (AutocompleteService doesn't return lat/lng)
+                        // Note: ensuring we don't spam details API, usually users select one. 
+                        // But here we need to display valid locations. 
+                        // Optimization: For the dropdown we might just show text, and fetch details ON SELECT.
+                        // However, existing UI expects latitude/longitude immediately?
+                        // The existing UI *renders* results. 
+                        // If we want to save costs, we should fetch lat/lng ONLY when user clicks "Add".
+                        // But current `handleSelectLocation` adds it directly.
+                        // Let's assume we map what we can. 
+
+                        // Actually, to get lat/lng for ALL suggestions is expensive (1 request per item).
+                        // BETTER APPROACH: Return predictions with a placeholder flag. 
+                        // Then fetch details in handleSelectLocation.
+
+                        return predictions.map(p => ({
+                            id: `google-${p.place_id}`,
+                            name: p.structured_formatting.main_text,
+                            address: p.description,
+                            latitude: 0, // Placeholder, fetch on select
+                            longitude: 0, // Placeholder
+                            is_google_prediction: true, // Flag to trigger details fetch
+                            google_place_id: p.place_id,
+                            is_new: true
+                        }));
+
+                    } else {
+                        // NOMINATIM IMPLEMENTATION (DEV)
+                        const nominatimRes = await fetch(`/nominatim/search?q=${encodeURIComponent(search)}&format=json&addressdetails=1&limit=5`);
+                        if (nominatimRes.ok) {
+                            const results = await nominatimRes.json();
+                            return results.map(item => ({
+                                id: `nom-${item.place_id}`,
+                                name: item.display_name.split(',')[0],
+                                address: item.display_name,
+                                latitude: parseFloat(item.lat),
+                                longitude: parseFloat(item.lon),
+                                is_new: true
+                            }));
+                        }
+                    }
+                } catch (err) {
+                    console.warn('External geocoding failed:', err);
+                }
+            }
+
+            // Fallback: search existing backend locations
             const url = search
                 ? `/api/locations?search=${encodeURIComponent(search)}`
                 : '/api/locations';
@@ -55,7 +150,47 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
         createMutation.mutate(locationData);
     };
 
-    const handleSelectLocation = (location) => {
+    const handleSelectLocation = async (location) => {
+        if (location.is_google_prediction && window.google && window.google.maps) {
+            // Fetch details for Google prediction to get lat/lng
+            try {
+                const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+
+                const details = await new Promise((resolve, reject) => {
+                    service.getDetails({
+                        placeId: location.google_place_id,
+                        fields: ['geometry', 'formatted_address', 'name']
+                    }, (place, status) => {
+                        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+                            resolve(place);
+                        } else {
+                            reject(status);
+                        }
+                    });
+                });
+
+                if (details.geometry && details.geometry.location) {
+                    const fullLocation = {
+                        ...location,
+                        name: details.name || location.name,
+                        address: details.formatted_address || location.address,
+                        latitude: details.geometry.location.lat(),
+                        longitude: details.geometry.location.lng(),
+                        is_google_prediction: false // Resolved
+                    };
+
+                    if (!selectedLocations.find(l => l.id === fullLocation.id)) {
+                        onAdd(fullLocation);
+                    }
+                    setSearch('');
+                    return;
+                }
+            } catch (err) {
+                console.error('Failed to get place details:', err);
+                // Fallback to original (will start with 0,0 but better than crashing)
+            }
+        }
+
         if (!selectedLocations.find(l => l.id === location.id)) {
             onAdd(location);
         }

@@ -1,0 +1,24 @@
+services:
+  nominatim:
+    image: mediagis/nominatim:4.4
+    container_name: nominatim
+    ports:
+      - "8080:8080"
+    environment:
+      # REGION SELECTION: Uncomment one of the lines below to change the dataset.
+      # WARNING: Larger regions require significantly more RAM and Disk space.
+      # - Monaco (Tiny, for testing) ~50MB RAM
+      - PBF_URL=https://download.geofabrik.de/europe/monaco-latest.osm.pbf
+      # - US Northeast (Medium) ~4GB RAM
+      # - PBF_URL=https://download.geofabrik.de/north-america/us/northeast-latest.osm.pbf
+      # - North America (Large) ~16GB+ RAM, 100GB+ Disk
+      # - PBF_URL=https://download.geofabrik.de/north-america-latest.osm.pbf
+
+      - NOMINATIM_PASSWORD=very_secure_password
+    volumes:
+      - nominatim-data:/var/lib/postgresql/14/main
+    shm_size: 1gb
+    restart: unless-stopped
+
+volumes:
+  nominatim-data:

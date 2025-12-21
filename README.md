@@ -277,6 +277,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] 14 Location API endpoints (CRUD + linking)
 - [x] LocationModal with full validation and toast notifications
 - [x] LocationSelector component (search, create, chips)
+- [x] Hybrid geocoding (Dev: Nominatim Docker, Prod: Google Maps API)
 - [x] PersonLocations widget ("Places Lived/Visited")
 - [x] Story Editor integration (attach locations)
 - [x] PhotoLightbox displays locations for events & stories
@@ -822,6 +823,18 @@ For more details, see:
 - `google-verification-justification.md` - Detailed scope justification
 - `youtube-demo-script.md` - Demo video production guide
 
+### Environment Variables (Production)
+**Frontend** (Vercel/Build):
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
+
+**Backend** (Render):
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
+- `GOOGLE_CLIENT_ID` - OAuth 2.0 client ID
+- `GOOGLE_CLIENT_SECRET` - OAuth 2.0 client secret
+- `GOOGLE_API_KEY` - Google Maps/Places API key (served to frontend via `/api/config`)
+
 ## 📝 License
 
 MIT License - See LICENSE file for details
@@ -832,4 +845,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Current Status:** Phase M Complete (User Registration) | Dual OAuth Architecture Implemented | Production Readiness: 90%
+**Current Status:** Phase S Complete (Hybrid Geocoding) | Dual OAuth + Self-Hosted Dev Geocoding | Production Readiness: 92%

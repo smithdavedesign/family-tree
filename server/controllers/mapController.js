@@ -121,6 +121,14 @@ exports.getPersonLocationStats = async (req, res) => {
 
         if (eventError) throw eventError;
 
+        // 5. Fetch all known locations (MOVED UP - needed for photo processing)
+        const { data: allKnownLocations } = await supabaseAdmin
+            .from('locations')
+            .select('*')
+            .not('latitude', 'is', null);
+
+        const knownLocationsMap = new Map(allKnownLocations?.map(l => [l.name.toLowerCase(), l]) || []);
+
         // --- Processing Data ---
 
         const mappedLocations = [];
@@ -156,15 +164,7 @@ exports.getPersonLocationStats = async (req, res) => {
             }
         });
 
-
         // B. Process Life Events & Vitals
-        const { data: allKnownLocations } = await supabaseAdmin
-            .from('locations')
-            .select('*')
-            .not('latitude', 'is', null);
-
-        const knownLocationsMap = new Map(allKnownLocations?.map(l => [l.name.toLowerCase(), l]) || []);
-
         // Events
         eventData.forEach(event => {
             if (!event.location) return;
