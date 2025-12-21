@@ -180,6 +180,7 @@ exports.getGlobalTravelStats = async (req, res) => {
                 location_name, 
                 year,
                 taken_date,
+                url,
                 persons!inner (
                     id,
                     first_name,
@@ -266,6 +267,7 @@ exports.getGlobalTravelStats = async (req, res) => {
             personName: `${p.persons.first_name} ${p.persons.last_name || ''}`.trim(),
             personImage: p.persons.profile_photo_url,
             personGender: p.persons.gender,
+            photoUrl: p.url,
             details: { year: p.year || (p.taken_date ? new Date(p.taken_date).getFullYear() : null) }
         }));
 

@@ -23,6 +23,7 @@ const TreeMapPage = () => {
     const [user, setUser] = useState(null);
     const [selectedPersonId, setSelectedPersonId] = useState('all');
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedPhoto, setSelectedPhoto] = useState(null);
 
     React.useEffect(() => {
         const fetchUser = async () => {
@@ -281,9 +282,31 @@ const TreeMapPage = () => {
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <p className="text-xs text-slate-500">
-                                                            {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
-                                                        </p>
+                                                        <div className="text-xs text-slate-500">
+                                                            <p className="mb-2">
+                                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
+                                                            </p>
+                                                            {loc.photoUrl && (
+                                                                <div
+                                                                    className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-200"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setSelectedPhoto({ url: loc.photoUrl, caption: loc.name });
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        src={loc.photoUrl}
+                                                                        alt={loc.name}
+                                                                        className="w-full h-32 object-cover transition-transform group-hover:scale-105"
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                                        <div className="bg-black/50 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                            View Photo
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     )}
 
                                                     {!isStory && (
@@ -311,6 +334,31 @@ const TreeMapPage = () => {
                     </div>
                 </div>
             </main>
+
+            {selectedPhoto && (
+                <div
+                    className="fixed inset-0 z-[2000] bg-black/90 flex items-center justify-center p-4"
+                    onClick={() => setSelectedPhoto(null)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white hover:text-gray-300"
+                        onClick={() => setSelectedPhoto(null)}
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
+                    <img
+                        src={selectedPhoto.url}
+                        alt={selectedPhoto.caption}
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    {selectedPhoto.caption && (
+                        <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black/50 p-2">
+                            {selectedPhoto.caption}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
