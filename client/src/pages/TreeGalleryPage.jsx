@@ -176,26 +176,24 @@ const TreeGalleryPage = () => {
                         )}
 
                         {/* Group By Toggle */}
-                        {viewMode === 'grid' && (
-                            <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
-                                <button
-                                    onClick={() => setGroupBy('date')}
-                                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    <Calendar className="w-4 h-4" />
-                                    Date
-                                </button>
-                                <button
-                                    onClick={() => setGroupBy('person')}
-                                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    <User className="w-4 h-4" />
-                                    Person
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
+                            <button
+                                onClick={() => setGroupBy('date')}
+                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'date' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Date
+                            </button>
+                            <button
+                                onClick={() => setGroupBy('person')}
+                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${groupBy === 'person' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                            >
+                                <User className="w-4 h-4" />
+                                Person
+                            </button>
+                        </div>
 
                         {/* Person Filter */}
                         <div className="relative">
