@@ -184,7 +184,9 @@ exports.getGlobalTravelStats = async (req, res) => {
                     id,
                     first_name,
                     last_name,
-                    tree_id
+                    tree_id,
+                    profile_photo_url,
+                    gender
                 )
             `)
             .not('latitude', 'is', null);
@@ -213,7 +215,9 @@ exports.getGlobalTravelStats = async (req, res) => {
                     id,
                     first_name,
                     last_name,
-                    tree_id
+                    tree_id,
+                    profile_photo_url,
+                    gender
                 )
             `);
 
@@ -233,7 +237,9 @@ exports.getGlobalTravelStats = async (req, res) => {
             date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
             personId: p.persons.id,
             personName: `${p.persons.first_name} ${p.persons.last_name || ''}`.trim(),
-            details: { year: p.year }
+            personImage: p.persons.profile_photo_url,
+            personGender: p.persons.gender,
+            details: { year: p.year || (p.taken_date ? new Date(p.taken_date).getFullYear() : null) }
         }));
 
         const livedLocations = personLocData
@@ -246,6 +252,8 @@ exports.getGlobalTravelStats = async (req, res) => {
                 date: pl.start_date,
                 personId: pl.persons.id,
                 personName: `${pl.persons.first_name} ${pl.persons.last_name || ''}`.trim(),
+                personImage: pl.persons.profile_photo_url,
+                personGender: pl.persons.gender,
                 details: {
                     start: pl.start_date,
                     end: pl.end_date,

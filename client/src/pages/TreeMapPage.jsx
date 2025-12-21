@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { Loader, MapPin, Filter, X } from 'lucide-react';
+import { Loader, MapPin, Filter, X, User } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -215,11 +215,28 @@ const TreeMapPage = () => {
                                         >
                                             <Popup>
                                                 <div className="text-sm min-w-[200px]">
-                                                    <p className="font-bold text-slate-900 mb-1">{loc.personName}</p>
-                                                    <p className="font-medium text-slate-800">{loc.name}</p>
-                                                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
-                                                        {isLived ? 'Location' : 'Photo Location'}
-                                                    </p>
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        {loc.personImage ? (
+                                                            <img
+                                                                src={loc.personImage}
+                                                                alt={loc.personName}
+                                                                className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                                                <User className="w-5 h-5 text-slate-400" />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="font-bold text-slate-900 leading-tight">{loc.personName}</p>
+                                                            <p className="text-xs font-medium uppercase tracking-wider mt-0.5" style={{ color }}>
+                                                                {isLived ? 'Location' : 'Photo Location'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <p className="font-medium text-slate-800 mb-1">{loc.name}</p>
+
                                                     {isLived ? (
                                                         <div className="text-xs text-slate-600">
                                                             {(loc.details?.start || loc.details?.end) ? (
