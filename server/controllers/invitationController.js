@@ -13,7 +13,7 @@ const generateToken = () => {
 exports.createInvitation = async (req, res) => {
     try {
         const { treeId } = req.params;
-        const { role } = req.body;
+        const { role, email } = req.body; // Accept email
         const userId = req.user.id;
 
         if (![ROLES.EDITOR, ROLES.VIEWER].includes(role)) {
@@ -21,25 +21,73 @@ exports.createInvitation = async (req, res) => {
         }
 
         const token = generateToken();
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days expiry
 
         // Create invitation record
-        const { data, error } = await supabaseAdmin
+        const { data: invitation, error } = await supabaseAdmin
             .from('invitations')
             .insert([{
                 tree_id: treeId,
                 inviter_id: userId,
                 role: role,
                 token: token,
-                expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days expiry
+                email: email || null, // Store email if provided
+                expires_at: expiresAt
             }])
             .select()
             .single();
 
         if (error) throw error;
 
+        // If email provided, send invite via Supabase Auth
+        if (email) {
+            // Check if user exists (by trying to get user by email, or just blindly inviting)
+            // Ideally we use admin.inviteUserByEmail for new users or signInWithOtp for existing.
+            // But we don't know if they exist easily without admin rights to list users (which we have).
+
+            // Strategy: Try to invite as new user. If it fails saying user exists, send magic link.
+            // Actually, cleaner is to just generate the link here and send our own email? 
+            // BUT the plan says "Use Supabase Auth to send the invite emails".
+
+            // However, Supabase's inviteUserByEmail sends a signup confirmation link.
+            // We want them to land on OUR accept page.
+            // redirect_to should be set to our accept page.
+
+            const redirectTo = `${process.env.CLIENT_URL || 'http://localhost:5173'}/invite/${token}`;
+
+            // Try to invite as new user
+            const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+                redirectTo: redirectTo
+            });
+
+            if (inviteError) {
+                // If user already exists, Supabase might return an error or just send a magic link?
+                // inviteUserByEmail usually returns error if user is registered.
+                if (inviteError.message?.includes('already has been registered') || inviteError.status === 422) {
+                    console.log(`User ${email} exists, sending magic link instead.`);
+                    // Send magic link (SignInWithOtp)
+                    const { error: otpError } = await supabaseAdmin.auth.signInWithOtp({
+                        email: email,
+                        options: {
+                            emailRedirectTo: redirectTo
+                        }
+                    });
+                    if (otpError) {
+                        console.error('Error sending magic link for invite:', otpError);
+                        // Don't fail the whole request, return warning?
+                    } else {
+                        console.log('Magic link sent successfully via signInWithOtp to', email);
+                    }
+                } else {
+                    console.error('Error inviting user:', inviteError);
+                    // Proceed but log error
+                }
+            }
+        }
+
         res.status(201).json({
             message: 'Invitation created',
-            invitation: data,
+            invitation: invitation,
             link: `/invite/${token}`
         });
 

@@ -17,13 +17,24 @@ const InviteAcceptPage = () => {
     const verifyAndAccept = async () => {
         try {
             // 1. Check authentication
-            const { data: { session } } = await supabase.auth.getSession();
+            // We need to wait a moment if we just came back from a redirect (e.g. from email link)
+            // Supabase client might still be processing the hash
+            let { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                // Wait a bit and check again (sometimes session restore is async on load)
+                await new Promise(resolve => setTimeout(resolve, 500));
+                (({ data: { session } } = await supabase.auth.getSession()));
+            }
 
             if (!session) {
                 // Redirect to login with return URL
                 // We'll store the invite token in localStorage to handle after login
                 localStorage.setItem('pendingInviteToken', token);
-                navigate(`/?redirect=/invite/${token}`);
+                // navigate(`/?redirect=/invite/${token}`); // Home page login might not handle redirect param yet
+                // Ideally send to login page or show login modal here.
+                // For now, let's just use the current behavior but maybe explicit login page
+                navigate(`/login?redirect=/invite/${token}`);
                 return;
             }
 

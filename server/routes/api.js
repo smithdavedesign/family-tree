@@ -141,6 +141,11 @@ router.get('/person/:personId/locations', requireAuth, locationController.getPer
 
 
 
+
+// Log routes
+const logController = require('../controllers/logController');
+router.post('/logs', writeLimiter, logController.createLog);
+
 // Export routes
 const exportRoutes = require('./export');
 router.use('/export', exportRoutes);

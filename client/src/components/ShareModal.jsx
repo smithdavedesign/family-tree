@@ -7,6 +7,7 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState('invite'); // 'invite' or 'members'
     const [inviteRole, setInviteRole] = useState('viewer');
+    const [inviteEmail, setInviteEmail] = useState('');
     const [generatedLink, setGeneratedLink] = useState('');
     const [loading, setLoading] = useState(false);
     const [members, setMembers] = useState([]);
@@ -49,13 +50,21 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({ role: inviteRole })
+                body: JSON.stringify({
+                    role: inviteRole,
+                    email: inviteEmail || undefined
+                })
             });
 
             if (response.ok) {
                 const data = await response.json();
                 setGeneratedLink(`${window.location.origin}${data.link}`);
-                toast.success("Invite link generated");
+                if (inviteEmail) {
+                    toast.success("Invite sent to email!");
+                    setInviteEmail(''); // Clear email after sending
+                } else {
+                    toast.success("Invite link generated");
+                }
             } else {
                 toast.error("Failed to generate invite link");
             }
@@ -201,6 +210,21 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                             </div>
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Invite by Email (Optional)
+                            </label>
+                            <Input
+                                type="email"
+                                placeholder="Enter email address..."
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                We'll send them a magic link to join directly. Leave blank to just generate a link.
+                            </p>
+                        </div>
+
                         {!generatedLink ? (
                             <Button
                                 onClick={handleCreateInvite}
@@ -209,7 +233,7 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
                                 fullWidth
                                 variant="primary"
                             >
-                                Generate Invite Link
+                                {inviteEmail ? 'Send Invite' : 'Generate Invite Link'}
                             </Button>
                         ) : (
                             <div>

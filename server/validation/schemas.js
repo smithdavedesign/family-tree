@@ -131,7 +131,8 @@ const relationshipSchema = Joi.object({
 
 // Invitation validation schema
 const invitationSchema = Joi.object({
-    role: Joi.string().valid('editor', 'viewer').required()
+    role: Joi.string().valid('editor', 'viewer').required(),
+    email: Joi.string().email().empty('').allow(null)
 });
 
 // Photo validation schema

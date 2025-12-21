@@ -9,10 +9,25 @@ import { useGoogleConnection } from '../hooks/useGoogleConnection';
 const AccountSettings = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [user, setUser] = useState(null);
     const [publicProfile, setPublicProfile] = useState(null);
     const [avatarUrl, setAvatarUrl] = useState('');
     const [updating, setUpdating] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+
+    // Get returnUrl from query params
+    const queryParams = new URLSearchParams(location.search);
+    const returnUrl = queryParams.get('returnUrl') || '/trees';
+
+    const {
+        isConnected,
+        connection,
+        isLoading: connectionLoading,
+        error: connectionError,
+        connect,
+        disconnect
+    } = useGoogleConnection();
 
     // ... (existing useEffect for returnUrl)
 
