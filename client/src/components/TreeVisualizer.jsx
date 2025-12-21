@@ -756,6 +756,8 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onNodeClick={handleNodeClickInternal}
+                onNodeContextMenu={onNodeContextMenu}
                 onPaneClick={(e) => {
                     if (onInteraction) onInteraction(false);
                     onPaneClick(e);
