@@ -110,8 +110,8 @@ exports.getPersonLocationStats = async (req, res) => {
         // Map photo locations to a common format
         const photoLocations = photoData.map(p => ({
             type: 'photo',
-            latitude: p.latitude,
-            longitude: p.longitude,
+            latitude: parseFloat(p.latitude),
+            longitude: parseFloat(p.longitude),
             name: p.location_name,
             date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
             details: { year: p.year }
@@ -122,8 +122,8 @@ exports.getPersonLocationStats = async (req, res) => {
             .filter(pl => pl.locations && pl.locations.latitude && pl.locations.longitude)
             .map(pl => ({
                 type: 'lived',
-                latitude: pl.locations.latitude,
-                longitude: pl.locations.longitude,
+                latitude: parseFloat(pl.locations.latitude),
+                longitude: parseFloat(pl.locations.longitude),
                 name: pl.locations.name,
                 date: pl.start_date,
                 details: {
