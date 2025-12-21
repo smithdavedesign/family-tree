@@ -111,8 +111,8 @@ const CommentSection = ({ resourceType, resourceId, treeId }) => {
                     comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3 group">
                             <Avatar
-                                url={comment.user?.avatar_url}
-                                name={comment.user?.email}
+                                src={comment.user?.avatar_url}
+                                alt={comment.user?.email}
                                 size="sm"
                             />
                             <div className="flex-1">
