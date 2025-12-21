@@ -135,9 +135,9 @@ const TreePage = () => {
                 {/* Main Content Area */}
                 <div className="h-full w-full relative">
                     {/* Main Visualization Area */}
-                    <div className={`h-full w-full relative transition-all duration-700 ${isZenMode ? 'pt-0' : 'pt-[140px]'}`}>
+                    <div className="h-full w-full relative">
                         {viewMode === 'standard' && (
-                            <div className="absolute inset-0 -mt-[140px] transition-all duration-700" style={{ marginTop: isZenMode ? '0px' : '-140px' }}>
+                            <div className="absolute inset-0">
                                 <TreeVisualizer
                                     treeId={id}
                                     onNodeClick={handleNodeClick}
@@ -152,40 +152,42 @@ const TreePage = () => {
                                 />
                             </div>
                         )}
-                        {viewMode === 'fan' && (
-                            <div className="h-full w-full">
-                                <FanChart
-                                    persons={persons}
-                                    relationships={relationships}
-                                    centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                                    onPersonClick={handleNodeClick}
-                                    onRefocus={handleRefocus}
-                                    isZenMode={isZenMode}
-                                />
-                            </div>
-                        )}
-                        {viewMode === 'descendant' && (
-                            <div className="h-full w-full">
-                                <DescendantChart
-                                    persons={persons}
-                                    relationships={relationships}
-                                    rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
-                                    onNodeClick={handleNodeClick}
-                                    onRefocus={handleRefocus}
-                                    isZenMode={isZenMode}
-                                />
-                            </div>
-                        )}
-                        {viewMode === 'timeline' && (
-                            <div className="h-full w-full">
-                                <TimelineView
-                                    persons={persons}
-                                    relationships={relationships}
-                                    lifeEvents={lifeEvents}
-                                    onEventClick={handleNodeClick}
-                                />
-                            </div>
-                        )}
+                        <div className={`h-full w-full transition-all duration-700 ${isZenMode ? 'pt-0' : 'pt-[140px]'}`}>
+                            {viewMode === 'fan' && (
+                                <div className="h-full w-full">
+                                    <FanChart
+                                        persons={persons}
+                                        relationships={relationships}
+                                        centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                        onPersonClick={handleNodeClick}
+                                        onRefocus={handleRefocus}
+                                        isZenMode={isZenMode}
+                                    />
+                                </div>
+                            )}
+                            {viewMode === 'descendant' && (
+                                <div className="h-full w-full">
+                                    <DescendantChart
+                                        persons={persons}
+                                        relationships={relationships}
+                                        rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
+                                        onNodeClick={handleNodeClick}
+                                        onRefocus={handleRefocus}
+                                        isZenMode={isZenMode}
+                                    />
+                                </div>
+                            )}
+                            {viewMode === 'timeline' && (
+                                <div className="h-full w-full">
+                                    <TimelineView
+                                        persons={persons}
+                                        relationships={relationships}
+                                        lifeEvents={lifeEvents}
+                                        onEventClick={handleNodeClick}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
