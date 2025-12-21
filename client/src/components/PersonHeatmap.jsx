@@ -52,7 +52,7 @@ const PersonHeatmap = ({ personId }) => {
                     <p className="text-2xl font-bold text-slate-900">{stats.unique_locations}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Places Lived</p>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Locations</p>
                     <p className="text-2xl font-bold text-orange-600">{stats.total_places_lived || 0}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -101,15 +101,19 @@ const PersonHeatmap = ({ personId }) => {
                                     <div className="text-sm">
                                         <p className="font-semibold text-slate-900">{loc.name}</p>
                                         <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
-                                            {isLived ? 'Place Lived' : 'Photo Location'}
+                                            {isLived ? 'Location' : 'Photo Location'}
                                         </p>
                                         {isLived ? (
                                             <div className="text-xs text-slate-600">
-                                                <p>
-                                                    {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
-                                                    {' - '}
-                                                    {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
-                                                </p>
+                                                {(loc.details?.start || loc.details?.end) ? (
+                                                    <p>
+                                                        {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                        {' - '}
+                                                        {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                    </p>
+                                                ) : (
+                                                    <p className="italic text-slate-400">No date recorded</p>
+                                                )}
                                             </div>
                                         ) : (
                                             <p className="text-xs text-slate-500">

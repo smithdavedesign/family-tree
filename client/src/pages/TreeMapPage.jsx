@@ -118,7 +118,7 @@ const TreeMapPage = () => {
                             <span className="text-lg font-bold text-slate-900">{mapData?.total_locations || 0}</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 uppercase">Places Lived</span>
+                            <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
                             <span className="text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
                         </div>
                         <div className="flex flex-col">
@@ -134,8 +134,8 @@ const TreeMapPage = () => {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
-                                ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                            ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
                             }`}
                     >
                         <Filter className="w-4 h-4" />
@@ -157,8 +157,8 @@ const TreeMapPage = () => {
                             <button
                                 onClick={() => setSelectedPersonId('all')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === 'all'
-                                        ? 'bg-teal-50 text-teal-700 font-medium'
-                                        : 'text-slate-700 hover:bg-slate-50'
+                                    ? 'bg-teal-50 text-teal-700 font-medium'
+                                    : 'text-slate-700 hover:bg-slate-50'
                                     }`}
                             >
                                 All People
@@ -168,8 +168,8 @@ const TreeMapPage = () => {
                                     key={id}
                                     onClick={() => setSelectedPersonId(id)}
                                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === id
-                                            ? 'bg-teal-50 text-teal-700 font-medium'
-                                            : 'text-slate-700 hover:bg-slate-50'
+                                        ? 'bg-teal-50 text-teal-700 font-medium'
+                                        : 'text-slate-700 hover:bg-slate-50'
                                         }`}
                                 >
                                     {name}
@@ -213,15 +213,19 @@ const TreeMapPage = () => {
                                                 <p className="font-bold text-slate-900 mb-1">{loc.personName}</p>
                                                 <p className="font-medium text-slate-800">{loc.name}</p>
                                                 <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
-                                                    {isLived ? 'Place Lived' : 'Photo Location'}
+                                                    {isLived ? 'Location' : 'Photo Location'}
                                                 </p>
                                                 {isLived ? (
                                                     <div className="text-xs text-slate-600">
-                                                        <p>
-                                                            {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
-                                                            {' - '}
-                                                            {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
-                                                        </p>
+                                                        {(loc.details?.start || loc.details?.end) ? (
+                                                            <p>
+                                                                {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                                {' - '}
+                                                                {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="italic text-slate-400">No date recorded</p>
+                                                        )}
                                                         {loc.details?.address && (
                                                             <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
                                                         )}
