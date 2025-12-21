@@ -108,6 +108,19 @@ const TreePage = () => {
         setIsSidePanelOpen(false);
     };
 
+    const handleRefocus = (personId) => {
+        const person = persons.find(p => p.id === personId);
+        if (person) {
+            setSelectedPerson({
+                id: person.id,
+                data: {
+                    ...person,
+                    label: `${person.first_name} ${person.last_name || ''}`
+                }
+            });
+        }
+    };
+
     const handleUpdate = () => {
         setRefreshTrigger((prev) => prev + 1);
         loadTreeData();
@@ -146,6 +159,8 @@ const TreePage = () => {
                                     relationships={relationships}
                                     centerPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
                                     onPersonClick={handleNodeClick}
+                                    onRefocus={handleRefocus}
+                                    isZenMode={isZenMode}
                                 />
                             </div>
                         )}
@@ -156,6 +171,8 @@ const TreePage = () => {
                                     relationships={relationships}
                                     rootPersonId={selectedPerson?.data?.id || (persons[0]?.id)}
                                     onNodeClick={handleNodeClick}
+                                    onRefocus={handleRefocus}
+                                    isZenMode={isZenMode}
                                 />
                             </div>
                         )}

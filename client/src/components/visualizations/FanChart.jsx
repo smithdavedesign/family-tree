@@ -1,8 +1,30 @@
 import React, { useMemo, useState } from 'react';
+import { Home, ChevronUp } from 'lucide-react';
 import { buildAncestorTree } from '../../utils/treeUtils';
 
-const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => {
+const FanChart = ({ persons, relationships, centerPersonId, onPersonClick, onRefocus, isZenMode }) => {
     const [hoveredPerson, setHoveredPerson] = useState(null);
+
+    // Get parent of current center
+    const getParentId = (personId) => {
+        const parentRelationship = relationships.find(r =>
+            r.person_2_id === personId && r.type === 'parent_child'
+        );
+        return parentRelationship?.person_1_id;
+    };
+
+    const handleReset = () => {
+        if (onRefocus && persons.length > 0) {
+            onRefocus(persons[0].id);
+        }
+    };
+
+    const handleGoToParent = () => {
+        const parentId = getParentId(centerPersonId);
+        if (parentId && onRefocus) {
+            onRefocus(parentId);
+        }
+    };
 
     const ancestorTree = useMemo(() => {
         if (!centerPersonId || !persons || !relationships) return null;
@@ -148,38 +170,46 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick }) => 
     const segments = useMemo(() => generateArcSegments(ancestorTree), [ancestorTree]);
 
     const handleSegmentClick = (segment) => {
-        if (onPersonClick && segment.person) {
-            // Match TreeVisualizer's node structure
-            const nodeStructure = {
-                id: segment.person.id,
-                data: {
-                    id: segment.person.id,
-                    tree_id: segment.person.tree_id,
-                    label: `${segment.person.first_name} ${segment.person.last_name || ''}`,
-                    first_name: segment.person.first_name,
-                    last_name: segment.person.last_name,
-                    profile_photo_url: segment.person.profile_photo_url,
-                    gender: segment.person.gender,
-                    dob: segment.person.dob,
-                    dod: segment.person.dod,
-                    pob: segment.person.pob,
-                    occupation: segment.person.occupation,
-                    bio: segment.person.bio
-                }
-            };
-            onPersonClick(null, nodeStructure);
+        if (segment.person && onRefocus) {
+            onRefocus(segment.person.id);
         }
     };
 
     return (
         <div className="flex flex-col items-center justify-center w-full h-full bg-slate-50 relative overflow-hidden">
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center z-10 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
-                <h3 className="text-xl font-bold text-slate-900">
-                    Ancestor Fan Chart
-                </h3>
-                <p className="text-sm text-slate-500 hidden sm:block">
-                    Click a segment to view person details
-                </p>
+            {/* Immersive Header with Navigation Controls */}
+            <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}>
+                <div className="bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white/20">
+                    <div className="flex items-center gap-4">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleReset}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                                title="Reset to root"
+                            >
+                                <Home className="w-4 h-4" />
+                                <span className="hidden sm:inline">Reset</span>
+                            </button>
+
+                            <button
+                                onClick={handleGoToParent}
+                                disabled={!getParentId(centerPersonId)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                title="Go to parent"
+                            >
+                                <ChevronUp className="w-4 h-4" />
+                                <span className="hidden sm:inline">Parent</span>
+                            </button>
+                        </div>
+
+                        <div className="border-l border-slate-300 pl-4">
+                            <div className="text-xs text-slate-500">Showing ancestors of:</div>
+                            <div className="font-semibold text-slate-900">
+                                {persons.find(p => p.id === centerPersonId)?.first_name} {persons.find(p => p.id === centerPersonId)?.last_name || ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="w-full h-full flex items-center justify-center p-4">
