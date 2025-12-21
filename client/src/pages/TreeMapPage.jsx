@@ -112,153 +112,155 @@ const TreeMapPage = () => {
                 ]}
             />
 
-            <main className="flex-1 flex flex-col relative min-h-[500px]">
-                {/* Stats Header */}
-                <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm">
-                    <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
-                            <span className="text-lg font-bold text-slate-900">{mapData?.total_locations || 0}</span>
+            <main className="flex-1 relative">
+                <div className="absolute inset-0 flex flex-col">
+                    {/* Stats Header */}
+                    <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm shrink-0">
+                        <div className="flex gap-6 overflow-x-auto no-scrollbar">
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
+                                <span className="text-lg font-bold text-slate-900">{mapData?.total_locations || 0}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
+                                <span className="text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Photo Spots</span>
+                                <span className="text-lg font-bold text-teal-600">{mapData?.total_photos_mapped || 0}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-slate-500 uppercase">Countries</span>
+                                <span className="text-lg font-bold text-slate-900">{mapData?.countries_count || 0}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 uppercase">Locations</span>
-                            <span className="text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 uppercase">Photo Spots</span>
-                            <span className="text-lg font-bold text-teal-600">{mapData?.total_photos_mapped || 0}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 uppercase">Countries</span>
-                            <span className="text-lg font-bold text-slate-900">{mapData?.countries_count || 0}</span>
-                        </div>
+
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
+                                ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                                }`}
+                        >
+                            <Filter className="w-4 h-4" />
+                            Filter
+                            {selectedPersonId !== 'all' && <span className="ml-1 flex h-2 w-2 rounded-full bg-teal-600" />}
+                        </button>
                     </div>
 
-                    <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
-                            ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-                            }`}
-                    >
-                        <Filter className="w-4 h-4" />
-                        Filter
-                        {selectedPersonId !== 'all' && <span className="ml-1 flex h-2 w-2 rounded-full bg-teal-600" />}
-                    </button>
-                </div>
-
-                {/* Filter Sidebar (Overlay) */}
-                {showFilters && (
-                    <div className="absolute top-[73px] right-4 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-[1000] max-h-[calc(100%-90px)] flex flex-col">
-                        <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-lg">
-                            <h3 className="font-semibold text-slate-900">Filter by Person</h3>
-                            <button onClick={() => setShowFilters(false)} className="text-slate-400 hover:text-slate-600">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="overflow-y-auto p-2 space-y-1">
-                            <button
-                                onClick={() => setSelectedPersonId('all')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === 'all'
-                                    ? 'bg-teal-50 text-teal-700 font-medium'
-                                    : 'text-slate-700 hover:bg-slate-50'
-                                    }`}
-                            >
-                                All People
-                            </button>
-                            {peopleList.map(([id, name]) => (
+                    {/* Filter Sidebar (Overlay) */}
+                    {showFilters && (
+                        <div className="absolute top-[73px] right-4 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-[1000] max-h-[calc(100%-90px)] flex flex-col">
+                            <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-lg">
+                                <h3 className="font-semibold text-slate-900">Filter by Person</h3>
+                                <button onClick={() => setShowFilters(false)} className="text-slate-400 hover:text-slate-600">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="overflow-y-auto p-2 space-y-1">
                                 <button
-                                    key={id}
-                                    onClick={() => setSelectedPersonId(id)}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === id
+                                    onClick={() => setSelectedPersonId('all')}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === 'all'
                                         ? 'bg-teal-50 text-teal-700 font-medium'
                                         : 'text-slate-700 hover:bg-slate-50'
                                         }`}
                                 >
-                                    {name}
+                                    All People
                                 </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Map */}
-                <div className="flex-1 bg-slate-100 relative z-0 min-h-0">
-                    {filteredLocations.length > 0 ? (
-                        <MapContainer
-                            key={treeId}
-                            bounds={bounds}
-                            style={{ height: '100%', width: '100%' }}
-                            scrollWheelZoom={true}
-                        >
-                            <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            {filteredLocations.map((loc, index) => {
-                                const isLived = loc.type === 'lived';
-                                const color = isLived ? '#ea580c' : '#14b8a6';
-                                const fillColor = isLived ? '#f97316' : '#14b8a6';
-
-                                return (
-                                    <CircleMarker
-                                        key={`${loc.type}-${index}`}
-                                        center={[loc.latitude, loc.longitude]}
-                                        radius={isLived ? 8 : 5}
-                                        pathOptions={{
-                                            color: color,
-                                            fillColor: fillColor,
-                                            fillOpacity: 0.6,
-                                            weight: 2
-                                        }}
+                                {peopleList.map(([id, name]) => (
+                                    <button
+                                        key={id}
+                                        onClick={() => setSelectedPersonId(id)}
+                                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === id
+                                            ? 'bg-teal-50 text-teal-700 font-medium'
+                                            : 'text-slate-700 hover:bg-slate-50'
+                                            }`}
                                     >
-                                        <Popup>
-                                            <div className="text-sm min-w-[200px]">
-                                                <p className="font-bold text-slate-900 mb-1">{loc.personName}</p>
-                                                <p className="font-medium text-slate-800">{loc.name}</p>
-                                                <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
-                                                    {isLived ? 'Location' : 'Photo Location'}
-                                                </p>
-                                                {isLived ? (
-                                                    <div className="text-xs text-slate-600">
-                                                        {(loc.details?.start || loc.details?.end) ? (
-                                                            <p>
-                                                                {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
-                                                                {' - '}
-                                                                {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
-                                                            </p>
-                                                        ) : (
-                                                            <p className="italic text-slate-400">No date recorded</p>
-                                                        )}
-                                                        {loc.details?.address && (
-                                                            <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-xs text-slate-500">
-                                                        {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
-                                                    </p>
-                                                )}
-                                                <button
-                                                    onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
-                                                    className="mt-2 text-xs text-teal-600 hover:underline font-medium"
-                                                >
-                                                    View Profile
-                                                </button>
-                                            </div>
-                                        </Popup>
-                                    </CircleMarker>
-                                );
-                            })}
-                        </MapContainer>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-slate-500">
-                            <div className="text-center">
-                                <MapPin className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                                <p>No locations found for the selected filter.</p>
+                                        {name}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
+
+                    {/* Map */}
+                    <div className="flex-1 bg-slate-100 relative z-0 min-h-0">
+                        {filteredLocations.length > 0 ? (
+                            <MapContainer
+                                key={treeId}
+                                bounds={bounds}
+                                style={{ height: '100%', width: '100%' }}
+                                scrollWheelZoom={true}
+                            >
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                                {filteredLocations.map((loc, index) => {
+                                    const isLived = loc.type === 'lived';
+                                    const color = isLived ? '#ea580c' : '#14b8a6';
+                                    const fillColor = isLived ? '#f97316' : '#14b8a6';
+
+                                    return (
+                                        <CircleMarker
+                                            key={`${loc.type}-${index}`}
+                                            center={[loc.latitude, loc.longitude]}
+                                            radius={isLived ? 8 : 5}
+                                            pathOptions={{
+                                                color: color,
+                                                fillColor: fillColor,
+                                                fillOpacity: 0.6,
+                                                weight: 2
+                                            }}
+                                        >
+                                            <Popup>
+                                                <div className="text-sm min-w-[200px]">
+                                                    <p className="font-bold text-slate-900 mb-1">{loc.personName}</p>
+                                                    <p className="font-medium text-slate-800">{loc.name}</p>
+                                                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
+                                                        {isLived ? 'Location' : 'Photo Location'}
+                                                    </p>
+                                                    {isLived ? (
+                                                        <div className="text-xs text-slate-600">
+                                                            {(loc.details?.start || loc.details?.end) ? (
+                                                                <p>
+                                                                    {loc.details?.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                                    {' - '}
+                                                                    {loc.details?.is_current ? 'Present' : (loc.details?.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                                </p>
+                                                            ) : (
+                                                                <p className="italic text-slate-400">No date recorded</p>
+                                                            )}
+                                                            {loc.details?.address && (
+                                                                <p className="mt-1 italic text-slate-500">{loc.details.address}</p>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-slate-500">
+                                                            {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details?.year || 'Unknown Date')}
+                                                        </p>
+                                                    )}
+                                                    <button
+                                                        onClick={() => navigate(`/tree/${treeId}/person/${loc.personId}`)}
+                                                        className="mt-2 text-xs text-teal-600 hover:underline font-medium"
+                                                    >
+                                                        View Profile
+                                                    </button>
+                                                </div>
+                                            </Popup>
+                                        </CircleMarker>
+                                    );
+                                })}
+                            </MapContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-slate-500">
+                                <div className="text-center">
+                                    <MapPin className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+                                    <p>No locations found for the selected filter.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </main>
         </div>
