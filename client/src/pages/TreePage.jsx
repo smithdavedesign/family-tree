@@ -37,6 +37,7 @@ const TreePage = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
     const [isZenMode, setIsZenMode] = useState(false);
+    const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
 
     // View mode state with localStorage persistence - default to 'standard'
     const [viewMode, setViewMode] = useState(() => {
@@ -100,10 +101,11 @@ const TreePage = () => {
 
     const handleNodeClick = (event, node) => {
         setSelectedPerson(node);
+        setIsSidePanelOpen(true);
     };
 
     const handleClosePanel = () => {
-        setSelectedPerson(null);
+        setIsSidePanelOpen(false);
     };
 
     const handleUpdate = () => {
@@ -270,7 +272,7 @@ const TreePage = () => {
                     <div className="flex-1" />
 
                     {/* Side Panel */}
-                    {selectedPerson && (
+                    {isSidePanelOpen && selectedPerson && (
                         <div className="fixed md:relative inset-0 md:inset-auto md:w-96 md:border-l bg-white shadow-xl z-50 md:z-0 md:shrink-0 overflow-y-auto pointer-events-auto">
                             <SidePanel
                                 person={selectedPerson}
