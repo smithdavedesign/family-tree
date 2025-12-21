@@ -145,6 +145,7 @@ const TreePage = () => {
                                     key={refreshTrigger}
                                     userRole={userRole}
                                     isEditMode={isEditMode}
+                                    onEditModeToggle={() => setIsEditMode(!isEditMode)}
                                     isZenMode={isZenMode}
                                     onInteraction={(active) => setIsZenMode(active)}
                                     onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
@@ -218,21 +219,8 @@ const TreePage = () => {
                         }
                         rightContent={
                             <div className="flex items-center gap-2 sm:gap-4">
-                                {/* Edit Mode Toggle (Only for owners/editors) */}
-                                {(userRole === 'owner' || userRole === 'editor') && (
-                                    <button
-                                        onClick={() => setIsEditMode(!isEditMode)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-sm font-medium border ${isEditMode
-                                            ? 'bg-teal-600 text-white border-teal-600 shadow-md'
-                                            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
-                                            }`}
-                                    >
-                                        <span className="hidden xs:inline">{isEditMode ? 'Editing' : 'View Only'}</span>
-                                        <div className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
-                                    </button>
-                                )}
-
-                                <div className="h-6 w-px bg-slate-200 mx-1 hidden xs:block" />
+                                {/* Edit Mode Toggle (Only for owners/editors) - Moved to Tree Toolbar */}
+                                <div className="h-6 w-px bg-slate-200 mx-1 hidden lg:block" />
 
                                 {/* Desktop Icons */}
                                 <div className="hidden lg:flex items-center gap-2">

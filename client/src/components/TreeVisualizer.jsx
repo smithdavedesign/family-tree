@@ -15,7 +15,7 @@ import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import { supabase } from '../auth';
-import { Undo, Redo, TreePine, Plus, ArrowDownUp, ArrowLeftRight, LocateFixed, Scan, X, Lock, Unlock, Search } from 'lucide-react';
+import { Undo, Redo, TreePine, Plus, ArrowDownUp, ArrowLeftRight, LocateFixed, Scan, X, Lock, Unlock, Search, Pencil } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import { useToast } from './ui';
@@ -64,7 +64,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: layoutedNodes, edges };
 };
 
-const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen, isEditMode, isZenMode, onInteraction }) => {
+const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], userRole = 'viewer', onSearchToggle, isSearchOpen, isEditMode, onEditModeToggle, isZenMode, onInteraction }) => {
     const isMobile = window.innerWidth < 768;
     const [isToolsOpen, setIsToolsOpen] = useState(false);
     const { toast } = useToast();
@@ -838,6 +838,16 @@ const TreeVisualizerContent = ({ treeId, onNodeClick, highlightedNodes = [], use
                         >
                             <Search className="w-5 h-5" />
                         </button>
+
+                        {(userRole === 'owner' || userRole === 'editor') && (
+                            <button
+                                onClick={onEditModeToggle}
+                                className={`p-2.5 rounded-xl transition-all active:scale-95 ${isEditMode ? 'bg-teal-600 text-white shadow-lg' : 'hover:bg-slate-100 text-slate-700'}`}
+                                title={isEditMode ? "Toggles Edit Tooling" : "Enable Edit Mode"}
+                            >
+                                <Pencil className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Edit Controls (Only in Edit Mode) */}
