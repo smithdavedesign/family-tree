@@ -46,14 +46,18 @@ const PersonHeatmap = ({ personId }) => {
     return (
         <div className="space-y-4">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Locations</p>
                     <p className="text-2xl font-bold text-slate-900">{stats.unique_locations}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Places Lived</p>
+                    <p className="text-2xl font-bold text-orange-600">{stats.total_places_lived || 0}</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Mapped Photos</p>
-                    <p className="text-2xl font-bold text-slate-900">{stats.total_photos_with_location}</p>
+                    <p className="text-2xl font-bold text-teal-600">{stats.total_photos_with_location}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Most Visited</p>
@@ -75,26 +79,48 @@ const PersonHeatmap = ({ personId }) => {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    {/* Render points as semi-transparent circles to simulate heatmap density */}
-                    {stats.locations.map((loc, index) => (
-                        <CircleMarker
-                            key={index}
-                            center={[loc.latitude, loc.longitude]}
-                            radius={8}
-                            fillColor="#14b8a6" // teal-500
-                            color="#0d9488" // teal-600
-                            weight={2}
-                            opacity={0.8}
-                            fillOpacity={0.5}
-                        >
-                            <Popup>
-                                <div className="text-sm">
-                                    <p className="font-semibold">{loc.location_name}</p>
-                                    <p className="text-xs text-slate-500">{new Date(loc.taken_date).toLocaleDateString()}</p>
-                                </div>
-                            </Popup>
-                        </CircleMarker>
-                    ))}
+                    {/* Render points */}
+                    {stats.locations.map((loc, index) => {
+                        const isLived = loc.type === 'lived';
+                        const color = isLived ? '#ea580c' : '#14b8a6'; // orange-600 vs teal-500
+                        const fillColor = isLived ? '#f97316' : '#14b8a6'; // orange-500 vs teal-500
+
+                        return (
+                            <CircleMarker
+                                key={index}
+                                center={[loc.latitude, loc.longitude]}
+                                radius={isLived ? 10 : 6} // Lived places are slightly larger
+                                pathOptions={{
+                                    color: color,
+                                    fillColor: fillColor,
+                                    fillOpacity: 0.6,
+                                    weight: 2
+                                }}
+                            >
+                                <Popup>
+                                    <div className="text-sm">
+                                        <p className="font-semibold text-slate-900">{loc.name}</p>
+                                        <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color }}>
+                                            {isLived ? 'Place Lived' : 'Photo Location'}
+                                        </p>
+                                        {isLived ? (
+                                            <div className="text-xs text-slate-600">
+                                                <p>
+                                                    {loc.details.start ? new Date(loc.details.start).getFullYear() : '?'}
+                                                    {' - '}
+                                                    {loc.details.is_current ? 'Present' : (loc.details.end ? new Date(loc.details.end).getFullYear() : '?')}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-slate-500">
+                                                {loc.date ? new Date(loc.date).toLocaleDateString() : (loc.details.year || 'Unknown Date')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </Popup>
+                            </CircleMarker>
+                        );
+                    })}
                 </MapContainer>
             </div>
         </div>

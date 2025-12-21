@@ -76,23 +76,76 @@ exports.getPersonLocationStats = async (req, res) => {
     const { id: personId } = req.params;
 
     try {
-        const { data, error } = await supabaseAdmin
+        // 1. Fetch Photo Locations
+        const { data: photoData, error: photoError } = await supabaseAdmin
             .from('photos')
             .select('latitude, longitude, location_name, taken_date, year')
             .eq('person_id', personId)
             .not('latitude', 'is', null);
 
-        if (error) throw error;
+        if (photoError) throw photoError;
+
+        // 2. Fetch Person Locations (Places Lived)
+        const { data: personLocData, error: personLocError } = await supabaseAdmin
+            .from('person_locations')
+            .select(`
+                location_id,
+                start_date,
+                end_date,
+                is_current,
+                locations (
+                    id,
+                    name,
+                    latitude,
+                    longitude,
+                    city,
+                    country
+                )
+            `)
+            .eq('person_id', personId);
+
+        if (personLocError) throw personLocError;
+
+        // Combine data for the map
+        // Map photo locations to a common format
+        const photoLocations = photoData.map(p => ({
+            type: 'photo',
+            latitude: p.latitude,
+            longitude: p.longitude,
+            name: p.location_name,
+            date: p.taken_date || (p.year ? `${p.year}-01-01` : null),
+            details: { year: p.year }
+        }));
+
+        // Map person locations to a common format
+        const livedLocations = personLocData
+            .filter(pl => pl.locations && pl.locations.latitude && pl.locations.longitude)
+            .map(pl => ({
+                type: 'lived',
+                latitude: pl.locations.latitude,
+                longitude: pl.locations.longitude,
+                name: pl.locations.name,
+                date: pl.start_date,
+                details: {
+                    start: pl.start_date,
+                    end: pl.end_date,
+                    is_current: pl.is_current,
+                    city: pl.locations.city,
+                    country: pl.locations.country
+                }
+            }));
+
+        const allLocations = [...photoLocations, ...livedLocations];
 
         // Calculate stats
-        const totalLocations = data.length;
-        const uniqueCities = new Set(data.map(p => p.location_name).filter(Boolean)).size;
+        const totalLocations = allLocations.length;
+        const uniqueCities = new Set(allLocations.map(p => p.name).filter(Boolean)).size;
 
         // Find most visited place (simple frequency map of location_name)
         const locationCounts = {};
-        data.forEach(p => {
-            if (p.location_name) {
-                locationCounts[p.location_name] = (locationCounts[p.location_name] || 0) + 1;
+        allLocations.forEach(p => {
+            if (p.name) {
+                locationCounts[p.name] = (locationCounts[p.name] || 0) + 1;
             }
         });
 
@@ -106,10 +159,11 @@ exports.getPersonLocationStats = async (req, res) => {
         });
 
         res.json({
-            total_photos_with_location: totalLocations,
+            total_photos_with_location: photoLocations.length,
+            total_places_lived: livedLocations.length,
             unique_locations: uniqueCities,
             most_visited_location: mostVisited,
-            locations: data // Return raw data for heatmap
+            locations: allLocations // Return combined data
         });
     } catch (error) {
         console.error('Error fetching person location stats:', error);
