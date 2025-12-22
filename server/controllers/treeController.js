@@ -1,4 +1,5 @@
 const { supabase, supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.getTree = async (req, res) => {
     try {
@@ -82,7 +83,11 @@ exports.getTree = async (req, res) => {
             role
         });
     } catch (error) {
-        console.error('Error fetching tree:', error);
+        logger.error('Failed to fetch tree', error, {
+            treeId: req.params.id,
+            userId: req.user?.id,
+            requestId: req.id,
+        });
         res.status(500).json({ error: error.message });
     }
 };

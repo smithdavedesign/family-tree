@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { initErrorLogging, errorHandler } = require('./utils/errorLogger');
+const logger = require('./utils/logger');
+const requestLogger = require('./middleware/requestLogger');
 const {
     securityHeaders,
     sanitizeInput,
@@ -25,6 +27,9 @@ app.use(sqlInjectionPrevention);
 // Temporarily disable CSRF to debug 403 errors
 app.use(csrfProtection);
 
+// Request logging middleware
+app.use(requestLogger);
+
 // Middleware
 app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -46,12 +51,21 @@ app.use(errorHandler());
 
 // General error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    logger.error('Unhandled error', err, {
+        requestId: req.id,
+        method: req.method,
+        url: req.originalUrl,
+        userId: req.user?.id,
+    });
+
     res.status(err.status || 500).json({
         error: err.message || 'Internal server error'
     });
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    logger.info(`Server running on port ${port}`, {
+        environment: process.env.NODE_ENV || 'development',
+        port,
+    });
 });
