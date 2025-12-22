@@ -181,9 +181,9 @@ const WelcomeWizard = ({ onComplete }) => {
     };
 
     return (
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 relative">
             {/* Progress Bar */}
-            <div className="h-2 bg-slate-100">
+            <div className="h-2 bg-slate-100 rounded-t-xl overflow-hidden">
                 <div
                     className="h-full bg-teal-500 transition-all duration-500 ease-out"
                     style={{ width: `${(step / 5) * 100}%` }}
