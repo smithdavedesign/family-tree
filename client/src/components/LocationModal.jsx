@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
-import { Button, useToast } from './ui';
+import { Button, Input, useToast } from './ui';
 
 const LocationModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     const { toast } = useToast();
@@ -121,85 +121,45 @@ const LocationModal = ({ isOpen, onClose, onSave, initialData = null }) => {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Location Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="e.g., New York, NY"
-                            required
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${errors.name ? 'border-red-300' : 'border-slate-300'}`}
-                        />
-                        {errors.name && (
-                            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                                <AlertCircle className="w-4 h-4" />
-                                {errors.name}
-                            </p>
-                        )}
-                    </div>
+                    <Input
+                        label="Location Name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="e.g., New York, NY"
+                        required
+                        error={errors.name}
+                    />
 
-                    {/* Address */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Address (Optional)
-                        </label>
-                        <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            placeholder="e.g., 123 Main St, New York, NY 10001"
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                        />
-                    </div>
+                    <Input
+                        label="Address (Optional)"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="e.g., 123 Main St, New York, NY 10001"
+                    />
 
-                    {/* Coordinates */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                                Latitude
-                            </label>
-                            <input
-                                type="number"
-                                name="latitude"
-                                value={formData.latitude}
-                                onChange={handleChange}
-                                placeholder="40.7128"
-                                step="any"
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${errors.latitude || errors.coordinates ? 'border-red-300' : 'border-slate-300'}`}
-                            />
-                            {errors.latitude && (
-                                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                                    <AlertCircle className="w-4 h-4" />
-                                    {errors.latitude}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                                Longitude
-                            </label>
-                            <input
-                                type="number"
-                                name="longitude"
-                                value={formData.longitude}
-                                onChange={handleChange}
-                                placeholder="-74.0060"
-                                step="any"
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${errors.longitude || errors.coordinates ? 'border-red-300' : 'border-slate-300'}`}
-                            />
-                            {errors.longitude && (
-                                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                                    <AlertCircle className="w-4 h-4" />
-                                    {errors.longitude}
-                                </p>
-                            )}
-                        </div>
+                        <Input
+                            label="Latitude"
+                            type="number"
+                            name="latitude"
+                            value={formData.latitude}
+                            onChange={handleChange}
+                            placeholder="40.7128"
+                            step="any"
+                            error={errors.latitude}
+                        />
+                        <Input
+                            label="Longitude"
+                            type="number"
+                            name="longitude"
+                            value={formData.longitude}
+                            onChange={handleChange}
+                            placeholder="-74.0060"
+                            step="any"
+                            error={errors.longitude}
+                        />
                     </div>
                     {errors.coordinates && (
                         <p className="text-sm text-red-600 flex items-center gap-1 -mt-2">
@@ -208,54 +168,34 @@ const LocationModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                         </p>
                     )}
 
-                    {/* Date Range */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                                Start Date (Optional)
-                            </label>
-                            <input
-                                type="date"
-                                name="start_date"
-                                value={formData.start_date}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                                End Date (Optional)
-                            </label>
-                            <input
-                                type="date"
-                                name="end_date"
-                                value={formData.end_date}
-                                onChange={handleChange}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${errors.end_date ? 'border-red-300' : 'border-slate-300'}`}
-                            />
-                            {errors.end_date && (
-                                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                                    <AlertCircle className="w-4 h-4" />
-                                    {errors.end_date}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Notes (Optional)
-                        </label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
+                        <Input
+                            label="Start Date (Optional)"
+                            type="date"
+                            name="start_date"
+                            value={formData.start_date}
                             onChange={handleChange}
-                            rows={3}
-                            placeholder="Add any notes about this location..."
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none"
+                        />
+                        <Input
+                            label="End Date (Optional)"
+                            type="date"
+                            name="end_date"
+                            value={formData.end_date}
+                            onChange={handleChange}
+                            error={errors.end_date}
                         />
                     </div>
+
+                    <Input
+                        label="Notes (Optional)"
+                        type="textarea"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="Add any notes about this location..."
+                        className="resize-none"
+                    />
 
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">

@@ -65,11 +65,11 @@ const TreeSwitcher = ({ currentTreeId }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="flex items-center gap-2 pl-1.5 pr-3 py-2 h-10 bg-white border border-transparent hover:border-slate-300 rounded-lg transition"
             >
                 <TreePine className="w-4 h-4 text-teal-600" />
                 <span className="font-medium text-gray-700 max-w-[200px] truncate">
-                    {currentTree.name}
+                    {currentTree.name.replace(/\s+tree$/i, '')}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -89,7 +89,7 @@ const TreeSwitcher = ({ currentTreeId }) => {
                                     }`}
                             >
                                 <TreePine className="w-4 h-4" />
-                                <span className="flex-1 truncate">{tree.name}</span>
+                                <span className="flex-1 truncate">{tree.name.replace(/\s+tree$/i, '')}</span>
                                 {tree.id === currentTreeId && (
                                     <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded">Current</span>
                                 )}

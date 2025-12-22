@@ -8,6 +8,7 @@ import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
 import AccountSettings from '../components/AccountSettings';
+import { Button, Select } from '../components/ui';
 import { Loader, MapPin, Filter, X, User, BookOpen, Layers, Flame } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -26,7 +27,6 @@ const TreeMapPage = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [selectedPersonId, setSelectedPersonId] = useState('all');
-    const [showFilters, setShowFilters] = useState(false);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [viewMode, setViewMode] = useState('pins'); // 'pins' or 'heatmap'
     const [showSettings, setShowSettings] = useState(false);
@@ -144,7 +144,7 @@ const TreeMapPage = () => {
 
             <Breadcrumbs
                 items={[
-                    { label: treeData?.name || 'Tree', href: `/tree/${treeId}` },
+                    { label: (treeData?.name || 'Tree').replace(/\s+tree$/i, ''), href: `/tree/${treeId}` },
                     { label: 'Map' }
                 ]}
             />
@@ -201,55 +201,21 @@ const TreeMapPage = () => {
                                         Heatmap
                                     </button>
                                 </div>
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${showFilters || selectedPersonId !== 'all'
-                                        ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                                        : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <Filter className="w-4 h-4" />
-                                    Filter
-                                    {selectedPersonId !== 'all' && <span className="ml-1 flex h-2 w-2 rounded-full bg-teal-600" />}
-                                </button>
+                                <Select
+                                    value={selectedPersonId}
+                                    onChange={(value) => setSelectedPersonId(value)}
+                                    options={[
+                                        { value: 'all', label: 'All People' },
+                                        ...peopleList.map(([id, name]) => ({ value: id, label: name }))
+                                    ]}
+                                    leftIcon={<Filter className="w-4 h-4" />}
+                                    className="w-full sm:w-56"
+                                    placeholder="Filter by Person"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    {/* Filter Sidebar (Overlay) */}
-                    {showFilters && (
-                        <div className="absolute top-[73px] right-4 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-[1000] max-h-[calc(100%-90px)] flex flex-col">
-                            <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-lg">
-                                <h3 className="font-semibold text-slate-900">Filter by Person</h3>
-                                <button onClick={() => setShowFilters(false)} className="text-slate-400 hover:text-slate-600">
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <div className="overflow-y-auto p-2 space-y-1">
-                                <button
-                                    onClick={() => setSelectedPersonId('all')}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === 'all'
-                                        ? 'bg-teal-50 text-teal-700 font-medium'
-                                        : 'text-slate-700 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    All People
-                                </button>
-                                {peopleList.map(([id, name]) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => setSelectedPersonId(id)}
-                                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedPersonId === id
-                                            ? 'bg-teal-50 text-teal-700 font-medium'
-                                            : 'text-slate-700 hover:bg-slate-50'
-                                            }`}
-                                    >
-                                        {name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Map */}
                     <div className="flex-1 bg-slate-100 relative z-0 min-h-0">
@@ -433,6 +399,7 @@ const TreeMapPage = () => {
                 <AccountSettings
                     user={user}
                     onClose={() => setShowSettings(false)}
+                    returnLabel="Map"
                 />
             )}
 

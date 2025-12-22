@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../auth';
 import { Search, Plus, X, MapPin } from 'lucide-react';
-import { Button } from './ui';
+import { Button, Input } from './ui';
 import LocationModal from './LocationModal';
 
 const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
@@ -211,13 +211,14 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
         <div className="space-y-3">
             {/* Search Input */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
+                <Input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search locations..."
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    leftIcon={<Search />}
+                    className="!rounded-full shadow-sm"
+                    showClear
                 />
             </div>
 

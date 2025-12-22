@@ -153,7 +153,7 @@ const TreePage = () => {
                                 />
                             </div>
                         )}
-                        <div className={`h-full w-full transition-all duration-700 ${isZenMode ? 'pt-0' : 'pt-[140px]'}`}>
+                        <div className={`h-full w-full transition-all duration-700 ${isZenMode ? 'pt-0' : 'pt-[115px]'}`}>
                             {viewMode === 'fan' && (
                                 <div className="h-full w-full">
                                     <FanChart
@@ -196,27 +196,10 @@ const TreePage = () => {
             {/* UI Overlays Layer */}
             <div className="relative z-10 pointer-events-none h-full flex flex-col">
                 {/* Navbar Wrapper */}
-                <div className={`transition-all duration-700 pointer-events-auto ${isZenMode ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+                <div className={`transition-all duration-700 pointer-events-auto relative z-50 ${isZenMode ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
                     <Navbar
                         user={user}
                         onOpenSettings={() => setShowSettings(true)}
-                        leftContent={
-                            <div className="flex items-center gap-2">
-                                <TreeSwitcher currentTreeId={id} />
-                                {selectedPerson && (
-                                    <>
-                                        <span className="text-slate-300">/</span>
-                                        <Breadcrumbs
-                                            inline
-                                            showHome={false}
-                                            items={[
-                                                { label: selectedPerson.data.label }
-                                            ]}
-                                        />
-                                    </>
-                                )}
-                            </div>
-                        }
                         rightContent={
                             <div className="flex items-center gap-2 sm:gap-4">
                                 {/* Edit Mode Toggle (Only for owners/editors) - Moved to Tree Toolbar */}
@@ -243,7 +226,7 @@ const TreePage = () => {
                                 {/* Mobile Menu Toggle (Icons) */}
                                 <div className="lg:hidden">
                                     <button
-                                        onClick={() => setIsNavMenuOpen(true)}
+                                        onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
                                         className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                                     >
                                         <Menu className="w-6 h-6" />
@@ -253,11 +236,14 @@ const TreePage = () => {
                         }
                     />
                 </div>
-
-                {/* View Mode Selector - Fades in Zen Mode */}
-                <div className={`bg-white/80 backdrop-blur-md border-b border-slate-200 transition-all duration-700 pointer-events-auto ${isZenMode ? 'opacity-0 -translate-y-full shadow-none' : 'opacity-100 translate-y-0 shadow-sm'}`}>
-                    <div className="max-w-[1600px] mx-auto px-4 py-3">
-                        <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+                <div className={`transition-all duration-700 pointer-events-auto relative z-40 bg-white border-b border-slate-200 shadow-sm ${isZenMode ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+                    <div className="max-w-[1600px] mx-auto px-4 py-1.5 flex items-center justify-start gap-4">
+                        <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
+                            <TreeSwitcher currentTreeId={id} />
+                        </div>
+                        <div className="flex-shrink-0">
+                            <ViewModeSelector viewMode={viewMode} onChange={handleViewModeChange} />
+                        </div>
                     </div>
                 </div>
 

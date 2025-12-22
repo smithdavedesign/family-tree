@@ -10,6 +10,7 @@ import {
     ZAxis,
 } from 'recharts';
 import { aggregateTimeline, transformForRecharts } from '../../utils/treeUtils';
+import { Select } from '../ui';
 
 /**
  * EventChartView - Recharts-based event visualization
@@ -128,7 +129,7 @@ const EventChartView = ({ persons, relationships, lifeEvents = [], onEventClick 
     }
 
     return (
-        <div className="flex flex-col h-full bg-white p-6">
+        <div className="flex flex-col h-full bg-white p-3 sm:p-6">
             {/* Header */}
             <div className="mb-6">
                 <h3 className="text-lg font-semibold text-slate-900">Family Timeline</h3>
@@ -139,38 +140,38 @@ const EventChartView = ({ persons, relationships, lifeEvents = [], onEventClick 
             <div className="flex flex-wrap gap-4 mb-6">
                 {/* Person filter */}
                 <div className="flex items-center gap-2">
-                    <label htmlFor="person-filter" className="text-sm font-medium text-slate-700">
-                        Person:
-                    </label>
-                    <select
+                    <Select
                         id="person-filter"
                         value={selectedPerson}
-                        onChange={(e) => setSelectedPerson(e.target.value)}
-                        className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    >
-                        <option value="all">All People</option>
-                        {persons.map(person => (
-                            <option key={person.id} value={person.id}>
-                                {person.first_name} {person.last_name || ''}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={setSelectedPerson}
+                        options={[
+                            { value: 'all', label: 'All People' },
+                            ...persons.map(person => ({
+                                value: person.id,
+                                label: `${person.first_name} ${person.last_name || ''}`
+                            }))
+                        ]}
+                        className="!w-48"
+                    />
                 </div>
 
-                {/* Event type filters */}
-                <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-slate-700">Show:</span>
-                    {Object.entries(selectedEventTypes).map(([type, isSelected]) => (
-                        <label key={type} className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => handleEventTypeToggle(type)}
-                                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                            />
-                            <span className="text-sm capitalize text-slate-600">{type.replace('_', ' ')}</span>
-                        </label>
-                    ))}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+                    <span className="hidden sm:inline text-sm font-semibold text-slate-700">Show:</span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-x-8">
+                        {Object.entries(selectedEventTypes).map(([type, isSelected]) => (
+                            <label key={type} className="flex items-center gap-2 cursor-pointer group select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleEventTypeToggle(type)}
+                                    className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 focus:ring-offset-0 transition-all cursor-pointer"
+                                />
+                                <span className="text-xs sm:text-sm font-medium capitalize text-slate-600 group-hover:text-slate-900 transition-colors">
+                                    {type.replace('_', ' ')}
+                                </span>
+                            </label>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -178,7 +179,7 @@ const EventChartView = ({ persons, relationships, lifeEvents = [], onEventClick 
             <div className="flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <ScatterChart
-                        margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
+                        margin={{ top: 10, right: 10, bottom: 35, left: 10 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                         <XAxis

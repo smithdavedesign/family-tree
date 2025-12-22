@@ -1,42 +1,110 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import LazyImage from './LazyImage';
 import { User, MoreVertical, FolderPlus, CheckCircle2, Circle } from 'lucide-react';
 
-const COLUMN_COUNT = 4; // Responsive logic can be added later (e.g. useWindowSize)
-const GAP = 16; // px
+const GAP = 12; // px
+const TARGET_ROW_HEIGHT = 280; // Ideal height for desktop
+const MOBILE_TARGET_HEIGHT = 220; // Ideal height for mobile
 
 const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set(), onToggleSelect, onAddToAlbum }) => {
     const parentRef = useRef(null);
     const [activeMenuId, setActiveMenuId] = useState(null);
 
-    // Flatten the groups into a list of "rows" for the virtualizer
-    // Each item in the list is either a 'header' or a 'photo-row'
+    const [containerWidth, setContainerWidth] = useState(0);
+
+    // Track container width for layout calculations
+    useEffect(() => {
+        if (!parentRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                // Subtract padding
+                setContainerWidth(entry.contentRect.width - 8); // 8px for padding
+            }
+        });
+        observer.observe(parentRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    // Flatten the groups into a list of "rows" for the virtualizer using a justified layout algorithm
     const rows = useMemo(() => {
+        if (containerWidth <= 0) return [];
+
         const result = [];
+        const isMobile = containerWidth < 640;
+        const targetHeight = isMobile ? MOBILE_TARGET_HEIGHT : TARGET_ROW_HEIGHT;
 
         groups.forEach(group => {
             // Add Header Row
             result.push({
                 type: 'header',
                 data: group,
-                height: 60 // Fixed height for headers
+                height: 60
             });
 
-            // Add Photo Rows
             const photos = group.items;
-            for (let i = 0; i < photos.length; i += COLUMN_COUNT) {
-                const rowPhotos = photos.slice(i, i + COLUMN_COUNT);
+            let currentRow = [];
+            let currentRowAR = 0;
+
+            photos.forEach((photo) => {
+                const ar = (photo.width || 1200) / (photo.height || 800);
+                currentRow.push({ ...photo, ar });
+                currentRowAR += ar;
+
+                // If the row is "full" enough (width with target height exceeds container)
+                if (currentRowAR * targetHeight >= containerWidth - (currentRow.length - 1) * GAP) {
+                    const rowHeight = (containerWidth - (currentRow.length - 1) * GAP) / currentRowAR;
+                    result.push({
+                        type: 'photos',
+                        items: currentRow,
+                        height: rowHeight
+                    });
+                    currentRow = [];
+                    currentRowAR = 0;
+                }
+            });
+
+            // Handle remaining photos in a non-full row (last row of a group)
+            if (currentRow.length > 0) {
+                let rowHeight = targetHeight;
+                let isPartial = true;
+
+                if (currentRow.length === 1) {
+                    const photo = currentRow[0];
+                    if (isMobile) {
+                        // On mobile, full width is fine for landscape
+                        if (photo.ar > 1.3) {
+                            rowHeight = Math.min(350, containerWidth / photo.ar);
+                            isPartial = false;
+                        } else {
+                            rowHeight = Math.min(450, targetHeight * 1.5);
+                            isPartial = true;
+                        }
+                    } else {
+                        // On desktop, NEVER stretch single photos across full width
+                        // Limit height and keep as partial (centered)
+                        rowHeight = Math.min(480, targetHeight * 1.6);
+                        isPartial = true;
+                    }
+                } else if (currentRow.length === 2 && !isMobile) {
+                    // Two photos on desktop: make them slightly larger but centered
+                    rowHeight = Math.min(380, targetHeight * 1.3);
+                    isPartial = true;
+                } else {
+                    rowHeight = Math.min(targetHeight * 1.2, (containerWidth - (currentRow.length - 1) * GAP) / currentRowAR);
+                }
+
                 result.push({
                     type: 'photos',
-                    items: rowPhotos,
-                    height: 250 // Approximate height for photo rows (aspect ratio dependent in future)
+                    items: currentRow,
+                    height: rowHeight,
+                    isPartial
                 });
             }
         });
 
         return result;
-    }, [groups]);
+    }, [groups, containerWidth]);
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -97,18 +165,25 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set()
                                 </div>
                             ) : (
                                 <div
-                                    className="grid gap-4"
-                                    style={{
-                                        gridTemplateColumns: `repeat(${COLUMN_COUNT}, minmax(0, 1fr))`
-                                    }}
+                                    className="flex"
+                                    style={{ gap: `${GAP}px`, height: `${row.height}px` }}
                                 >
                                     {row.items.map(photo => {
                                         const isSelected = selectedIds.has(photo.id);
+                                        const width = row.isPartial ? row.height * photo.ar : 'auto';
+
                                         return (
                                             <div
                                                 key={photo.id}
-                                                className={`group relative h-[250px] bg-slate-200 rounded-lg overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-4 ring-teal-500 ring-inset' : 'hover:shadow-md'
+                                                className={`group relative bg-slate-200 rounded-lg overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-4 ring-teal-500 ring-inset' : 'hover:shadow-md'
                                                     }`}
+                                                style={{
+                                                    height: '100%',
+                                                    width: row.isPartial ? `${width}px` : 'auto',
+                                                    flexGrow: row.isPartial ? 0 : photo.ar,
+                                                    flexShrink: 0,
+                                                    minWidth: '0' // Prevent content from forcing width
+                                                }}
                                                 onClick={() => onPhotoClick && onPhotoClick(photo)}
                                             >
                                                 <LazyImage
@@ -118,7 +193,6 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set()
                                                     height={photo.height}
                                                     className="w-full h-full"
                                                 />
-
                                                 {/* Selection Checkbox */}
                                                 {onToggleSelect && (
                                                     <button
@@ -127,8 +201,8 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set()
                                                             onToggleSelect(photo.id);
                                                         }}
                                                         className={`absolute top-2 left-2 p-1 rounded-full transition-all z-20 ${isSelected
-                                                                ? 'bg-teal-500 text-white opacity-100'
-                                                                : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/50'
+                                                            ? 'bg-teal-500 text-white opacity-100'
+                                                            : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/50'
                                                             }`}
                                                     >
                                                         {isSelected ? (
@@ -181,10 +255,6 @@ const VirtualGallery = ({ groups, groupBy, onPhotoClick, selectedIds = new Set()
                                             </div>
                                         );
                                     })}
-                                    {/* Fill empty cells if row is incomplete */}
-                                    {[...Array(COLUMN_COUNT - row.items.length)].map((_, i) => (
-                                        <div key={`empty-${i}`} />
-                                    ))}
                                 </div>
                             )}
                         </div>

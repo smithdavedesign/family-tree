@@ -17,9 +17,10 @@ const AccountSettings = () => {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    // Get returnUrl from query params
+    // Get returnUrl from query params or state
     const queryParams = new URLSearchParams(location.search);
-    const returnUrl = queryParams.get('returnUrl') || '/trees';
+    const returnUrl = location.state?.returnUrl || queryParams.get('returnUrl') || '/trees';
+    const returnLabel = location.state?.returnLabel || queryParams.get('returnLabel') || 'Back';
 
     const {
         isConnected,
@@ -29,8 +30,6 @@ const AccountSettings = () => {
         connect,
         disconnect
     } = useGoogleConnection();
-
-    // ... (existing useEffect for returnUrl)
 
     useEffect(() => {
         const getUser = async () => {
@@ -124,7 +123,11 @@ const AccountSettings = () => {
     };
 
     if (loading) {
-        // ... (loading state)
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+            </div>
+        );
     }
 
     return (
@@ -133,13 +136,12 @@ const AccountSettings = () => {
             <Navbar user={user} onOpenSettings={() => { }} />
 
             {/* Breadcrumbs */}
-            <div className="bg-white border-b border-slate-200">
-                <Breadcrumbs
-                    items={[
-                        { label: 'Settings' }
-                    ]}
-                />
-            </div>
+            <Breadcrumbs
+                backItem={{ label: returnLabel, href: returnUrl }}
+                items={[
+                    { label: 'Settings' }
+                ]}
+            />
 
             <div className="max-w-4xl mx-auto px-4 pb-8 mt-8">
                 {/* Header */}

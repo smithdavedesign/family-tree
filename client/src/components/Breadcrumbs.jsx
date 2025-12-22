@@ -1,18 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft } from 'lucide-react';
 
-const Breadcrumbs = ({ items = [], inline = false, showHome = true }) => {
+const Breadcrumbs = ({ items = [], inline = false, showHome = true, backItem = null }) => {
     const content = (
-        <div className={`flex items-center gap-2 text-sm ${!inline ? 'max-w-[1600px] mx-auto px-4 py-2' : ''}`}>
+        <div className={`flex items-center gap-2 text-sm overflow-x-auto whitespace-nowrap no-scrollbar ${!inline ? 'max-w-[1600px] mx-auto px-4 py-2.5' : ''}`}>
+            {backItem && (
+                <>
+                    <Link
+                        to={backItem.href}
+                        className="flex items-center gap-1 text-teal-600 hover:text-teal-700 transition-colors font-semibold shrink-0"
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[120px] sm:max-w-[200px]">{backItem.label}</span>
+                    </Link>
+                    <div className="w-px h-4 bg-slate-200 mx-1 shrink-0" aria-hidden="true" />
+                </>
+            )}
+
             {showHome && (
                 <Link
                     to="/trees"
-                    className="flex items-center gap-1.5 text-slate-600 hover:text-teal-600 transition-colors"
+                    className="flex items-center gap-1.5 text-slate-500 hover:text-teal-600 transition-colors shrink-0"
                     aria-label="Home"
                 >
-                    <Home className="w-4 h-4" />
-                    <span className="font-medium">My Trees</span>
+                    <Home className="w-3.5 h-3.5" />
+                    <span className="font-medium hidden sm:inline">My Trees</span>
                 </Link>
             )}
 
@@ -25,32 +38,24 @@ const Breadcrumbs = ({ items = [], inline = false, showHome = true }) => {
                 return (
                     <React.Fragment key={index}>
                         {(showHome || index > 0) && (
-                            <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
                         )}
 
-                        {/* If showHome is false and index is 0, we might want a chevron if it's a continuation. 
-                            Let's add a prop 'startWithSeparator' if needed. For now, standard behavior:
-                            Separator appears BEFORE each item, EXCEPT the first one IF home is hidden? 
-                            No, standard is [Home] > [Item 1] > [Item 2].
-                            If [Home] is hidden: [Item 1] > [Item 2].
-                            If we want [TreeSwitcher] > [Item 1], we need a separator before Item 1.
-                        */}
-
-                        {index === items.length - 1 && !item.onClick && !item.href ? (
-                            <span className="text-slate-900 font-semibold" aria-current="page">
+                        {index === items.length - 1 ? (
+                            <span className="text-slate-900 font-bold truncate max-w-[150px] sm:max-w-none" aria-current="page">
                                 {item.label}
                             </span>
                         ) : item.onClick ? (
                             <button
                                 onClick={item.onClick}
-                                className="text-slate-600 hover:text-teal-600 transition-colors font-medium hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded px-1"
+                                className="text-slate-500 hover:text-teal-600 transition-colors font-medium hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded px-1 shrink-0 truncate max-w-[120px] sm:max-w-none"
                             >
                                 {item.label}
                             </button>
                         ) : (
                             <Link
                                 to={item.href}
-                                className="text-slate-600 hover:text-teal-600 transition-colors font-medium"
+                                className="text-slate-500 hover:text-teal-600 transition-colors font-medium shrink-0 truncate max-w-[120px] sm:max-w-none"
                             >
                                 {item.label}
                             </Link>
@@ -64,7 +69,7 @@ const Breadcrumbs = ({ items = [], inline = false, showHome = true }) => {
     if (inline) return content;
 
     return (
-        <nav className="bg-white/50 backdrop-blur-sm border-b border-slate-100" aria-label="Breadcrumb">
+        <nav className="bg-white border-b border-slate-200 shadow-sm" aria-label="Breadcrumb">
             {content}
         </nav>
     );

@@ -4,7 +4,7 @@ import { signOut, supabase } from '../auth';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button, Input, useToast } from './ui';
 
-const AccountSettings = ({ user, onClose }) => {
+const AccountSettings = ({ user, onClose, returnLabel = '' }) => {
     const { toast } = useToast();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -79,7 +79,12 @@ const AccountSettings = ({ user, onClose }) => {
                 <Button
                     variant="outline"
                     fullWidth
-                    onClick={() => navigate('/settings', { state: { returnUrl: window.location.pathname + window.location.search } })}
+                    onClick={() => navigate('/settings', {
+                        state: {
+                            returnUrl: window.location.pathname + window.location.search,
+                            returnLabel: returnLabel
+                        }
+                    })}
                     className="border-slate-300 text-slate-700 hover:bg-slate-50"
                 >
                     Manage Integrations & Full Settings

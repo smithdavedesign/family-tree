@@ -131,11 +131,17 @@ exports.getStory = async (req, res) => {
     try {
         const { data: story, error: storyError } = await supabaseAdmin
             .from('stories')
-            .select('*')
+            .select('*, trees(name)')
             .eq('id', id)
             .single();
 
         if (storyError) throw storyError;
+
+        // Flatten tree name
+        if (story.trees) {
+            story.tree_name = story.trees.name;
+            delete story.trees;
+        }
 
         // Get linked people
         const { data: people, error: peopleError } = await supabaseAdmin

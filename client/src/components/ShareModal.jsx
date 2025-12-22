@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Check, UserPlus, Users, Trash2, Shield } from 'lucide-react';
 import { supabase } from '../auth';
-import { Modal, Button, Input, useToast } from './ui';
+import { Modal, Button, Input, Select, useToast } from './ui';
 
 const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
     const { toast } = useToast();
@@ -287,14 +287,15 @@ const ShareModal = ({ isOpen, onClose, treeId, treeName, currentUserRole }) => {
 
                                 {currentUserRole === 'owner' && member.role !== 'owner' && (
                                     <div className="flex items-center gap-2">
-                                        <select
+                                        <Select
                                             value={member.role}
-                                            onChange={(e) => handleUpdateRole(member.users.id, e.target.value)}
-                                            className="text-sm border rounded p-1 bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                                        >
-                                            <option value="viewer">Viewer</option>
-                                            <option value="editor">Editor</option>
-                                        </select>
+                                            onChange={(val) => handleUpdateRole(member.users.id, val)}
+                                            options={[
+                                                { value: 'viewer', label: 'Viewer' },
+                                                { value: 'editor', label: 'Editor' }
+                                            ]}
+                                            className="!w-32"
+                                        />
                                         <Button
                                             variant="danger"
                                             size="xs"

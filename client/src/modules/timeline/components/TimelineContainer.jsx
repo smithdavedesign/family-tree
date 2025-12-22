@@ -7,6 +7,8 @@ import useTimelineData from '../hooks/useTimelineData';
 import TimelineScroller from './TimelineScroller';
 import '../styles/timeline.css';
 
+import Breadcrumbs from '../../../components/Breadcrumbs';
+
 import AccountSettings from '../../../components/AccountSettings';
 
 const TimelineContainer = () => {
@@ -47,19 +49,19 @@ const TimelineContainer = () => {
         <div className="timeline-container">
             <Navbar
                 user={user}
-                title="Family Timeline"
                 onOpenSettings={() => setShowSettings(true)}
-                leftContent={
-                    <Link to={`/tree/${id}`} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="font-medium hidden sm:inline">Back to Tree</span>
-                    </Link>
-                }
                 rightContent={
                     <div className="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
                         {events.length} Events
                     </div>
                 }
+            />
+
+            <Breadcrumbs
+                items={[
+                    { label: 'Timeline' }
+                ]}
+                backItem={{ label: 'Back to Tree', href: `/tree/${id}` }}
             />
 
             <TimelineScroller events={events} persons={persons} />

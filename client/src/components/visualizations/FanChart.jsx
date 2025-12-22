@@ -178,34 +178,34 @@ const FanChart = ({ persons, relationships, centerPersonId, onPersonClick, onRef
     return (
         <div className="flex flex-col items-center justify-center w-full h-full bg-slate-50 relative overflow-hidden">
             {/* Immersive Header with Navigation Controls */}
-            <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-700 ${isZenMode ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}>
-                <div className="bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white/20">
-                    <div className="flex items-center gap-4">
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleReset}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
-                                title="Reset to root"
-                            >
-                                <Home className="w-4 h-4" />
-                                <span className="hidden sm:inline">Reset</span>
-                            </button>
+            <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-700 w-full max-w-sm px-4 ${isZenMode ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}>
+                <div className="bg-white/95 backdrop-blur-md p-4 rounded-b-3xl shadow-xl border-x border-b border-slate-200/60">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="flex items-center gap-3 w-full">
+                            <div className="flex-1 border-r border-slate-200 pr-4">
+                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-0.5">Showing ancestors of</div>
+                                <div className="font-bold text-slate-900 truncate">
+                                    {persons.find(p => p.id === centerPersonId)?.first_name} {persons.find(p => p.id === centerPersonId)?.last_name || ''}
+                                </div>
+                            </div>
 
-                            <button
-                                onClick={handleGoToParent}
-                                disabled={!getParentId(centerPersonId)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                title="Go to parent"
-                            >
-                                <ChevronUp className="w-4 h-4" />
-                                <span className="hidden sm:inline">Parent</span>
-                            </button>
-                        </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleReset}
+                                    className="p-2.5 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all active:scale-95"
+                                    title="Reset to root"
+                                >
+                                    <Home className="w-5 h-5" />
+                                </button>
 
-                        <div className="border-l border-slate-300 pl-4">
-                            <div className="text-xs text-slate-500">Showing ancestors of:</div>
-                            <div className="font-semibold text-slate-900">
-                                {persons.find(p => p.id === centerPersonId)?.first_name} {persons.find(p => p.id === centerPersonId)?.last_name || ''}
+                                <button
+                                    onClick={handleGoToParent}
+                                    disabled={!getParentId(centerPersonId)}
+                                    className="p-2.5 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 disabled:opacity-30 disabled:grayscale transition-all active:scale-95"
+                                    title="Go to parent"
+                                >
+                                    <ChevronUp className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
                     </div>

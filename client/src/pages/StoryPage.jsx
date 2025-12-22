@@ -7,6 +7,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import CommentSection from '../components/comments/CommentSection';
 import StoryLocationSection from '../components/StoryLocationSection';
+import Navbar from '../components/Navbar';
+import AccountSettings from '../components/AccountSettings';
 
 const fetchStory = async (id) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -91,6 +93,16 @@ const StoryContent = ({ content }) => {
 const StoryPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [showSettings, setShowSettings] = React.useState(false);
+    const [user, setUser] = React.useState(null);
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        fetchUser();
+    }, []);
 
     const { data: story, isLoading, error } = useQuery({
         queryKey: ['story', id],
@@ -140,8 +152,17 @@ const StoryPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
+            <Navbar user={user} onOpenSettings={() => setShowSettings(true)} />
+            <Breadcrumbs
+                items={[
+                    { label: story.tree_name || 'Tree', href: `/tree/${story.tree_id}` },
+                    { label: 'Stories', href: `/tree/${story.tree_id}/stories` },
+                    { label: story.title }
+                ]}
+            />
+
             {/* Header */}
-            <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+            <div className="bg-white border-b border-slate-200 sticky top-16 z-10">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
@@ -246,6 +267,14 @@ const StoryPage = () => {
                     </div>
                 </article>
             </main>
+
+            {showSettings && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
+                    returnLabel={story?.title}
+                />
+            )}
         </div>
     );
 };

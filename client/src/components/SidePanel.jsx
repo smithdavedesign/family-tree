@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, GraduationCap, Heart, Users, FileText, Upload, Check, Camera, Phone, Mail, Home, BookOpen, ExternalLink } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
-import { Button, Input, useToast, Modal } from './ui';
+import { Button, Input, Select, useToast, Modal } from './ui';
 import LocationSelector from './LocationSelector';
 import PhotoGallery from './PhotoGallery';
 import DocumentGallery from './DocumentGallery';
@@ -72,7 +72,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`/api/person/${person.id}/media`, {
+            const response = await fetch(`/ api / person / ${person.id}/media`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -596,18 +596,17 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                                     </div>
 
                                     <div className="col-span-2">
-                                        <Input
+                                        <Select
                                             label="Gender"
-                                            name="gender"
                                             value={formData.gender}
-                                            onChange={handleChange}
-                                            as="select"
-                                        >
-                                            <option value="">Select...</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </Input>
+                                            onChange={(val) => setFormData(prev => ({ ...prev, gender: val }))}
+                                            options={[
+                                                { value: 'Male', label: 'Male' },
+                                                { value: 'Female', label: 'Female' },
+                                                { value: 'Other', label: 'Other' }
+                                            ]}
+                                            fullWidth
+                                        />
                                     </div>
                                 </div>
                             </div>

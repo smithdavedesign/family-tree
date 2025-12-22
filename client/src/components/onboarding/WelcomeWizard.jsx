@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, User, Users, TreePine, Check } from 'lucide-react';
-import { Button, useToast } from '../ui';
+import { Button, Input, Select, useToast } from '../ui';
 import { supabase } from '../../auth';
 
 const WelcomeWizard = ({ onComplete }) => {
@@ -213,14 +213,12 @@ const WelcomeWizard = ({ onComplete }) => {
                         <h2 className="text-2xl font-bold text-slate-800 mb-6">Name your Family Tree</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tree Name</label>
-                                <input
-                                    type="text"
+                                <Input
+                                    label="Tree Name"
                                     name="treeName"
                                     value={formData.treeName}
                                     onChange={handleChange}
                                     placeholder="e.g. The Smith Family"
-                                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                                     autoFocus
                                 />
                             </div>
@@ -237,53 +235,40 @@ const WelcomeWizard = ({ onComplete }) => {
                         <h2 className="text-2xl font-bold text-slate-800 mb-6">Tell us about yourself</h2>
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"
-                                    />
-                                </div>
+                                <Input
+                                    label="First Name"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                />
+                                <Input
+                                    label="Last Name"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
-                                    <select
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"
-                                    >
-                                        <option value="">Select...</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Birth Date</label>
-                                    <input
-                                        type="date"
-                                        name="birthDate"
-                                        value={formData.birthDate}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"
-                                    />
-                                </div>
+                                <Select
+                                    label="Gender"
+                                    value={formData.gender}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, gender: val }))}
+                                    options={[
+                                        { value: 'Male', label: 'Male' },
+                                        { value: 'Female', label: 'Female' },
+                                        { value: 'Other', label: 'Other' }
+                                    ]}
+                                    placeholder="Select..."
+                                    fullWidth
+                                />
+                                <Input
+                                    label="Birth Date"
+                                    type="date"
+                                    name="birthDate"
+                                    value={formData.birthDate}
+                                    onChange={handleChange}
+                                />
                             </div>
 
                             <Button onClick={handleNext} disabled={!formData.firstName.trim() || !formData.lastName.trim()} className="w-full mt-4">
@@ -303,21 +288,17 @@ const WelcomeWizard = ({ onComplete }) => {
                             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <h3 className="font-medium text-slate-700 mb-3 flex items-center"><User className="w-4 h-4 mr-2" /> Father</h3>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input
-                                        type="text"
+                                    <Input
                                         name="fatherFirstName"
                                         value={formData.fatherFirstName}
                                         onChange={handleChange}
                                         placeholder="First Name"
-                                        className="px-3 py-2 rounded border border-slate-300 text-sm"
                                     />
-                                    <input
-                                        type="text"
+                                    <Input
                                         name="fatherLastName"
                                         value={formData.fatherLastName}
                                         onChange={handleChange}
                                         placeholder="Last Name"
-                                        className="px-3 py-2 rounded border border-slate-300 text-sm"
                                     />
                                 </div>
                             </div>
@@ -325,21 +306,17 @@ const WelcomeWizard = ({ onComplete }) => {
                             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <h3 className="font-medium text-slate-700 mb-3 flex items-center"><User className="w-4 h-4 mr-2" /> Mother</h3>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input
-                                        type="text"
+                                    <Input
                                         name="motherFirstName"
                                         value={formData.motherFirstName}
                                         onChange={handleChange}
                                         placeholder="First Name"
-                                        className="px-3 py-2 rounded border border-slate-300 text-sm"
                                     />
-                                    <input
-                                        type="text"
+                                    <Input
                                         name="motherLastName"
                                         value={formData.motherLastName}
                                         onChange={handleChange}
                                         placeholder="Maiden Name"
-                                        className="px-3 py-2 rounded border border-slate-300 text-sm"
                                     />
                                 </div>
                             </div>

@@ -5,11 +5,22 @@ import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
 import AlbumManager from '../components/AlbumManager';
 import AlbumView from '../components/AlbumView';
+import AccountSettings from '../components/AccountSettings';
 import { supabase } from '../auth';
 
 const AlbumPage = () => {
     const { treeId, albumId } = useParams();
     const navigate = useNavigate();
+    const [showSettings, setShowSettings] = React.useState(false);
+    const [user, setUser] = React.useState(null);
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        fetchUser();
+    }, []);
 
     // Fetch tree info for role
     const { data: treeData } = useQuery({
@@ -30,7 +41,7 @@ const AlbumPage = () => {
 
     // Breadcrumb items
     const breadcrumbItems = [
-        { label: treeName, href: `/tree/${treeId}` }
+        { label: treeName.replace(/\s+tree$/i, ''), href: `/tree/${treeId}` }
     ];
 
     if (albumId && treeData) {
@@ -49,11 +60,10 @@ const AlbumPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <Navbar />
+            <Navbar user={user} onOpenSettings={() => setShowSettings(true)} />
+            <Breadcrumbs items={breadcrumbItems} />
 
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                <Breadcrumbs items={breadcrumbItems} />
-
+            <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="mt-6">
                     {albumId ? (
                         <AlbumView
@@ -70,6 +80,14 @@ const AlbumPage = () => {
                     )}
                 </div>
             </div>
+
+            {showSettings && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
+                    returnLabel={breadcrumbItems[breadcrumbItems.length - 1]?.label}
+                />
+            )}
         </div>
     );
 };

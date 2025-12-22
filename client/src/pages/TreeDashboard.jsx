@@ -159,7 +159,7 @@ const TreeDashboard = (props) => {
                 onOpenSettings={() => setShowSettings(true)}
                 leftContent={
                     <button
-                        onClick={() => setIsSidebarOpen(true)}
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                         className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                         aria-label="Open menu"
                     >

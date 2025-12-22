@@ -11,7 +11,7 @@ import VirtualGallery from '../components/VirtualGallery';
 import AccountSettings from '../components/AccountSettings';
 import PhotoLightbox from '../components/PhotoLightbox';
 import AlbumSelectorModal from '../components/AlbumSelectorModal';
-import { Button, useToast } from '../components/ui';
+import { Button, Select, useToast } from '../components/ui';
 
 const TreeGalleryPage = () => {
     const { id: treeId } = useParams();
@@ -124,16 +124,13 @@ const TreeGalleryPage = () => {
             <Navbar
                 user={user}
                 onOpenSettings={() => setShowSettings(true)}
-                leftContent={
-                    <Breadcrumbs
-                        inline
-                        showHome={false}
-                        items={[
-                            { label: treeName, href: `/tree/${treeId}` },
-                            { label: 'Photo Gallery' }
-                        ]}
-                    />
-                }
+            />
+
+            <Breadcrumbs
+                items={[
+                    { label: treeName, href: `/tree/${treeId}` },
+                    { label: 'Photo Gallery' }
+                ]}
             />
 
             {/* Header / Controls */}
@@ -195,20 +192,16 @@ const TreeGalleryPage = () => {
                             </button>
                         </div>
 
-                        {/* Person Filter */}
-                        <div className="relative">
-                            <select
-                                value={filterPerson}
-                                onChange={(e) => setFilterPerson(e.target.value)}
-                                className="pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none cursor-pointer hover:bg-slate-50"
-                            >
-                                <option value="all">All People</option>
-                                {persons.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                            <Filter className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        </div>
+                        <Select
+                            value={filterPerson}
+                            onChange={(value) => setFilterPerson(value)}
+                            options={[
+                                { value: 'all', label: 'All People' },
+                                ...persons.map(p => ({ value: p.id, label: p.name }))
+                            ]}
+                            leftIcon={<Filter className="w-4 h-4" />}
+                            className="w-full sm:w-48"
+                        />
                     </div>
                 </div>
             </div>

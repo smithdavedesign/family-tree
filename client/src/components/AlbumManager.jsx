@@ -93,16 +93,15 @@ const AlbumManager = ({ treeId, userRole, onAlbumClick }) => {
             </div>
 
             {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                    type="text"
-                    placeholder="Search albums..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                />
-            </div>
+            <Input
+                type="text"
+                placeholder="Search albums..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                leftIcon={<Search />}
+                className="!rounded-full shadow-sm"
+                showClear
+            />
 
             {/* Albums Grid */}
             {filteredAlbums.length === 0 ? (
@@ -141,27 +140,24 @@ const AlbumManager = ({ treeId, userRole, onAlbumClick }) => {
                 >
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                Album Name *
-                            </label>
                             <Input
+                                label="Album Name"
                                 type="text"
                                 placeholder="e.g., Summer Vacation 1985"
                                 value={newAlbum.name}
                                 onChange={(e) => setNewAlbum({ ...newAlbum, name: e.target.value })}
                                 maxLength={255}
+                                required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                Description
-                            </label>
-                            <textarea
+                            <Input
+                                label="Description"
+                                type="textarea"
                                 placeholder="Add a description for this album..."
                                 value={newAlbum.description}
                                 onChange={(e) => setNewAlbum({ ...newAlbum, description: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                                 rows={3}
                                 maxLength={2000}
                             />

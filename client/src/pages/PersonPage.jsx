@@ -12,6 +12,7 @@ import PersonStories from '../components/PersonStories';
 import RelationshipMap from '../components/RelationshipMap';
 import PersonDocuments from '../components/PersonDocuments';
 import SidePanel from '../components/SidePanel';
+import AccountSettings from '../components/AccountSettings';
 import PersonHeatmap from '../components/PersonHeatmap';
 import PersonLocations from '../components/PersonLocations';
 import { Map as MapIcon } from 'lucide-react';
@@ -51,6 +52,7 @@ const PersonPage = () => {
     const navigate = useNavigate();
     const [user, setUser] = React.useState(null);
     const [showSidePanel, setShowSidePanel] = React.useState(false);
+    const [showSettings, setShowSettings] = React.useState(false);
     const [refreshKey, setRefreshKey] = React.useState(0);
 
     React.useEffect(() => {
@@ -140,13 +142,13 @@ const PersonPage = () => {
             {/* Navbar */}
             <Navbar
                 user={user}
-                onOpenSettings={() => { }}
+                onOpenSettings={() => setShowSettings(true)}
             />
 
             {/* Breadcrumbs */}
             <Breadcrumbs
                 items={[
-                    { label: treeName, href: `/tree/${treeId}` },
+                    { label: treeName.replace(/\s+tree$/i, ''), href: `/tree/${treeId}` },
                     { label: fullName }
                 ]}
             />
@@ -212,6 +214,13 @@ const PersonPage = () => {
                         />
                     </div>
                 </div>
+            )}
+            {showSettings && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
+                    returnLabel={fullName}
+                />
             )}
         </div>
     );

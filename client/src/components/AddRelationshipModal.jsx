@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { supabase } from '../auth';
-import { Modal, Button, Input, useToast } from './ui';
+import { Modal, Button, Input, Select, useToast } from './ui';
 
 const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => {
     const { toast } = useToast();
@@ -322,17 +322,18 @@ const AddRelationshipModal = ({ isOpen, onClose, currentPerson, onSuccess }) => 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
-                        <select
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        <Select
+                            label="Gender"
                             value={newPersonData.gender}
-                            onChange={(e) => setNewPersonData({ ...newPersonData, gender: e.target.value })}
-                        >
-                            <option value="">Select Gender...</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
+                            onChange={(val) => setNewPersonData({ ...newPersonData, gender: val })}
+                            options={[
+                                { value: 'Male', label: 'Male' },
+                                { value: 'Female', label: 'Female' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                            placeholder="Select Gender..."
+                            fullWidth
+                        />
                     </div>
 
                     <div className="flex gap-3 pt-4">

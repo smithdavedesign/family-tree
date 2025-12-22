@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input } from './ui';
+import { Button, Input, Select } from './ui';
 import { X, Image as ImageIcon } from 'lucide-react';
 import PhotoSelector from './PhotoSelector';
 import LocationSelector from './LocationSelector';
@@ -87,17 +87,13 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Type</label>
-                    <select
-                        name="event_type"
+                    <Select
+                        label="Type"
                         value={formData.event_type}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    >
-                        {EVENT_TYPES.map(type => (
-                            <option key={type.value} value={type.value}>{type.label}</option>
-                        ))}
-                    </select>
+                        onChange={(val) => setFormData(prev => ({ ...prev, event_type: val }))}
+                        options={EVENT_TYPES.map(type => ({ value: type.value, label: type.label }))}
+                        fullWidth
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Date (Single)</label>
@@ -171,13 +167,13 @@ const LifeEventForm = ({ event, treeId, onSave, onCancel, isSaving }) => {
             </div>
 
             <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Description</label>
-                <textarea
+                <Input
+                    label="Description"
+                    type="textarea"
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Add details..."
                 />
             </div>

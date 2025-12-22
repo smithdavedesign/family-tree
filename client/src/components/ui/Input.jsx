@@ -51,8 +51,8 @@ const Input = ({
         baseStyles,
         variantStyles[variant],
         stateStyles,
-        leftIcon ? 'pl-10' : '',
-        (rightIcon || showClear || isPassword || showCounter) ? 'pr-10' : '',
+        leftIcon ? '!pl-16' : '',
+        (rightIcon || showClear || isPassword || showCounter) ? '!pr-16' : '',
         className,
     ].filter(Boolean).join(' ');
 
@@ -83,8 +83,8 @@ const Input = ({
             <div className="relative">
                 {/* Left Icon */}
                 {leftIcon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        {leftIcon}
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center pointer-events-none">
+                        {React.cloneElement(leftIcon, { className: `w-5 h-5 ${leftIcon.props.className || ''}` })}
                     </div>
                 )}
 
@@ -109,7 +109,7 @@ const Input = ({
                 </InputElement>
 
                 {/* Right Icons/Actions */}
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     {/* Character Counter */}
                     {showCounter && maxLength && (
                         <span className="text-xs text-slate-400">

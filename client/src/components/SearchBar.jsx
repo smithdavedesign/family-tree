@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, X, Calendar, Filter } from 'lucide-react';
+import { Input, Button } from './ui';
 
 const SearchBar = ({ persons = [], onHighlight, onClear, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -57,24 +58,17 @@ const SearchBar = ({ persons = [], onHighlight, onClear, onClose }) => {
             <div className="max-w-4xl mx-auto">
                 <div className="flex gap-2 items-center">
                     {/* Search Input */}
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <input
+                    <div className="flex-1">
+                        <Input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search family members..."
-                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            leftIcon={<Search />}
+                            showClear
+                            className="bg-white !rounded-full shadow-sm"
                             autoFocus
                         />
-                        {searchTerm && (
-                            <button
-                                onClick={handleClear}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
                     </div>
 
                     {/* Filter Toggle */}
