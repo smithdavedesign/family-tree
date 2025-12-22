@@ -128,21 +128,23 @@ const SearchBar = ({ persons = [], onHighlight, onClear, onClose }) => {
 
                         {/* Year Range Inputs */}
                         {filterType === 'year' && (
-                            <div className="flex gap-2 items-center">
-                                <Calendar className="w-4 h-4 text-gray-500" />
-                                <input
-                                    type="date"
-                                    id="yearRangeStart"
-                                    name="yearRangeStart"
-                                    value={yearRange.start}
-                                    onChange={(e) => {
-                                        setYearRange({ ...yearRange, start: e.target.value });
-                                        handleSearch(searchTerm);
-                                    }}
-                                    placeholder="Start date"
-                                    className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                />
-                                <span className="text-gray-500">to</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
+                                    <input
+                                        type="date"
+                                        id="yearRangeStart"
+                                        name="yearRangeStart"
+                                        value={yearRange.start}
+                                        onChange={(e) => {
+                                            setYearRange({ ...yearRange, start: e.target.value });
+                                            handleSearch(searchTerm);
+                                        }}
+                                        placeholder="Start date"
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-0"
+                                    />
+                                </div>
+                                <span className="text-gray-500 mx-auto sm:mx-0 text-xs">to</span>
                                 <input
                                     type="date"
                                     id="yearRangeEnd"
@@ -153,7 +155,7 @@ const SearchBar = ({ persons = [], onHighlight, onClear, onClose }) => {
                                         handleSearch(searchTerm);
                                     }}
                                     placeholder="End date"
-                                    className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-0"
                                 />
                             </div>
                         )}

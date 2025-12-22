@@ -265,7 +265,7 @@ const TreePage = () => {
                 <div className="flex-1 flex overflow-hidden relative">
                     {/* Search Bar - Conditionally Rendered */}
                     {isSearchOpen && (
-                        <div className="absolute top-4 left-4 z-30 w-full max-w-md animate-slideIn pointer-events-auto">
+                        <div className="absolute top-4 left-4 right-4 z-30 md:w-full md:max-w-md animate-slideIn pointer-events-auto">
                             <SearchBar
                                 persons={persons}
                                 onHighlight={setHighlightedNodes}
