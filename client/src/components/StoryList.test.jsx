@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '../test/utils/testUtils';
 import { vi } from 'vitest';
 import StoryList from './StoryList';
 import { useStories } from '../hooks/useStories';
@@ -9,7 +9,9 @@ import { useToast } from './ui';
 vi.mock('../hooks/useStories');
 vi.mock('./ui', () => ({
     Button: ({ children, ...props }) => <button {...props}>{children}</button>,
+    ToastProvider: ({ children }) => <div>{children}</div>,
     useToast: vi.fn(),
+    Input: (props) => <input {...props} />,
 }));
 
 // Mock StoryEditor

@@ -131,9 +131,40 @@ exports.getUserTrees = async (req, res) => {
             ? membershipData.map(m => ({ ...m.trees, memberRole: m.role }))
             : [];
 
-        console.log('Trees found - Owned:', ownedTrees?.length || 0, 'Shared:', sharedTrees?.length || 0);
+        // Helper to combine tree data with member flags
+        const enhanceTrees = (trees, memberships) => {
+            if (!trees) return [];
+            return trees.map(tree => {
+                const member = memberships?.find(m => m.tree_id === tree.id);
+                return {
+                    ...tree,
+                    is_favorite: member?.is_favorite || false,
+                    is_archived: member?.is_archived || false,
+                    updated_at: tree.updated_at || tree.created_at
+                };
+            });
+        };
 
-        res.json({ ownedTrees: ownedTrees || [], sharedTrees });
+        // Fetch user's membership for ALL trees to get flags
+        const { data: allMemberships } = await supabaseAdmin
+            .from('tree_members')
+            .select('tree_id, is_favorite, is_archived')
+            .eq('user_id', userId);
+
+        const enhancedOwnedTrees = enhanceTrees(ownedTrees, allMemberships);
+        const enhancedSharedTrees = sharedTrees.map(t => {
+            const member = allMemberships?.find(m => m.tree_id === t.id);
+            return {
+                ...t,
+                is_favorite: member?.is_favorite || false,
+                is_archived: member?.is_archived || false,
+                updated_at: t.updated_at || t.created_at
+            };
+        });
+
+        console.log('Trees found - Owned:', enhancedOwnedTrees?.length || 0, 'Shared:', enhancedSharedTrees?.length || 0);
+
+        res.json({ ownedTrees: enhancedOwnedTrees || [], sharedTrees: enhancedSharedTrees });
     } catch (error) {
         console.error('Error fetching user trees:', error);
         res.status(500).json({ error: error.message });
@@ -314,6 +345,68 @@ exports.deleteTree = async (req, res) => {
         res.json({ message: 'Tree deleted successfully' });
     } catch (error) {
         console.error('Error deleting tree:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateTree = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        if (!name) return res.status(400).json({ error: 'Tree name is required' });
+
+        const { data: tree, error } = await supabaseAdmin
+            .from('trees')
+            .update({ name, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.json(tree);
+    } catch (error) {
+        console.error('Error updating tree:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.toggleFavorite = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { is_favorite } = req.body;
+
+        const { error } = await supabaseAdmin
+            .from('tree_members')
+            .update({ is_favorite })
+            .eq('tree_id', id)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        res.json({ success: true, is_favorite });
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.toggleArchive = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { is_archived } = req.body;
+
+        const { error } = await supabaseAdmin
+            .from('tree_members')
+            .update({ is_archived })
+            .eq('tree_id', id)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        res.json({ success: true, is_archived });
+    } catch (error) {
+        console.error('Error toggling archive:', error);
         res.status(500).json({ error: error.message });
     }
 };

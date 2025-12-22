@@ -85,6 +85,7 @@ const AlbumManager = ({ treeId, userRole, onAlbumClick }) => {
                     <Button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="gap-2"
+                        data-testid="create-album-btn"
                     >
                         <Plus className="w-4 h-4" />
                         Create Album
@@ -114,7 +115,10 @@ const AlbumManager = ({ treeId, userRole, onAlbumClick }) => {
                         {searchTerm ? 'Try a different search term' : 'Create your first album to organize photos'}
                     </p>
                     {canEdit && !searchTerm && (
-                        <Button onClick={() => setIsCreateModalOpen(true)}>
+                        <Button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            data-testid="create-album-btn"
+                        >
                             Create Album
                         </Button>
                     )}

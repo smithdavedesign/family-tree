@@ -77,7 +77,8 @@ describe('AlbumManager Component', () => {
         renderComponent({ userRole: 'editor' });
 
         await waitFor(() => {
-            expect(screen.getByText('Create Album')).toBeInTheDocument();
+            const buttons = screen.getAllByTestId('create-album-btn');
+            expect(buttons.length).toBeGreaterThanOrEqual(1);
         });
     });
 
@@ -90,7 +91,7 @@ describe('AlbumManager Component', () => {
         renderComponent({ userRole: 'viewer' });
 
         await waitFor(() => {
-            expect(screen.queryByText('Create Album')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('create-album-btn')).not.toBeInTheDocument();
         });
     });
 
@@ -103,14 +104,15 @@ describe('AlbumManager Component', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByText('Create Album')).toBeInTheDocument();
+            const buttons = screen.getAllByTestId('create-album-btn');
+            expect(buttons.length).toBeGreaterThanOrEqual(1);
         });
 
-        fireEvent.click(screen.getByText('Create Album'));
+        fireEvent.click(screen.getAllByTestId('create-album-btn')[0]);
 
         await waitFor(() => {
             expect(screen.getByText('Create New Album')).toBeInTheDocument();
-            expect(screen.getByPlaceholderText(/album name/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/album name/i)).toBeInTheDocument();
         });
     });
 

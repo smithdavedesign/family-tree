@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../utils/testUtils';
-import AlbumSelector from '../../components/AlbumSelector';
+import AlbumSelectorModal from '../../components/AlbumSelectorModal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 global.fetch = vi.fn();
@@ -33,12 +33,13 @@ describe('AlbumSelector Component', () => {
             photoIds: ['photo-1', 'photo-2'],
             treeId: 'test-tree-id',
             onClose: vi.fn(),
+            isOpen: true,
             ...props
         };
 
         return render(
             <QueryClientProvider client={queryClient}>
-                <AlbumSelector {...defaultProps} />
+                <AlbumSelectorModal {...defaultProps} />
             </QueryClientProvider>
         );
     };
@@ -81,7 +82,8 @@ describe('AlbumSelector Component', () => {
 
         // Check that button text updates
         await waitFor(() => {
-            expect(screen.getByText(/Add to 2 Albums/i)).toBeInTheDocument();
+            expect(screen.getByText(/Add Photos/i)).toBeInTheDocument();
+            expect(screen.getByText(/Add 2 Photo/i)).toBeInTheDocument();
         });
     });
 
@@ -100,7 +102,7 @@ describe('AlbumSelector Component', () => {
         fireEvent.click(screen.getByText('Create New Album'));
 
         await waitFor(() => {
-            expect(screen.getByPlaceholderText('Album name...')).toBeInTheDocument();
+            expect(screen.getByPlaceholderText('Album name')).toBeInTheDocument();
         });
     });
 
@@ -119,7 +121,7 @@ describe('AlbumSelector Component', () => {
 
         fireEvent.click(screen.getByText('Create New Album'));
 
-        const input = await screen.findByPlaceholderText('Album name...');
+        const input = await screen.findByPlaceholderText('Album name');
         fireEvent.change(input, { target: { value: 'New Test Album' } });
 
         // Mock create album API call
@@ -128,13 +130,7 @@ describe('AlbumSelector Component', () => {
             json: async () => ({ id: 'new-album-id', name: 'New Test Album' })
         });
 
-        // Mock add photos API call
-        global.fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({ added: 2 })
-        });
-
-        fireEvent.click(screen.getByText('Create & Add'));
+        fireEvent.click(screen.getByText('Create'));
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
@@ -142,6 +138,26 @@ describe('AlbumSelector Component', () => {
                 expect.objectContaining({
                     method: 'POST',
                     body: expect.stringContaining('New Test Album')
+                })
+            );
+        });
+
+        // Mock add photos API call
+        global.fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ added: 2 })
+        });
+
+        // Click Add Photos
+        const addBtn = screen.getByRole('button', { name: /Add Photos/i });
+        expect(addBtn).not.toBeDisabled();
+        fireEvent.click(addBtn);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/photos'),
+                expect.objectContaining({
+                    method: 'POST'
                 })
             );
         });
@@ -156,7 +172,7 @@ describe('AlbumSelector Component', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByText('No albums yet. Create one above.')).toBeInTheDocument();
+            expect(screen.getByText('No albums yet')).toBeInTheDocument();
         });
     });
 });

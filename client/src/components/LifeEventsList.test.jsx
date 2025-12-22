@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '../test/utils/testUtils';
 import { vi } from 'vitest';
 import LifeEventsList from './LifeEventsList';
 import { useLifeEvents } from '../hooks/useLifeEvents';

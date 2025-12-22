@@ -134,11 +134,17 @@ const TreeDashboard = (props) => {
         );
     }
 
-    const allTrees = [...ownedTrees, ...sharedTrees];
+    const allTrees = [...ownedTrees, ...sharedTrees]
+        // Filter out archived trees unless viewing archived
+        .filter(t => activeView === 'archived' ? t.is_archived : !t.is_archived);
+
     const filteredTrees = activeView === 'all' ? allTrees :
-        activeView === 'owned' ? ownedTrees :
-            activeView === 'shared' ? sharedTrees :
-                []; // Add logic for recent, favorites, archived if needed
+        activeView === 'owned' ? ownedTrees.filter(t => !t.is_archived) :
+            activeView === 'shared' ? sharedTrees.filter(t => !t.is_archived) :
+                activeView === 'favorites' ? allTrees.filter(t => t.is_favorite) :
+                    activeView === 'archived' ? [...ownedTrees, ...sharedTrees].filter(t => t.is_archived) :
+                        activeView === 'recent' ? [...allTrees].sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)).slice(0, 5) :
+                            [];
 
     // Show Welcome Wizard if no trees and not loading
     if (!loading && allTrees.length === 0) {
@@ -170,160 +176,154 @@ const TreeDashboard = (props) => {
                 }
             />
 
-            <div className="max-w-[1600px] mx-auto flex items-start">
+            <div className="flex items-start">
                 <Sidebar
                     activeView={activeView}
                     onViewChange={setActiveView}
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
-                    className="shrink-0 pl-4"
+                    className="shrink-0"
                 />
 
-                <main className="flex-1 min-w-0 py-8 pl-8 pr-4 animate-fadeIn">
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900">
-                                {activeView === 'all' && 'All Trees'}
-                                {activeView === 'owned' && 'My Trees'}
-                                {activeView === 'shared' && 'Shared with Me'}
-                                {activeView === 'recent' && 'Recent Trees'}
-                                {activeView === 'favorites' && 'Favorites'}
-                                {activeView === 'archived' && 'Archived Trees'}
-                            </h1>
-                            <p className="text-slate-600 mt-1">Manage and explore your family history</p>
+                <main className="flex-1 min-w-0 py-8 px-4 animate-fadeIn">
+                    <div className="max-w-[1600px] mx-auto">
+                        {/* Header */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-slate-900">
+                                    {activeView === 'all' && 'All Trees'}
+                                    {activeView === 'owned' && 'My Trees'}
+                                    {activeView === 'shared' && 'Shared with Me'}
+                                    {activeView === 'recent' && 'Recent Trees'}
+                                    {activeView === 'favorites' && 'Favorites'}
+                                    {activeView === 'archived' && 'Archived Trees'}
+                                </h1>
+                                <p className="text-slate-600 mt-1">Manage and explore your family history</p>
+                            </div>
                         </div>
 
-                        {/* Create New Tree Button - Moved to inside the grid for consistency with snippet */}
-                        {/* <Button
-                            variant="primary"
-                            leftIcon={<Plus className="w-5 h-5" />}
-                            onClick={() => setShowCreateModal(true)}
-                        >
-                            Create New Tree
-                        </Button> */}
-                    </div>
+                        {/* Main Content Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Left Column - Trees */}
+                            <div className="lg:col-span-2 space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-slate-800">Your Family Trees</h2>
+                                    <Button
+                                        variant="primary"
+                                        leftIcon={<Plus className="w-4 h-4" />}
+                                        onClick={() => setShowCreateModal(true)}
+                                    >
+                                        New Tree
+                                    </Button>
+                                </div>
 
-                    {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column - Trees */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-xl font-bold text-slate-800">Your Family Trees</h2>
-                                <Button
-                                    variant="primary"
-                                    leftIcon={<Plus className="w-4 h-4" />}
-                                    onClick={() => setShowCreateModal(true)}
-                                >
-                                    New Tree
-                                </Button>
+                                {/* Tree List */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {filteredTrees.length > 0 ? (
+                                        filteredTrees.map((tree) => (
+                                            <div
+                                                key={tree.id}
+                                                onClick={() => navigate(`/tree/${tree.id}`)}
+                                                className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-teal-200 transition-all cursor-pointer group"
+                                            >
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="p-3 bg-teal-50 rounded-lg group-hover:bg-teal-100 transition-colors">
+                                                        <TreeDeciduous className="w-6 h-6 text-teal-600" />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-teal-700 transition-colors flex items-center gap-2">
+                                                    {tree.name}
+                                                    {tree.is_favorite && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
+                                                </h3>
+                                                <p className="text-sm text-slate-500 line-clamp-2 mb-4">
+                                                    {tree.description || 'No description'}
+                                                </p>
+                                                <div className="flex items-center justify-between text-xs text-slate-400 pt-4 border-t border-slate-50">
+                                                    <div className="flex items-center gap-1">
+                                                        <Users className="w-3 h-3" />
+                                                        <span>{tree.member_count || 1} members</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span>Updated {new Date(tree.updated_at || tree.created_at).toLocaleDateString()}</span>
+                                                        <ChevronRight className="w-3 h-3" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full bg-slate-50 rounded-xl p-8 text-center border-2 border-dashed border-slate-200">
+                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                                                <TreeDeciduous className="w-6 h-6 text-slate-300" />
+                                            </div>
+                                            <h3 className="text-slate-900 font-medium mb-1">No trees yet</h3>
+                                            <p className="text-slate-500 text-sm mb-4">Create your first family tree to get started</p>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowCreateModal(true)}
+                                            >
+                                                Create Tree
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Tree List */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {filteredTrees.length > 0 ? (
-                                    filteredTrees.map((tree) => (
-                                        <div
-                                            key={tree.id}
-                                            onClick={() => navigate(`/tree/${tree.id}`)}
-                                            className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-teal-200 transition-all cursor-pointer group"
-                                        >
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="p-3 bg-teal-50 rounded-lg group-hover:bg-teal-100 transition-colors">
-                                                    <TreeDeciduous className="w-6 h-6 text-teal-600" />
-                                                </div>
-                                            </div>
-                                            <h3 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-teal-700 transition-colors">
-                                                {tree.name}
-                                            </h3>
-                                            <p className="text-sm text-slate-500 line-clamp-2 mb-4">
-                                                {tree.description || 'No description'}
-                                            </p>
-                                            <div className="flex items-center justify-between text-xs text-slate-400 pt-4 border-t border-slate-50">
-                                                <div className="flex items-center gap-1">
-                                                    <Users className="w-3 h-3" />
-                                                    <span>{tree.member_count || 1} members</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span>Updated {new Date(tree.updated_at).toLocaleDateString()}</span>
-                                                    <ChevronRight className="w-3 h-3" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="col-span-full bg-slate-50 rounded-xl p-8 text-center border-2 border-dashed border-slate-200">
-                                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                                            <TreeDeciduous className="w-6 h-6 text-slate-300" />
-                                        </div>
-                                        <h3 className="text-slate-900 font-medium mb-1">No trees yet</h3>
-                                        <p className="text-slate-500 text-sm mb-4">Create your first family tree to get started</p>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowCreateModal(true)}
-                                        >
-                                            Create Tree
-                                        </Button>
+                            {/* Right Column - Activity & Events */}
+                            <div className="space-y-6">
+                                {/* Global Travel Stats */}
+                                <GlobalTravelDashboard />
+
+                                {/* Events Widget */}
+                                <EventsWidget />
+
+                                {/* Activity Feed */}
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                    <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                            <Activity className="w-4 h-4 text-teal-600" />
+                                            Recent Activity
+                                        </h3>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Right Column - Activity & Events */}
-                        <div className="space-y-6">
-                            {/* Global Travel Stats */}
-                            <GlobalTravelDashboard />
-
-                            {/* Events Widget */}
-                            <EventsWidget />
-
-                            {/* Activity Feed */}
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                        <Activity className="w-4 h-4 text-teal-600" />
-                                        Recent Activity
-                                    </h3>
-                                </div>
-                                <div className="divide-y divide-slate-50">
-                                    {/* Placeholder Activity Items */}
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="p-4 hover:bg-slate-50 transition-colors">
-                                            <div className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
-                                                    JD
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-slate-600">
-                                                        <span className="font-semibold text-slate-900">John Doe</span> added a new photo to <span className="font-medium text-teal-600">Smith Family Tree</span>
-                                                    </p>
-                                                    <p className="text-xs text-slate-400 mt-1">2 hours ago</p>
+                                    <div className="divide-y divide-slate-50">
+                                        {/* Placeholder Activity items - Use mock data if needed or fetch real activity */}
+                                        {[1, 2, 3].map((i) => (
+                                            <div key={i} className="p-4 hover:bg-slate-50 transition-colors">
+                                                <div className="flex gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
+                                                        JD
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-slate-600">
+                                                            <span className="font-semibold text-slate-900">John Doe</span> added a new photo to <span className="font-medium text-teal-600">Smith Family Tree</span>
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 mt-1">2 hours ago</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Empty States */}
+                        {activeView === 'favorites' && filteredTrees.length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                                <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-slate-900">No favorites yet</h3>
+                                <p className="text-slate-500 mt-1">Star your most important trees to see them here.</p>
+                            </div>
+                        )}
+
+                        {activeView === 'archived' && filteredTrees.length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                                <Archive className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-slate-900">No archived trees</h3>
+                                <p className="text-slate-500 mt-1">Archived trees will appear here.</p>
+                            </div>
+                        )}
                     </div>
-
-                    {/* Empty States */}
-                    {activeView === 'favorites' && (
-                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                            <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-slate-900">No favorites yet</h3>
-                            <p className="text-slate-500 mt-1">Star your most important trees to see them here.</p>
-                        </div>
-                    )}
-
-                    {activeView === 'archived' && (
-                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                            <Archive className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-slate-900">No archived trees</h3>
-                            <p className="text-slate-500 mt-1">Archived trees will appear here.</p>
-                        </div>
-                    )}
                 </main>
             </div>
 

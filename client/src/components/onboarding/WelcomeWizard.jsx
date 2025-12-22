@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, User, Users, TreePine, Check } from 'lucide-react';
 import { Button, Input, Select, useToast } from '../ui';
 import { supabase } from '../../auth';
+import { sessionManager } from '../../utils/sessionManager';
 
 const WelcomeWizard = ({ onComplete }) => {
     const [step, setStep] = useState(1);
@@ -43,29 +44,64 @@ const WelcomeWizard = ({ onComplete }) => {
     const handleFinish = async () => {
         setIsSubmitting(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
+            // Robust token retrieval
+            let session = (await supabase.auth.getSession()).data.session;
+
+            if (!session) {
+                console.log('Supabase session null, trying sessionManager...');
+                session = sessionManager.getSession();
+            }
+
+            if (!session) {
+                console.log('sessionManager session null, trying getUser fallback...');
+                const { data } = await supabase.auth.getUser();
+                if (data?.user) {
+                    // getUser worked, but we might still not have an access_token in the same way getSession provides it if it's stale
+                    // In this case, refresh if possible
+                    session = (await supabase.auth.getSession()).data.session;
+                }
+            }
+
             const token = session?.access_token;
+            if (!token) {
+                throw new Error('No authentication token found. Please try logging in again.');
+            }
+
+            const apiFetch = async (url, options) => {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        ...(options.headers || {})
+                    }
+                });
+
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { message: 'Unknown error' };
+                    }
+
+                    const error = new Error(errorData.error || errorData.message || `API error: ${response.status}`);
+                    error.status = response.status;
+                    error.data = errorData;
+                    throw error;
+                }
+                return response.json();
+            };
 
             // 1. Create Tree
-            const treeRes = await fetch('/api/trees', {
+            const tree = await apiFetch('/api/trees', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
                 body: JSON.stringify({ name: formData.treeName })
             });
 
-            if (!treeRes.ok) throw new Error('Failed to create tree');
-            const tree = await treeRes.json();
-
             // 2. Create Self (Root Person)
-            const selfRes = await fetch('/api/person', {
+            const self = await apiFetch('/api/person', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
                 body: JSON.stringify({
                     tree_id: tree.id,
                     first_name: formData.firstName,
@@ -75,54 +111,36 @@ const WelcomeWizard = ({ onComplete }) => {
                 })
             });
 
-            if (!selfRes.ok) throw new Error('Failed to create profile');
-            const self = await selfRes.json();
-
             // 3. Create Father (Optional)
             let fatherId = null;
             if (formData.fatherFirstName.trim()) {
-                const fatherRes = await fetch('/api/person', {
+                const father = await apiFetch('/api/person', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
                     body: JSON.stringify({
                         tree_id: tree.id,
                         first_name: formData.fatherFirstName,
-                        last_name: formData.fatherLastName || formData.lastName, // Assume same last name if empty
+                        last_name: formData.fatherLastName || formData.lastName,
                         gender: 'Male'
                     })
                 });
-                if (fatherRes.ok) {
-                    const father = await fatherRes.json();
-                    fatherId = father.id;
+                fatherId = father.id;
 
-                    // Link Father
-                    await fetch('/api/relationship', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            tree_id: tree.id,
-                            person_1_id: father.id,
-                            person_2_id: self.id,
-                            type: 'parent_child'
-                        })
-                    });
-                }
+                // Link Father
+                await apiFetch('/api/relationship', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        tree_id: tree.id,
+                        person_1_id: father.id,
+                        person_2_id: self.id,
+                        type: 'parent_child'
+                    })
+                });
             }
 
             // 4. Create Mother (Optional)
             if (formData.motherFirstName.trim()) {
-                const motherRes = await fetch('/api/person', {
+                const mother = await apiFetch('/api/person', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
                     body: JSON.stringify({
                         tree_id: tree.id,
                         first_name: formData.motherFirstName,
@@ -130,40 +148,29 @@ const WelcomeWizard = ({ onComplete }) => {
                         gender: 'Female'
                     })
                 });
-                if (motherRes.ok) {
-                    const mother = await motherRes.json();
 
-                    // Link Mother
-                    await fetch('/api/relationship', {
+                // Link Mother
+                await apiFetch('/api/relationship', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        tree_id: tree.id,
+                        person_1_id: mother.id,
+                        person_2_id: self.id,
+                        type: 'parent_child'
+                    })
+                });
+
+                // Link Parents as Spouses (if both exist)
+                if (fatherId) {
+                    await apiFetch('/api/relationship', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`
-                        },
                         body: JSON.stringify({
                             tree_id: tree.id,
-                            person_1_id: mother.id,
-                            person_2_id: self.id,
-                            type: 'parent_child'
+                            person_1_id: fatherId,
+                            person_2_id: mother.id,
+                            type: 'spouse'
                         })
                     });
-
-                    // Link Parents as Spouses (if both exist)
-                    if (fatherId) {
-                        await fetch('/api/relationship', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                                tree_id: tree.id,
-                                person_1_id: fatherId,
-                                person_2_id: mother.id,
-                                type: 'spouse'
-                            })
-                        });
-                    }
                 }
             }
 
@@ -173,8 +180,17 @@ const WelcomeWizard = ({ onComplete }) => {
             navigate(`/tree/${tree.id}`);
 
         } catch (error) {
-            console.error('Wizard Error:', error);
-            toast.error('Something went wrong. Please try again.');
+            console.error('Wizard Error details:', {
+                message: error.message,
+                status: error.status,
+                data: error.data
+            });
+
+            if (error.status === 401) {
+                toast.error('Session expired. Please log in again.');
+            } else {
+                toast.error(error.message || 'Something went wrong. Please try again.');
+            }
         } finally {
             setIsSubmitting(false);
         }

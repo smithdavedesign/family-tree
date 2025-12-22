@@ -26,6 +26,9 @@ router.get('/trees', requireAuth, treeController.getUserTrees);
 router.post('/trees', requireAuth, validate(treeSchema), writeLimiter, auditLog('CREATE', 'tree'), treeController.createTree);
 router.get('/tree/:id', requireAuth, requireViewer, treeController.getTree);
 router.delete('/tree/:id', requireAuth, requireOwner, writeLimiter, auditLog('DELETE', 'tree'), treeController.deleteTree);
+router.put('/tree/:id', requireAuth, requireOwner, writeLimiter, auditLog('UPDATE', 'tree'), treeController.updateTree);
+router.post('/tree/:id/favorite', requireAuth, writeLimiter, treeController.toggleFavorite);
+router.post('/tree/:id/archive', requireAuth, writeLimiter, treeController.toggleArchive);
 
 // Invitation & Member routes
 router.post('/tree/:treeId/invite', requireAuth, requireEditor, validate(invitationSchema), writeLimiter, auditLog('CREATE', 'invitation'), invitationController.createInvitation);
