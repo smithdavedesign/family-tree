@@ -129,10 +129,16 @@ const AccountSettings = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             {/* Navbar */}
-            {/* ... */}
+            <Navbar user={user} onOpenSettings={() => { }} />
 
             {/* Breadcrumbs */}
-            {/* ... */}
+            <div className="bg-white border-b border-slate-200">
+                <Breadcrumbs
+                    items={[
+                        { label: 'Settings' }
+                    ]}
+                />
+            </div>
 
             <div className="max-w-4xl mx-auto px-4 pb-8 mt-8">
                 {/* Header */}
@@ -143,8 +149,8 @@ const AccountSettings = () => {
 
                 {/* Profile Settings */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-slate-900 mb-4">Profile Settings</h2>
-                    <div className="flex items-start gap-6">
+                    <h2 className="text-xl font-semibold text-slate-900 mb-6">Profile Settings</h2>
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         <div className="flex-shrink-0">
                             <div className="w-20 h-20 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
                                 {avatarUrl ? (
@@ -156,27 +162,28 @@ const AccountSettings = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex-1 space-y-4">
+                        <div className="flex-1 w-full space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Profile Picture URL
                                 </label>
-                                <div className="flex gap-2">
+                                <div className="flex flex-col sm:flex-row gap-3">
                                     <input
                                         type="text"
                                         value={avatarUrl}
                                         onChange={(e) => setAvatarUrl(e.target.value)}
                                         placeholder="https://example.com/avatar.jpg"
-                                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     />
                                     <Button
                                         onClick={handleUpdateProfile}
                                         disabled={updating || !avatarUrl.trim() || avatarUrl === publicProfile?.avatar_url}
+                                        className="w-full sm:w-auto"
                                     >
                                         {updating ? 'Saving...' : 'Save'}
                                     </Button>
                                 </div>
-                                <p className="text-xs text-slate-500 mt-1">
+                                <p className="text-xs text-slate-500 mt-2">
                                     Enter a URL for your profile picture. This will be displayed next to your comments.
                                 </p>
                             </div>
