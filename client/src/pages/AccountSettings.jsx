@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../auth';
 import { Button, useToast } from '../components/ui';
 import Breadcrumbs from '../components/Breadcrumbs';
+import Navbar from '../components/Navbar';
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { useGoogleConnection } from '../hooks/useGoogleConnection';
 
