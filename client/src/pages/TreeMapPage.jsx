@@ -7,6 +7,7 @@ import 'leaflet.heat';
 import { supabase } from '../auth';
 import Navbar from '../components/Navbar';
 import Breadcrumbs from '../components/Breadcrumbs';
+import AccountSettings from '../components/AccountSettings';
 import { Loader, MapPin, Filter, X, User, BookOpen, Layers, Flame } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -28,6 +29,7 @@ const TreeMapPage = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [viewMode, setViewMode] = useState('pins'); // 'pins' or 'heatmap'
+    const [showSettings, setShowSettings] = useState(false);
 
     // Heatmap Layer Component
     const HeatmapLayer = ({ points }) => {
@@ -138,7 +140,7 @@ const TreeMapPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-            <Navbar user={user} onOpenSettings={() => { }} />
+            <Navbar user={user} onOpenSettings={() => setShowSettings(true)} />
 
             <Breadcrumbs
                 items={[
@@ -426,6 +428,13 @@ const TreeMapPage = () => {
                     </div>
                 </div>
             </main>
+
+            {showSettings && (
+                <AccountSettings
+                    user={user}
+                    onClose={() => setShowSettings(false)}
+                />
+            )}
 
             {selectedPhoto && (
                 <div
