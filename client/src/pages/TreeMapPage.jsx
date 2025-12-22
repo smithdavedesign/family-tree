@@ -150,33 +150,33 @@ const TreeMapPage = () => {
             <main className="flex-1 relative">
                 <div className="absolute inset-0 flex flex-col">
                     {/* Stats Header */}
-                    <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shadow-sm shrink-0">
-                        <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Lives Lived</span>
-                                <span className="text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
+                    <div className="bg-white border-b border-slate-200 px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 z-10 shadow-sm shrink-0">
+                        <div className="flex flex-wrap gap-x-5 md:gap-x-6 gap-y-2 md:gap-y-0">
+                            <div className="flex flex-col min-w-[65px]">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-500 uppercase whitespace-nowrap">Lives Lived</span>
+                                <span className="text-base md:text-lg font-bold text-orange-600">{mapData?.total_places_lived || 0}</span>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Life Events</span>
-                                <span className="text-lg font-bold text-blue-600">{mapData?.total_events_mapped || 0}</span>
+                            <div className="flex flex-col min-w-[65px]">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-500 uppercase whitespace-nowrap">Life Events</span>
+                                <span className="text-base md:text-lg font-bold text-blue-600">{mapData?.total_events_mapped || 0}</span>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Stories</span>
-                                <span className="text-lg font-bold text-purple-600">{mapData?.total_stories_mapped || 0}</span>
+                            <div className="flex flex-col min-w-[65px]">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-500 uppercase whitespace-nowrap">Stories</span>
+                                <span className="text-base md:text-lg font-bold text-purple-600">{mapData?.total_stories_mapped || 0}</span>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Photos</span>
-                                <span className="text-lg font-bold text-teal-600">{mapData?.total_photos_mapped || 0}</span>
+                            <div className="flex flex-col min-w-[65px]">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-500 uppercase whitespace-nowrap">Photos</span>
+                                <span className="text-base md:text-lg font-bold text-teal-600">{mapData?.total_photos_mapped || 0}</span>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-medium text-slate-500 uppercase">Countries</span>
-                                <span className="text-lg font-bold text-slate-900">{mapData?.countries_count || 0}</span>
+                            <div className="flex flex-col min-w-[65px]">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-500 uppercase whitespace-nowrap">Countries</span>
+                                <span className="text-base md:text-lg font-bold text-slate-900">{mapData?.countries_count || 0}</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pt-3 md:pt-0 border-t border-slate-100 md:border-0 justify-between md:justify-end">
                             {/* View Mode Toggle */}
-                            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-2">
+                            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
                                 <button
                                     onClick={() => setViewMode('pins')}
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${viewMode === 'pins'
