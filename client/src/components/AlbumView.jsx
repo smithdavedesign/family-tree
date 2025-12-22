@@ -241,7 +241,14 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setIsEditModalOpen(true)}
+                            onClick={() => {
+                                setEditData({
+                                    name: album.name,
+                                    description: album.description || '',
+                                    is_private: album.is_private
+                                });
+                                setIsEditModalOpen(true);
+                            }}
                         >
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
@@ -364,17 +371,17 @@ const AlbumView = ({ albumId, onBack, userRole }) => {
                             />
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <input
                                 type="checkbox"
                                 id="edit_is_private"
                                 checked={editData.is_private}
                                 onChange={(e) => setEditData({ ...editData, is_private: e.target.checked })}
-                                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                             />
-                            <label htmlFor="edit_is_private" className="text-sm text-slate-700 flex items-center gap-2">
+                            <label htmlFor="edit_is_private" className="text-sm text-slate-700 flex items-center gap-2 cursor-pointer">
                                 <Lock className="w-4 h-4" />
-                                Private album
+                                Private Album
                             </label>
                         </div>
 

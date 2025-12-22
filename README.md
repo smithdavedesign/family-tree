@@ -332,6 +332,38 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 ---
 
+### ✅ Phase T: UX Polish & Performance (100%) - **COMPLETE**
+**Timeline:** Completed Dec 2024 | **UI Refinements & Optimization**
+
+**Goal:** Polish user interfaces, fix inconsistencies, and optimize performance for better user experience.
+
+#### Completed Features
+- [x] Album editing UX improvements
+  - Edit form now pre-fills with current title and description
+  - Fixed private album checkbox styling (proper sizing and alignment)
+  - Consistent UI between create and edit modals
+- [x] Settings navigation reorganization
+  - Simplified navbar dropdown to single "Settings" option
+  - Removed delete account from Quick Settings modal (safety improvement)
+  - Added "Open Full Account Settings" button in Quick Settings
+  - Improved modal sizing (`lg` instead of invalid `2xl`)
+- [x] Button consistency in Account Settings page
+  - All buttons now use design system's `fullWidth` prop
+  - Removed raw Tailwind className overrides
+- [x] Photos table database migration
+  - Created `012_photos_table.sql` migration
+  - Added missing columns: `tree_id`, `google_media_id`, `thumbnail_url`, `updated_at`
+  - Supports both local and Google Photos uploads
+- [x] Photo upload performance optimization
+  - Implemented React Query targeted cache invalidation
+  - Removed expensive full tree refreshes after uploads
+  - Optimistic cache updates for instant UI feedback
+  - Only invalidates `['photos', personId]` and `['person', personId]` queries
+
+**Performance Impact:** Photo uploads no longer trigger expensive tree re-renders, making the app much more responsive with large trees.
+
+---
+
 ### ✅ Phase L: Dual OAuth Architecture (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Critical for Google Integration Reliability**
 

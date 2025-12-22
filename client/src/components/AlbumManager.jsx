@@ -167,17 +167,17 @@ const AlbumManager = ({ treeId, userRole, onAlbumClick }) => {
                             />
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <input
                                 type="checkbox"
                                 id="is_private"
                                 checked={newAlbum.is_private}
                                 onChange={(e) => setNewAlbum({ ...newAlbum, is_private: e.target.checked })}
-                                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                             />
-                            <label htmlFor="is_private" className="text-sm text-slate-700 flex items-center gap-2">
+                            <label htmlFor="is_private" className="text-sm text-slate-700 flex items-center gap-2 cursor-pointer">
                                 <Lock className="w-4 h-4" />
-                                Private album (only visible to tree owner)
+                                Private Album
                             </label>
                         </div>
 

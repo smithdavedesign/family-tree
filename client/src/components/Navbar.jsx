@@ -79,7 +79,7 @@ const Navbar = ({
                                             <p className="text-sm font-medium text-slate-900 truncate">{user.email}</p>
                                         </div>
 
-                                        {onOpenSettings && (
+                                        {onOpenSettings ? (
                                             <button
                                                 onClick={() => {
                                                     setIsMenuOpen(false);
@@ -88,9 +88,20 @@ const Navbar = ({
                                                 className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
                                             >
                                                 <Settings className="w-4 h-4" />
-                                                Account Settings
+                                                Settings
                                             </button>
+                                        ) : (
+                                            <Link
+                                                to="/settings"
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                                            >
+                                                <Settings className="w-4 h-4" />
+                                                Settings
+                                            </Link>
                                         )}
+
+                                        <div className="border-t border-slate-100 my-1"></div>
 
                                         <button
                                             onClick={handleSignOut}

@@ -133,7 +133,7 @@ const AccountSettings = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             {/* Navbar */}
-            <Navbar user={user} onOpenSettings={() => { }} />
+            <Navbar user={user} onOpenSettings={null} />
 
             {/* Breadcrumbs */}
             <Breadcrumbs
@@ -288,7 +288,7 @@ const AccountSettings = () => {
                             <Button
                                 onClick={disconnect}
                                 variant="outline"
-                                className="w-full"
+                                fullWidth
                             >
                                 Disconnect Google Account
                             </Button>
@@ -326,7 +326,7 @@ const AccountSettings = () => {
                                     const connectUrl = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
                                     connect(connectUrl);
                                 }}
-                                className="w-full"
+                                fullWidth
                             >
                                 🔗 Connect Google Drive & Photos
                             </Button>
@@ -343,6 +343,7 @@ const AccountSettings = () => {
                     <Button
                         onClick={handleDeleteAccount}
                         variant="outline"
+                        fullWidth
                         className="border-red-300 text-red-700 hover:bg-red-50"
                     >
                         Delete Account

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { X, Plus, Image as ImageIcon, Edit, User, Calendar, MapPin, Briefcase, GraduationCap, Heart, Users, FileText, Upload, Check, Camera, Phone, Mail, Home, BookOpen, ExternalLink } from 'lucide-react';
 import MergeModal from './MergeModal';
 import AddRelationshipModal from './AddRelationshipModal';
@@ -12,6 +13,7 @@ import StoryList from './StoryList';
 import { supabase } from '../auth';
 
 const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'viewer' }) => {
+    const queryClient = useQueryClient();
     const { toast } = useToast();
     const [media, setMedia] = useState([]);
     const [loadingMedia, setLoadingMedia] = useState(false);
@@ -148,18 +150,27 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 if (response.ok) {
                     const newPhoto = await response.json();
 
+                    // Optimistically update cache instead of full tree refresh
+                    queryClient.setQueryData(['photos', person.id], (old) =>
+                        old ? [...old, newPhoto] : [newPhoto]
+                    );
+
                     // If uploading profile photo, also update the profile_photo_url
                     if (isProfile) {
                         await handleSave({ profile_photo_url: googlePhoto.baseUrl });
                         setProfilePhotoUrl(googlePhoto.baseUrl); // Update local state immediately
                         setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
 
+                        // Invalidate person query to update profile photo in tree
+                        queryClient.invalidateQueries(['person', person.id]);
                         toast.success("Profile picture updated");
                     } else {
                         toast.success("Photo added to gallery");
                         if (refreshGallery) refreshGallery();
                     }
-                    if (onUpdate) onUpdate();
+
+                    // Targeted invalidation instead of full tree refresh
+                    queryClient.invalidateQueries(['photos', person.id]);
                 } else {
                     toast.error("Failed to add photo");
                 }
@@ -210,19 +221,30 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
                 });
 
                 if (response.ok) {
+                    const newPhoto = await response.json();
+
+                    // Optimistically update cache instead of full tree refresh
+                    queryClient.setQueryData(['photos', person.id], (old) =>
+                        old ? [...old, newPhoto] : [newPhoto]
+                    );
+
                     // If uploading profile photo, also update the profile_photo_url
                     if (isUploadingProfilePhoto) {
                         await handleSave({ profile_photo_url: reader.result });
                         setProfilePhotoUrl(reader.result); // Update local state immediately
                         setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
 
+                        // Invalidate person query to update profile photo in tree
+                        queryClient.invalidateQueries(['person', person.id]);
                         toast.success("Profile picture updated");
                         setShowPhotoSourceModal(false);
                     } else {
                         toast.success("Photo added to gallery");
                         if (pendingRefreshGallery) pendingRefreshGallery();
                     }
-                    if (onUpdate) onUpdate();
+
+                    // Targeted invalidation instead of full tree refresh
+                    queryClient.invalidateQueries(['photos', person.id]);
                 } else if (response.status === 413) {
                     toast.error("File is too large for the server");
                 } else {

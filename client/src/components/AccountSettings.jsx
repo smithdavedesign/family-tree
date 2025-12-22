@@ -182,7 +182,7 @@ const AccountSettings = ({ user, onClose, returnLabel = '' }) => {
             isOpen={true}
             onClose={onClose}
             title="Account Settings"
-            size="2xl"
+            size="lg"
         >
             <div className="flex border-b border-slate-200 mb-6">
                 <button
@@ -237,69 +237,22 @@ const AccountSettings = ({ user, onClose, returnLabel = '' }) => {
                         Sign Out
                     </Button>
 
-                    {/* Delete Account Section */}
+                    {/* Link to Full Account Settings */}
                     <div className="border-t border-slate-200 pt-6">
-                        <h3 className="text-sm font-bold text-red-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            Danger Zone
-                        </h3>
-
-                        {!showDeleteConfirm ? (
-                            <Button
-                                variant="danger"
-                                fullWidth
-                                onClick={() => setShowDeleteConfirm(true)}
-                                leftIcon={<Trash2 className="w-4 h-4" />}
-                            >
-                                Delete Account
-                            </Button>
-                        ) : (
-                            <div className="space-y-4 animate-fadeIn">
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <h4 className="font-bold text-red-800 mb-2 text-sm">⚠️ This action is permanent!</h4>
-                                    <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
-                                        <li>All your family trees will be deleted</li>
-                                        <li>All persons and relationships will be removed</li>
-                                        <li>All uploaded photos will be deleted</li>
-                                        <li>This action cannot be undone</li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Type <strong>DELETE</strong> to confirm:
-                                    </label>
-                                    <Input
-                                        value={deleteConfirmText}
-                                        onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                        placeholder="DELETE"
-                                        className="border-red-300 focus:ring-red-500"
-                                    />
-                                </div>
-
-                                <div className="flex gap-3">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setShowDeleteConfirm(false);
-                                            setDeleteConfirmText('');
-                                        }}
-                                        className="flex-1"
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        onClick={handleDeleteAccount}
-                                        disabled={deleteConfirmText !== 'DELETE' || deleting}
-                                        loading={deleting}
-                                        className="flex-1"
-                                    >
-                                        Delete Forever
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                        <Button
+                            variant="outline"
+                            fullWidth
+                            onClick={() => {
+                                onClose();
+                                navigate('/settings');
+                            }}
+                            leftIcon={<User className="w-4 h-4" />}
+                        >
+                            Open Full Account Settings
+                        </Button>
+                        <p className="text-xs text-slate-500 mt-2 text-center">
+                            Access profile settings, integrations, and account management
+                        </p>
                     </div>
                 </div>
             )}
