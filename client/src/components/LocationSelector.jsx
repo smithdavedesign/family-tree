@@ -152,46 +152,70 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
         let selection = location;
 
         if (location.is_google_prediction && window.google && window.google.maps) {
-            // Fetch details for Google prediction to get lat/lng
+            // HYBRID CACHE STRATEGY: 
+            // 1. Check our database for this Google Place ID first (FREE)
             try {
-                const service = new window.google.maps.places.PlacesService(document.createElement('div'));
-
-                const details = await new Promise((resolve, reject) => {
-                    service.getDetails({
-                        placeId: location.google_place_id,
-                        fields: ['geometry', 'formatted_address', 'name']
-                    }, (place, status) => {
-                        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-                            resolve(place);
-                        } else {
-                            reject(status);
-                        }
-                    });
+                const { data: { session } } = await supabase.auth.getSession();
+                const cacheRes = await fetch(`/api/locations?google_place_id=${location.google_place_id}`, {
+                    headers: { Authorization: `Bearer ${session?.access_token}` }
                 });
 
-                if (details.geometry && details.geometry.location) {
-                    selection = {
-                        ...location,
-                        name: details.name || location.name,
-                        address: details.formatted_address || location.address,
-                        latitude: details.geometry.location.lat(),
-                        longitude: details.geometry.location.lng(),
-                        is_google_prediction: false // Resolved
-                    };
+                if (cacheRes.ok) {
+                    const cacheHits = await cacheRes.json();
+                    if (cacheHits && cacheHits.length > 0) {
+                        // Found in cache! Use this instead of calling Google Details API
+                        selection = {
+                            ...cacheHits[0],
+                            is_new: false // Already in DB
+                        };
+                    }
                 }
             } catch (err) {
-                console.error('Failed to get place details:', err);
-                // Fallback to original suggestion
+                console.warn('Cache lookup failed, falling back to Google API:', err);
+            }
+
+            // 2. If not in cache, fetch details for Google prediction to get lat/lng (PAID)
+            if (selection.is_google_prediction) {
+                try {
+                    const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+
+                    const details = await new Promise((resolve, reject) => {
+                        service.getDetails({
+                            placeId: location.google_place_id,
+                            fields: ['geometry', 'formatted_address', 'name']
+                        }, (place, status) => {
+                            if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+                                resolve(place);
+                            } else {
+                                reject(status);
+                            }
+                        });
+                    });
+
+                    if (details.geometry && details.geometry.location) {
+                        selection = {
+                            ...location,
+                            name: details.name || location.name,
+                            address: details.formatted_address || location.address,
+                            latitude: details.geometry.location.lat(),
+                            longitude: details.geometry.location.lng(),
+                            is_google_prediction: false // Resolved
+                        };
+                    }
+                } catch (err) {
+                    console.error('Failed to get place details from Google API:', err);
+                }
             }
         }
 
-        // If it's a new external suggestion, save it to our DB first to get a UUID
+        // If it's a new external suggestion (or a newly resolved Google prediction), save it to our DB first to get a UUID
         if (selection.is_new) {
             createMutation.mutate({
                 name: selection.name,
                 address: selection.address,
                 latitude: selection.latitude,
-                longitude: selection.longitude
+                longitude: selection.longitude,
+                google_place_id: selection.google_place_id // Store for future caching!
             });
         } else if (!selectedLocations.find(l => l.id === selection.id)) {
             onAdd(selection);
