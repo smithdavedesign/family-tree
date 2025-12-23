@@ -114,10 +114,10 @@ const getSubscriptionStatus = async (req, res) => {
             // Map Stripe Price ID back to internal plan ID
             const priceId = subscription.stripe_plan_id;
 
-            if (priceId === process.env.STRIPE_PRICE_PRO_MONTHLY) {
+            if (priceId === stripeService.priceMonthly) {
                 planTier = 'pro';
                 currentPlan = 'price_pro_monthly';
-            } else if (priceId === process.env.STRIPE_PRICE_PRO_YEARLY) {
+            } else if (priceId === stripeService.priceYearly) {
                 planTier = 'pro';
                 currentPlan = 'price_pro_yearly';
             } else {

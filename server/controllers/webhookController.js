@@ -1,10 +1,9 @@
 const { supabaseAdmin } = require('../db');
-const { stripe } = require('../services/stripeService');
+const { stripe, webhookSecret, priceMonthly, priceYearly } = require('../services/stripeService');
 const logger = require('../utils/logger');
 
 const handleStripeWebhook = async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     let event;
 
@@ -47,13 +46,13 @@ const handleCheckoutSessionCompleted = async (session) => {
     let planTier = 'free';
     let tokensToGrant = 50;
 
-    logger.debug('Webhook Plan Matching', { priceId, monthly: process.env.STRIPE_PRICE_PRO_MONTHLY, yearly: process.env.STRIPE_PRICE_PRO_YEARLY });
+    logger.debug('Webhook Plan Matching', { priceId, monthly: priceMonthly, yearly: priceYearly });
 
-    if (priceId === process.env.STRIPE_PRICE_PRO_MONTHLY) {
+    if (priceId === priceMonthly) {
         planTier = 'pro';
         tokensToGrant = 1000;
         logger.info('Matched Monthly Plan');
-    } else if (priceId === process.env.STRIPE_PRICE_PRO_YEARLY) {
+    } else if (priceId === priceYearly) {
         planTier = 'pro';
         tokensToGrant = 12000;
         logger.info('Matched Yearly Plan');

@@ -1,16 +1,35 @@
 const Stripe = require('stripe');
 require('dotenv').config();
 
-const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_dev_startup';
-if (!process.env.STRIPE_SECRET_KEY) {
-    console.warn('⚠️  STRIPE_SECRET_KEY is missing. Stripe features will fail until set.');
+const isTest = process.env.STRIPE_ENV === 'test';
+
+// Dynamically pick keys based on STRIPE_ENV
+const stripeKey = isTest
+    ? (process.env.TEST_STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY)
+    : process.env.STRIPE_SECRET_KEY;
+
+const webhookSecret = isTest
+    ? (process.env.TEST_STRIPE_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET)
+    : process.env.STRIPE_WEBHOOK_SECRET;
+
+const priceMonthly = isTest
+    ? (process.env.TEST_STRIPE_PRICE_PRO_MONTHLY || process.env.STRIPE_PRICE_PRO_MONTHLY)
+    : process.env.STRIPE_PRICE_PRO_MONTHLY;
+
+const priceYearly = isTest
+    ? (process.env.TEST_STRIPE_PRICE_PRO_YEARLY || process.env.STRIPE_PRICE_PRO_YEARLY)
+    : process.env.STRIPE_PRICE_PRO_YEARLY;
+
+const stripe = new Stripe(stripeKey || 'sk_test_dummy_key');
+
+if (!stripeKey) {
+    console.warn('⚠️  STRIPE_SECRET_KEY is missing.');
 }
-const stripe = new Stripe(stripeKey);
 
 const PLAN_MAPPING = {
     'price_free': { id: 'price_free', name: 'Free', tokens: 50 },
-    'price_pro_monthly': { id: 'price_pro_monthly', name: 'Pro Monthly', tokens: 1000, stripePriceId: process.env.STRIPE_PRICE_PRO_MONTHLY },
-    'price_pro_yearly': { id: 'price_pro_yearly', name: 'Pro Yearly', tokens: 12000, stripePriceId: process.env.STRIPE_PRICE_PRO_YEARLY },
+    'price_pro_monthly': { id: 'price_pro_monthly', name: 'Pro Monthly', tokens: 1000, stripePriceId: priceMonthly },
+    'price_pro_yearly': { id: 'price_pro_yearly', name: 'Pro Yearly', tokens: 12000, stripePriceId: priceYearly },
 };
 
 /**
@@ -87,6 +106,9 @@ const createPortalSession = async (stripeCustomerId, returnUrl) => {
 module.exports = {
     stripe,
     PLAN_MAPPING,
+    webhookSecret,
+    priceMonthly,
+    priceYearly,
     createStripeCustomer,
     createCheckoutSession,
     createPortalSession
