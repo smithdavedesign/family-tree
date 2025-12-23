@@ -22,6 +22,8 @@ const TreeDashboard = (props) => {
     const [showSettings, setShowSettings] = useState(false);
     const [activeView, setActiveView] = useState('all');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [recentActivity, setRecentActivity] = useState([]);
+    const [loadingActivity, setLoadingActivity] = useState(false);
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -30,6 +32,7 @@ const TreeDashboard = (props) => {
             fetchUser();
         }
         fetchTrees();
+        fetchRecentActivity();
     }, []);
 
     const fetchUser = async () => {
@@ -61,6 +64,27 @@ const TreeDashboard = (props) => {
             console.error('Error fetching trees:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchRecentActivity = async () => {
+        setLoadingActivity(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch('/api/activity/recent', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setRecentActivity(data);
+            }
+        } catch (error) {
+            console.error('Error fetching activity:', error);
+        } finally {
+            setLoadingActivity(false);
         }
     };
 
@@ -203,10 +227,10 @@ const TreeDashboard = (props) => {
                             </div>
                         </div>
 
-                        {/* Main Content Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Left Column - Trees */}
-                            <div className="lg:col-span-2 space-y-6">
+                        {/* Main Content Grid - Balanced 4-column layout */}
+                        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                            {/* Trees - Takes 2 columns on xl screens */}
+                            <div className="xl:col-span-2 space-y-6">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-xl font-bold text-slate-800">Your Family Trees</h2>
                                     <Button
@@ -218,8 +242,8 @@ const TreeDashboard = (props) => {
                                     </Button>
                                 </div>
 
-                                {/* Tree List */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Tree List - Single column for cleaner look */}
+                                <div className="space-y-4">
                                     {filteredTrees.length > 0 ? (
                                         filteredTrees.map((tree) => (
                                             <div
@@ -252,7 +276,7 @@ const TreeDashboard = (props) => {
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="col-span-full bg-slate-50 rounded-xl p-8 text-center border-2 border-dashed border-slate-200">
+                                        <div className="bg-slate-50 rounded-xl p-8 text-center border-2 border-dashed border-slate-200">
                                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
                                                 <TreeDeciduous className="w-6 h-6 text-slate-300" />
                                             </div>
@@ -270,41 +294,73 @@ const TreeDashboard = (props) => {
                                 </div>
                             </div>
 
-                            {/* Right Column - Activity & Events */}
-                            <div className="space-y-6">
-                                {/* Global Travel Stats */}
-                                <GlobalTravelDashboard />
-
-                                {/* Events Widget */}
-                                <EventsWidget />
-
-                                {/* Activity Feed */}
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            {/* Recent Activity - 1 column */}
+                            <div className="xl:col-span-1">
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-fit sticky top-20">
                                     <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
                                             <Activity className="w-4 h-4 text-teal-600" />
                                             Recent Activity
                                         </h3>
                                     </div>
-                                    <div className="divide-y divide-slate-50">
-                                        {/* Placeholder Activity items - Use mock data if needed or fetch real activity */}
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="p-4 hover:bg-slate-50 transition-colors">
-                                                <div className="flex gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
-                                                        JD
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-slate-600">
-                                                            <span className="font-semibold text-slate-900">John Doe</span> added a new photo to <span className="font-medium text-teal-600">Smith Family Tree</span>
-                                                        </p>
-                                                        <p className="text-xs text-slate-400 mt-1">2 hours ago</p>
-                                                    </div>
-                                                </div>
+                                    <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
+                                        {loadingActivity ? (
+                                            <div className="p-8 text-center text-slate-500">
+                                                <LoadingSpinner size="sm" />
                                             </div>
-                                        ))}
+                                        ) : recentActivity.length > 0 ? (
+                                            recentActivity.map((activity) => {
+                                                const initials = activity.user_name
+                                                    ?.split(' ')
+                                                    .map(n => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                    .slice(0, 2) || '??';
+
+                                                const timeAgo = getTimeAgo(activity.created_at);
+
+                                                return (
+                                                    <div key={activity.id} className="p-4 hover:bg-slate-50 transition-colors">
+                                                        <div className="flex gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-bold shrink-0">
+                                                                {activity.user_avatar ? (
+                                                                    <img
+                                                                        src={activity.user_avatar}
+                                                                        alt={activity.user_name}
+                                                                        className="w-8 h-8 rounded-full"
+                                                                    />
+                                                                ) : (
+                                                                    initials
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm text-slate-600">
+                                                                    <span className="font-semibold text-slate-900">{activity.user_name}</span>
+                                                                    {' '}{activity.description}
+                                                                </p>
+                                                                <p className="text-xs text-slate-400 mt-1">{timeAgo}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="p-8 text-center text-slate-500">
+                                                <Activity className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                                                <p className="text-sm">No recent activity</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Right Column - Events & Travel - 1 column */}
+                            <div className="xl:col-span-1 space-y-6">
+                                {/* Events Widget */}
+                                <EventsWidget />
+
+                                {/* Global Travel Stats */}
+                                <GlobalTravelDashboard />
                             </div>
                         </div>
 
@@ -385,5 +441,23 @@ const TreeDashboard = (props) => {
         </div>
     );
 };
+
+/**
+ * Convert timestamp to relative time (e.g., "2 hours ago")
+ */
+function getTimeAgo(timestamp) {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now - past;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return past.toLocaleDateString();
+}
 
 export default TreeDashboard;

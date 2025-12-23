@@ -217,11 +217,11 @@ const AccountSettings = ({ user, onClose, returnLabel = '' }) => {
                     <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
                         <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Account Information</h3>
                         <div className="space-y-2">
-                            <p className="text-sm text-slate-600 flex justify-between">
+                            <p className="text-sm text-slate-600 flex items-center gap-3">
                                 <span className="font-medium">Email:</span>
                                 <span>{user?.email}</span>
                             </p>
-                            <p className="text-sm text-slate-600 flex justify-between">
+                            <p className="text-sm text-slate-600 flex items-center gap-3">
                                 <span className="font-medium">Provider:</span>
                                 <span>Google</span>
                             </p>

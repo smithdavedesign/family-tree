@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useReminders } from '../../hooks/useReminders';
-import { Calendar, Gift, Heart, Flag } from 'lucide-react';
+import { Calendar, Gift, Heart, Flag, ChevronDown, ChevronUp } from 'lucide-react';
 
 const EventsWidget = () => {
     const { reminders, isLoading } = useReminders();
+    const [showAll, setShowAll] = useState(false);
 
     if (isLoading) {
         return (
@@ -50,6 +51,10 @@ const EventsWidget = () => {
         return `in ${diffDays} days`;
     };
 
+    const ITEMS_TO_SHOW = 8;
+    const displayedEvents = showAll ? reminders : reminders.slice(0, ITEMS_TO_SHOW);
+    const hasMore = reminders.length > ITEMS_TO_SHOW;
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -68,31 +73,52 @@ const EventsWidget = () => {
                         No upcoming events found.
                     </div>
                 ) : (
-                    <div className="space-y-1">
-                        {reminders.map((event) => (
-                            <div key={event.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group">
-                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 group-hover:border-teal-200 group-hover:bg-teal-50 transition-colors">
-                                    {getIcon(event.type)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-medium text-slate-900 truncate">
-                                        {event.title}
-                                    </h4>
-                                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                                        <span>{formatDate(event.date)}</span>
-                                        <span>•</span>
-                                        <span className="text-teal-600 font-medium">{getRelativeTime(event.date)}</span>
-                                        {event.years > 0 && (
-                                            <>
-                                                <span>•</span>
-                                                <span>{event.years} years</span>
-                                            </>
-                                        )}
+                    <>
+                        <div className="space-y-1">
+                            {displayedEvents.map((event) => (
+                                <div key={event.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 group-hover:border-teal-200 group-hover:bg-teal-50 transition-colors">
+                                        {getIcon(event.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-medium text-slate-900 truncate">
+                                            {event.title}
+                                        </h4>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <span>{formatDate(event.date)}</span>
+                                            <span>•</span>
+                                            <span className="text-teal-600 font-medium">{getRelativeTime(event.date)}</span>
+                                            {event.years > 0 && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span>{event.years} years</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        {hasMore && (
+                            <button
+                                onClick={() => setShowAll(!showAll)}
+                                className="w-full mt-2 p-2 text-sm text-teal-600 hover:bg-teal-50 rounded-lg transition-colors flex items-center justify-center gap-1 font-medium"
+                            >
+                                {showAll ? (
+                                    <>
+                                        Show less
+                                        <ChevronUp className="w-4 h-4" />
+                                    </>
+                                ) : (
+                                    <>
+                                        Show {reminders.length - ITEMS_TO_SHOW} more
+                                        <ChevronDown className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </>
                 )}
             </div>
         </div>
