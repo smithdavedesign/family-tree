@@ -1,28 +1,14 @@
 const Stripe = require('stripe');
 require('dotenv').config();
 
-const isTest = process.env.STRIPE_ENV === 'test';
+const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key';
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const priceMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
+const priceYearly = process.env.STRIPE_PRICE_PRO_YEARLY;
 
-// Dynamically pick keys based on STRIPE_ENV
-const stripeKey = isTest
-    ? (process.env.TEST_STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY)
-    : process.env.STRIPE_SECRET_KEY;
+const stripe = new Stripe(stripeKey);
 
-const webhookSecret = isTest
-    ? (process.env.TEST_STRIPE_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET)
-    : process.env.STRIPE_WEBHOOK_SECRET;
-
-const priceMonthly = isTest
-    ? (process.env.TEST_STRIPE_PRICE_PRO_MONTHLY || process.env.STRIPE_PRICE_PRO_MONTHLY)
-    : process.env.STRIPE_PRICE_PRO_MONTHLY;
-
-const priceYearly = isTest
-    ? (process.env.TEST_STRIPE_PRICE_PRO_YEARLY || process.env.STRIPE_PRICE_PRO_YEARLY)
-    : process.env.STRIPE_PRICE_PRO_YEARLY;
-
-const stripe = new Stripe(stripeKey || 'sk_test_dummy_key');
-
-if (!stripeKey) {
+if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('⚠️  STRIPE_SECRET_KEY is missing.');
 }
 
