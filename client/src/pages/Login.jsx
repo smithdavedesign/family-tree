@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import { signInWithPassword, signInWithGoogle } from '../auth';
 
@@ -12,7 +12,6 @@ const Login = () => {
         password: '',
         rememberMe: false,
     });
-    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -154,21 +153,14 @@ const Login = () => {
                                     <Input
                                         id="password"
                                         name="password"
-                                        type={showPassword ? 'text' : 'password'}
+                                        type="password"
                                         value={formData.password}
                                         onChange={handleChange}
                                         placeholder="••••••••"
-                                        className="pl-10 pr-10"
+                                        className="pl-10"
                                         required
                                         autoComplete="current-password"
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                    >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
                                 </div>
                             </div>
 
@@ -182,7 +174,7 @@ const Login = () => {
                                     onChange={handleChange}
                                     className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
                                 />
-                                <label htmlFor="rememberMe" className="text-sm text-slate-600">
+                                <label htmlFor="rememberMe" className="text-sm text-slate-600 mb-0">
                                     Remember me for 30 days
                                 </label>
                             </div>

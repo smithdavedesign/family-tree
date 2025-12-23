@@ -13,7 +13,7 @@ import ViewModeSelector from '../components/ViewModeSelector';
 import FanChart from '../components/visualizations/FanChart';
 import DescendantChart from '../components/visualizations/DescendantChart';
 import TimelineView from '../components/visualizations/EventChartView';
-import { Share2, Settings, Image, Book, Calendar as CalendarIcon, Map as MapIcon, Menu, X as CloseIcon } from 'lucide-react';
+import { Share2, Settings, Image, Book, BookOpen, Calendar as CalendarIcon, Map as MapIcon, Menu, X as CloseIcon } from 'lucide-react';
 import { Button } from '../components/ui';
 import { supabase } from '../auth';
 
@@ -219,6 +219,7 @@ const TreePage = () => {
                                     )}
                                     <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/gallery`} className="p-2" title="Gallery"><span className="text-xl">🖼️</span></Button>
                                     <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/albums`} className="p-2" title="Albums"><span className="text-xl">📚</span></Button>
+                                    <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/stories`} className="p-2" title="Stories"><span className="text-xl">📖</span></Button>
                                     <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/timeline`} className="p-2" title="Timeline"><span className="text-xl">📅</span></Button>
                                     <Button variant="ghost" size="sm" onClick={() => window.location.href = `/tree/${id}/map`} className="p-2" title="Map"><span className="text-xl">🗺️</span></Button>
                                 </div>
@@ -317,6 +318,13 @@ const TreePage = () => {
                                 >
                                     <div className="p-3 bg-white rounded-xl shadow-sm"><Book className="w-6 h-6 text-teal-600" /></div>
                                     <span className="text-sm font-semibold text-slate-700">Albums</span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = `/tree/${id}/stories`}
+                                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50 hover:border-teal-200 transition-all"
+                                >
+                                    <div className="p-3 bg-white rounded-xl shadow-sm"><BookOpen className="w-6 h-6 text-teal-600" /></div>
+                                    <span className="text-sm font-semibold text-slate-700">Stories</span>
                                 </button>
                                 <button
                                     onClick={() => window.location.href = `/tree/${id}/timeline`}

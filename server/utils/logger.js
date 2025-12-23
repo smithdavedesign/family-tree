@@ -35,15 +35,39 @@ class Logger {
     }
 
     /**
+     * Extract relevant context from request object
+     */
+    extractReqContext(req) {
+        if (!req || typeof req !== 'object') return {};
+
+        // If it's not likely a request object, return as is
+        if (!req.method && !req.headers) return req;
+
+        return {
+            requestId: req.id,
+            method: req.method,
+            url: req.originalUrl || req.url,
+            userId: req.user?.id,
+            ip: req.ip,
+        };
+    }
+
+    /**
      * Format log entry as JSON or human-readable
      */
     formatLog(level, message, context = {}) {
+        // If context is a request object, extract context from it
+        let enrichedContext = context;
+        if (context && typeof context === 'object' && (context.method || context.headers)) {
+            enrichedContext = this.extractReqContext(context);
+        }
+
         const logEntry = {
             timestamp: new Date().toISOString(),
             level,
             message,
             environment: this.environment,
-            ...context,
+            ...enrichedContext,
         };
 
         // In production, output JSON for log aggregation
@@ -58,9 +82,9 @@ class Logger {
 
         // HTTP Request Formatting
         let httpContextInfo = '';
-        const restContext = { ...context };
+        const restContext = { ...enrichedContext };
 
-        if (context.method && context.statusCode) {
+        if (enrichedContext.method && enrichedContext.statusCode) {
             const methodColor = {
                 GET: chalk.blue,
                 POST: chalk.green,
@@ -68,18 +92,18 @@ class Logger {
                 DELETE: chalk.red,
                 PATCH: chalk.magenta,
                 OPTIONS: chalk.gray
-            }[context.method.toUpperCase()] || chalk.white;
+            }[enrichedContext.method.toUpperCase()] || chalk.white;
 
             const statusColor =
-                context.statusCode >= 500 ? chalk.red :
-                    context.statusCode >= 400 ? chalk.yellow :
-                        context.statusCode >= 300 ? chalk.cyan :
-                            context.statusCode >= 200 ? chalk.green : chalk.white;
+                enrichedContext.statusCode >= 500 ? chalk.red :
+                    enrichedContext.statusCode >= 400 ? chalk.yellow :
+                        enrichedContext.statusCode >= 300 ? chalk.cyan :
+                            enrichedContext.statusCode >= 200 ? chalk.green : chalk.white;
 
-            const method = methodColor(context.method);
-            const url = context.url;
-            const status = statusColor(context.statusCode);
-            const duration = context.duration ? chalk.gray(context.duration) : '';
+            const method = methodColor(enrichedContext.method);
+            const url = enrichedContext.url;
+            const status = statusColor(enrichedContext.statusCode);
+            const duration = enrichedContext.duration ? chalk.gray(enrichedContext.duration) : '';
 
             httpContextInfo = `${method} ${url} ${status} ${duration}`;
 
@@ -114,35 +138,47 @@ class Logger {
     /**
      * Log at DEBUG level
      */
-    debug(message, context = {}) {
+    debug(message, context = {}, req) {
         if (LOG_LEVELS.DEBUG < this.minLevel) return;
-        console.log(this.formatLog('DEBUG', message, context));
+        const finalContext = { ...context, ...(req ? this.extractReqContext(req) : {}) };
+        console.log(this.formatLog('DEBUG', message, finalContext));
     }
 
     /**
      * Log at INFO level
      */
-    info(message, context = {}) {
+    info(message, context = {}, req) {
         if (LOG_LEVELS.INFO < this.minLevel) return;
-        console.log(this.formatLog('INFO', message, context));
+        const finalContext = { ...context, ...(req ? this.extractReqContext(req) : {}) };
+        console.log(this.formatLog('INFO', message, finalContext));
     }
 
     /**
      * Log at WARN level
      */
-    warn(message, context = {}) {
+    warn(message, context = {}, req) {
         if (LOG_LEVELS.WARN < this.minLevel) return;
-        console.warn(this.formatLog('WARN', message, context));
+        const finalContext = { ...context, ...(req ? this.extractReqContext(req) : {}) };
+        console.warn(this.formatLog('WARN', message, finalContext));
     }
 
     /**
      * Log at ERROR level
      */
-    error(message, error, context = {}) {
+    error(message, error, context = {}, req) {
         if (LOG_LEVELS.ERROR < this.minLevel) return;
 
+        // If 3rd arg is req, shift it
+        let finalReq = req;
+        let finalContext = context;
+        if (context && context.headers) {
+            finalReq = context;
+            finalContext = {};
+        }
+
         const errorContext = {
-            ...context,
+            ...finalContext,
+            ...(finalReq ? this.extractReqContext(finalReq) : {}),
             error: error instanceof Error ? {
                 message: error.message,
                 stack: error.stack,

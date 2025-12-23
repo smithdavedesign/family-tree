@@ -9,6 +9,7 @@ import CommentSection from '../components/comments/CommentSection';
 import StoryLocationSection from '../components/StoryLocationSection';
 import Navbar from '../components/Navbar';
 import AccountSettings from '../components/AccountSettings';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const fetchStory = async (id) => {
     const { data: { session } } = await supabase.auth.getSession();
