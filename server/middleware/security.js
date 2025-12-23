@@ -16,11 +16,16 @@ function securityHeaders() {
             directives: {
                 defaultSrc: ["'self'"],
                 styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-                fontSrc: ["'self'", "https://fonts.gstatic.com"],
-                imgSrc: ["'self'", "data:", "https:", "blob:"],
-                scriptSrc: ["'self'"],
-                connectSrc: ["'self'", "https://*.supabase.co"],
-                frameSrc: ["'none'"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+                imgSrc: ["'self'", "data:", "https:", "blob:", "*.googleusercontent.com", "*.googleapis.com"],
+                scriptSrc: ["'self'", "https://maps.googleapis.com", "'unsafe-inline'", "'unsafe-eval'"],
+                connectSrc: [
+                    "'self'",
+                    "https://*.supabase.co",
+                    "https://maps.googleapis.com",
+                    "https://*.googleapis.com"
+                ],
+                frameSrc: ["'self'", "https://accounts.google.com"],
                 objectSrc: ["'none'"],
             },
         },
@@ -135,9 +140,10 @@ function csrfProtection(req, res, next) {
     const allowedOrigins = [
         process.env.CLIENT_URL || 'http://localhost:5173',
         'http://localhost:5173',
-        'http://localhost:4173', // Vite preview server
+        'http://localhost:4173',
         'http://localhost:3000',
-        'https://family-tree-blue-kappa.vercel.app'
+        'https://family-tree-blue-kappa.vercel.app',
+        'https://family-tree-app.vercel.app' // Add production URL if different
     ];
 
     // Check if origin is allowed

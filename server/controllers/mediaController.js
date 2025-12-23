@@ -1,5 +1,9 @@
 const { supabaseAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
+const sharp = require('sharp');
+const storageService = require('../services/storageService');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 exports.addMedia = async (req, res) => {
     const { person_id, url, type, google_media_id } = req.body;
@@ -83,10 +87,30 @@ exports.getMediaForPerson = async (req, res) => {
 // --- Photos (Phase H) ---
 
 exports.addPhoto = async (req, res) => {
-    const { person_id, url, caption, taken_date, is_primary, google_media_id, width, height, orientation, latitude, longitude, location_name } = req.body;
+    let { person_id, url, caption, taken_date, is_primary, google_media_id, width, height, orientation, latitude, longitude, location_name } = req.body;
 
     try {
-        let shouldBePrimary = is_primary;
+        // --- PERFORMANCE WIN: IMAGE OPTIMIZATION ---
+        // If we have a file upload (binary), process it with Sharp
+        if (req.file) {
+            logger.info('Processing uploaded file with Sharp', { filename: req.file.originalname }, req);
+
+            // Resize and compress: 1200px max width/height, WebP for best compression/quality
+            const optimizedBuffer = await sharp(req.file.buffer)
+                .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+                .webp({ quality: 85 })
+                .toBuffer();
+
+            // Generate a secure unique path
+            const fileName = `${person_id}/${uuidv4()}.webp`;
+
+            // Upload to Supabase Storage bucket 'photos'
+            url = await storageService.uploadFile('photos', fileName, optimizedBuffer, 'image/webp');
+
+            logger.info('Optimized image uploaded to Supabase Storage', { url }, req);
+        }
+
+        let shouldBePrimary = is_primary === 'true' || is_primary === true;
 
         // Calculate derived date fields
         let year = null;

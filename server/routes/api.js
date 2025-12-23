@@ -22,6 +22,7 @@ const mapController = require('../controllers/mapController');
 const locationController = require('../controllers/locationController');
 const commentController = require('../controllers/commentController');
 const activityController = require('../controllers/activityController');
+const upload = require('../middleware/upload');
 
 // Tree routes
 router.get('/trees', requireAuth, treeController.getUserTrees);
@@ -55,7 +56,7 @@ router.delete('/relationship/:id', requireAuth, requireRelationshipEditor, write
 router.post('/media', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'media'), mediaController.addMedia);
 
 // Photo routes (Phase H)
-router.post('/photos', requireAuth, requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'photo'), mediaController.addPhoto);
+router.post('/photos', requireAuth, upload.single('photo'), requirePersonEditorBody, writeLimiter, auditLog('CREATE', 'photo'), mediaController.addPhoto);
 router.get('/person/:id/photos', requireAuth, requirePersonViewer, mediaController.getPhotos);
 router.put('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('UPDATE', 'photo'), mediaController.updatePhoto);
 router.delete('/photos/:id', requireAuth, requirePhotoEditor, writeLimiter, auditLog('DELETE', 'photo'), mediaController.deletePhoto);

@@ -200,61 +200,56 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
         setShowPhotoSourceModal(false);
 
         try {
-            // Convert to base64
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const { data: { session } } = await supabase.auth.getSession();
-                const token = session?.access_token;
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
 
-                const response = await fetch('/api/photos', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        person_id: person.id,
-                        url: reader.result, // base64 data URL
-                        caption: file.name,
-                        is_primary: isUploadingProfilePhoto // Mark as primary if it's a profile photo
-                    })
-                });
+            const formData = new FormData();
+            formData.append('person_id', person.id);
+            formData.append('photo', file);
+            formData.append('caption', file.name);
+            formData.append('is_primary', isUploadingProfilePhoto);
 
-                if (response.ok) {
-                    const newPhoto = await response.json();
+            const response = await fetch('/api/photos', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            });
 
-                    // Optimistically update cache instead of full tree refresh
-                    queryClient.setQueryData(['photos', person.id], (old) =>
-                        old ? [...old, newPhoto] : [newPhoto]
-                    );
+            if (response.ok) {
+                const newPhoto = await response.json();
 
-                    // If uploading profile photo, also update the profile_photo_url
-                    if (isUploadingProfilePhoto) {
-                        await handleSave({ profile_photo_url: reader.result });
-                        setProfilePhotoUrl(reader.result); // Update local state immediately
-                        setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
+                // Optimistically update cache instead of full tree refresh
+                queryClient.setQueryData(['photos', person.id], (old) =>
+                    old ? [...old, newPhoto] : [newPhoto]
+                );
 
-                        // Invalidate person query to update profile photo in tree
-                        queryClient.invalidateQueries(['person', person.id]);
-                        toast.success("Profile picture updated");
-                        setShowPhotoSourceModal(false);
-                    } else {
-                        toast.success("Photo added to gallery");
-                        if (pendingRefreshGallery) pendingRefreshGallery();
-                    }
+                // If uploading profile photo, also update local state
+                if (isUploadingProfilePhoto) {
+                    setProfilePhotoUrl(newPhoto.url); // Use the new storage URL
+                    setGalleryRefreshTrigger(prev => prev + 1); // Trigger gallery refresh
 
-                    // Targeted invalidation instead of full tree refresh
-                    queryClient.invalidateQueries(['photos', person.id]);
-                } else if (response.status === 413) {
-                    toast.error("File is too large for the server");
+                    // Invalidate person query to update profile photo in tree
+                    queryClient.invalidateQueries(['person', person.id]);
+                    toast.success("Profile picture updated");
                 } else {
-                    toast.error("Failed to upload photo");
+                    toast.success("Photo added to gallery");
+                    if (pendingRefreshGallery) pendingRefreshGallery();
                 }
-            };
-            reader.readAsDataURL(file);
+
+                // Targeted invalidation instead of full tree refresh
+                queryClient.invalidateQueries(['photos', person.id]);
+            } else if (response.status === 413) {
+                toast.error("File is too large for the server");
+            } else {
+                toast.error("Failed to upload photo");
+            }
         } catch (error) {
             console.error("Error uploading file:", error);
             toast.error("Error adding photo");
+        } finally {
+            setShowPhotoSourceModal(false);
         }
     };
 

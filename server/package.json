@@ -20,6 +20,8 @@
     "googleapis": "^167.0.0",
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
+    "multer": "^2.0.2",
+    "sharp": "^0.34.5",
     "stripe": "^20.1.0"
   },
   "devDependencies": {
