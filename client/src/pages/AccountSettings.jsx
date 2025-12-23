@@ -301,24 +301,37 @@ const AccountSettings = () => {
                     </div>
 
                     {/* Family Coupon Section */}
-                    <div className="mt-6 pt-6 border-t border-slate-100">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Have a Family Code?
-                        </label>
-                        <div className="flex gap-3 max-w-md">
-                            <input
-                                type="text"
-                                value={couponCode}
-                                onChange={(e) => setCouponCode(e.target.value)}
-                                placeholder="Enter secret code"
-                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            />
+                    <div className="mt-8 pt-8 border-t border-slate-100">
+                        <div className="flex items-center gap-2 mb-4">
+                            <CheckCircle2 className="w-5 h-5 text-teal-600" />
+                            <h3 className="text-lg font-semibold text-slate-900">Redeem Family Code</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 mb-4">
+                            Enter your secret family code to refill your AI token balance. This code is provided specifically for family members.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value)}
+                                    placeholder="Enter secret code"
+                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm font-medium uppercase tracking-wider placeholder:normal-case"
+                                />
+                            </div>
                             <Button
                                 onClick={handleRedeemCode}
                                 disabled={redeeming || !couponCode.trim()}
-                                className="bg-slate-800 hover:bg-slate-900 text-white"
+                                className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-200/50 transition-all active:scale-95"
                             >
-                                {redeeming ? 'Redeeming...' : 'Redeem'}
+                                {redeeming ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                        Redeeming...
+                                    </>
+                                ) : (
+                                    'Redeem Code'
+                                )}
                             </Button>
                         </div>
                     </div>
