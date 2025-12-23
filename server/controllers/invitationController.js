@@ -54,7 +54,8 @@ exports.createInvitation = async (req, res) => {
             // We want them to land on OUR accept page.
             // redirect_to should be set to our accept page.
 
-            const redirectTo = `${process.env.CLIENT_URL || 'http://localhost:5173'}/invite/${token}`;
+            const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173');
+            const redirectTo = `${baseUrl}/invite/${token}`;
 
             // Try to invite as new user
             const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
