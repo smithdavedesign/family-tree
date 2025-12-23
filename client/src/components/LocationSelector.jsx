@@ -281,7 +281,7 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                         <button
                             key={location.id}
                             onClick={() => handleSelectLocation(location)}
-                            className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-50 last:border-0"
                         >
                             <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -297,19 +297,29 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                             </div>
                         </button>
                     ))}
+
+                    {/* Fallback for manual entry tucked at bottom of results */}
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-500 border-t border-slate-100"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span className="text-xs italic">Can't find it? Add location manually</span>
+                    </button>
                 </div>
             )}
 
-            {/* Add New Location Button */}
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowModal(true)}
-                className="w-full gap-2"
-            >
-                <Plus className="w-4 h-4" />
-                Add New Location
-            </Button>
+            {/* If no search is active, show a very subtle link instead of a big button */}
+            {!search && (
+                <div className="text-right">
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-wider font-semibold"
+                    >
+                        + Add Manually
+                    </button>
+                </div>
+            )}
 
             {/* Selected Locations (Chips) */}
             {selectedLocations.length > 0 && (

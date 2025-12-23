@@ -4,6 +4,7 @@ require('dotenv').config();
 const { initErrorLogging, errorHandler } = require('./utils/errorLogger');
 const logger = require('./utils/logger');
 const requestLogger = require('./middleware/requestLogger');
+const storageService = require('./services/storageService');
 const {
     securityHeaders,
     sanitizeInput,
@@ -66,9 +67,38 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Help debug immediate crashes
+process.on('exit', (code) => {
+    console.log(`Process exited with code: ${code}`);
+    logger.info(`Process exited with code: ${code}`);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    logger.error('Unhandled Rejection', { reason });
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    logger.error('Uncaught Exception', { error: err.message, stack: err.stack });
+    process.exit(1);
+});
+
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`, {
         environment: process.env.NODE_ENV || 'development',
         port,
     });
+
+    // Initialize storage buckets (non-blocking)
+    storageService.initializeBucket('photos').then(() => {
+        logger.info('Storage initialization complete');
+    }).catch(err => {
+        logger.error('Storage initialization failed', err);
+    });
+
+    // Keep event loop alive if something is acting weird
+    setInterval(() => {
+        logger.debug('Server heartbeat...');
+    }, 60000);
 });

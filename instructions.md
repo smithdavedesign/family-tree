@@ -40,6 +40,8 @@ Build a web-based Family Tree application where users log in via Google SSO, ema
 - ✅ **Phase R:** Onboarding & Comments (100%)
 - ✅ **Phase S:** Hybrid Geocoding (100%)
 - ✅ **Phase T:** UX Polish & Performance (100%)
+- ✅ **Phase 7:** Security & Performance Hardening (100%)
+- 🚀 **Phase 8:** Family Coupon System (Next)
 
 ## 1. Architecture & Data Schema
 
