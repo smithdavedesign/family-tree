@@ -35,7 +35,11 @@ const createCheckoutSession = async (req, res) => {
             await supabaseAdmin.from('users').update({ stripe_customer_id: stripeCustomerId }).eq('id', userId);
         }
 
-        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? null : 'http://localhost:5173');
+        if (!baseUrl) {
+            logger.error('CLIENT_URL environment variable is missing for Stripe redirect', {}, req);
+            return res.status(500).json({ error: 'Server configuration error: missing CLIENT_URL' });
+        }
         const returnUrl = `${baseUrl}/settings`;
 
 
@@ -64,7 +68,11 @@ const createPortalSession = async (req, res) => {
             return res.status(400).json({ error: 'No billing account found' });
         }
 
-        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? null : 'http://localhost:5173');
+        if (!baseUrl) {
+            logger.error('CLIENT_URL environment variable is missing for Stripe portal redirect', {}, req);
+            return res.status(500).json({ error: 'Server configuration error: missing CLIENT_URL' });
+        }
         const returnUrl = `${baseUrl}/settings`;
 
         const url = await stripeService.createPortalSession(user.stripe_customer_id, returnUrl);

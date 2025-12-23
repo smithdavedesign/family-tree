@@ -2,11 +2,11 @@ const { google } = require('googleapis');
 const { supabase, supabaseAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
 
-// Initialize OAuth2 Client
+// Initialize OAuth2 Client dynamically if possible, or use env var
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    'http://localhost:5173/api/google/callback' // Dev server with proxy
+    process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5173/api/google/callback'
 );
 
 // Required scopes for Drive, Photos, and User Info
@@ -121,10 +121,12 @@ exports.handleCallback = async (req, res) => {
 
         // Redirect back to where they came from with success message
         const separator = returnUrl.includes('?') ? '&' : '?';
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}google_connected=true`);
+        const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173');
+        res.redirect(`${baseUrl}${returnUrl}${separator}google_connected=true`);
     } catch (error) {
         logger.error('Error handling Google callback:', error, req);
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);
+        const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173');
+        res.redirect(`${baseUrl}/settings?error=callback_failed`);
     }
 };
 
