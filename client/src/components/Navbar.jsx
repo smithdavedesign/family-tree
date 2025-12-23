@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Settings, ChevronDown, TreePine } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, TreePine, Zap } from 'lucide-react';
 import { supabase } from '../auth';
 import { Avatar } from './ui';
+import { useSubscription } from '../context/SubscriptionContext';
 
 const Navbar = ({
     title = "Roots & Branches",
@@ -11,9 +12,15 @@ const Navbar = ({
     user,
     onOpenSettings
 }) => {
+    const { tokenBalance, planTier, loading, refreshSubscription } = useSubscription() || {};
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const navigate = useNavigate();
+
+    // Poll for updates more frequently or on mount
+    useEffect(() => {
+        refreshSubscription?.(); // Optional chaining in case context is null initially
+    }, [refreshSubscription]);
 
     // Close menu on click outside
     useEffect(() => {
@@ -56,6 +63,14 @@ const Navbar = ({
                     {/* Right Side */}
                     <div className="flex items-center gap-3 sm:gap-4">
                         {rightContent}
+
+                        {/* Credits Badge */}
+                        {user && !loading && (
+                            <Link to="/pricing" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-50 to-blue-50 hover:from-teal-100 hover:to-blue-100 text-teal-700 text-sm font-medium rounded-full border border-teal-200 transition-colors">
+                                <Zap className="w-3.5 h-3.5 fill-teal-500 text-teal-500" />
+                                <span>{tokenBalance ?? 0}</span>
+                            </Link>
+                        )}
 
                         {/* User Menu */}
                         {user && (

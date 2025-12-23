@@ -35,6 +35,10 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true
 }));
+// Webhook route must be before express.json() to handle raw body
+const webhookController = require('./controllers/webhookController');
+app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), webhookController.handleStripeWebhook);
+
 app.use(express.json({ limit: '50mb' }));
 
 // Routes

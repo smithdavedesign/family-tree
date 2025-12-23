@@ -31,6 +31,13 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - ✅ **View Lock** - Prevent accidental panning/zooming
 - ✅ **Timeline Visualization** - Chronological event view with color-coded dots and density heatmap
 
+### 💰 Payments & Subscription
+- ✅ **Free Tier** - Basic access with 50 AI tokens/month
+- ✅ **Pro Subscription** - $4.99/mo or $49.99/yr via Stripe
+- ✅ **Token System** - Usage-based consumption for premium AI features
+- ✅ **Family Coupon** - Secret code redemption for family members
+- ✅ **Billing Portal** - Self-serve subscription management (Stripe Customer Portal)
+
 ## 🛠 Tech Stack
 
 - **Frontend:** React, Vite, TailwindCSS v3, React Flow
@@ -451,7 +458,6 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Write integration tests (Tree CRUD - 7, Person CRUD - 8, Relationships - 6)
 - [x] Write E2E critical journey test (Playwright)
 - [x] Add comprehensive testing documentation to README
-- [ ] Fix 2 minor SearchBar test issues
 - [ ] Achieve 60%+ code coverage
 - [ ] Cross-browser testing (Chrome, Firefox, Safari)
 - [ ] Mobile device testing (iOS Safari, Android Chrome)

@@ -5,6 +5,7 @@ const { requireOwner, requireEditor, requireViewer, requirePersonEditor, require
 const { writeLimiter, accountDeletionLimiter } = require('../middleware/rateLimiter');
 const { auditLog } = require('../middleware/auditLogger');
 const { validate } = require('../middleware/validation');
+const { checkTokens } = require('../middleware/usageLimiter');
 const { personSchema, personUpdateSchema, treeSchema, relationshipSchema, invitationSchema, photoSchema, albumSchema, albumUpdateSchema, addPhotosToAlbumSchema, reorderPhotosSchema } = require('../validation/schemas');
 const treeController = require('../controllers/treeController');
 const personController = require('../controllers/personController');
@@ -83,7 +84,8 @@ router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEve
 // Story routes
 router.get('/stories', requireAuth, storyController.getStories);
 router.get('/story/:id', requireAuth, storyController.getStory);
-router.post('/story', requireAuth, requireTreeEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
+// Premium feature: Cost 10 tokens to generate/create a story
+router.post('/story', requireAuth, requireTreeEditor, checkTokens(10), writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
 router.put('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('UPDATE', 'story'), storyController.updateStory);
 router.delete('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('DELETE', 'story'), storyController.deleteStory);
 
@@ -159,7 +161,16 @@ const exportRoutes = require('./export');
 router.use('/export', exportRoutes);
 
 // Test routes (for error logging and other testing)
-const testRoutes = require('./test');
+const testRoutes = require('./testRoutes');
 router.use('/test', testRoutes);
+
+// Subscription routes
+const subscriptionRoutes = require('./subscriptionRoutes');
+router.use('/', subscriptionRoutes);
+
+// Test Endpoint for Token Draining
+router.post('/test/burn-tokens', requireAuth, checkTokens(50), (req, res) => {
+    res.json({ success: true, message: 'Burned 50 tokens', remaining: req.user.tokens });
+});
 
 module.exports = router;

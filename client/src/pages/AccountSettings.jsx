@@ -4,8 +4,10 @@ import { supabase } from '../auth';
 import { Button, useToast } from '../components/ui';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Navbar from '../components/Navbar';
-import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { useGoogleConnection } from '../hooks/useGoogleConnection';
+import { useSubscription } from '../context/SubscriptionContext';
+import { api } from '../auth';
 
 const AccountSettings = () => {
     const navigate = useNavigate();
@@ -15,6 +17,8 @@ const AccountSettings = () => {
     const [avatarUrl, setAvatarUrl] = useState('');
     const [updating, setUpdating] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [couponCode, setCouponCode] = useState('');
+    const [redeeming, setRedeeming] = useState(false);
     const { toast } = useToast();
 
     // Get returnUrl from query params or state
@@ -31,7 +35,54 @@ const AccountSettings = () => {
         disconnect
     } = useGoogleConnection();
 
+    const { subscription, planTier, currentPlan, loading: subLoading, refreshSubscription } = useSubscription() || {};
+
+    const formatPlanName = (plan) => {
+        if (!plan || plan === 'free' || plan === 'price_free') return 'Free';
+        if (plan === 'price_pro_monthly') return 'Pro Monthly';
+        if (plan === 'price_pro_yearly') return 'Pro Yearly';
+        return 'Pro'; // Fallback
+    };
+
+    const handleManageSubscription = async () => {
+        try {
+            const { data } = await api.post('/subscription/portal');
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (error) {
+            console.error('Failed to open billing portal:', error);
+            alert('Failed to open billing portal');
+        }
+    };
+
+    const handleRedeemCode = async () => {
+        if (!couponCode.trim()) return;
+        setRedeeming(true);
+        try {
+            const { data } = await api.post('/subscription/redeem', { code: couponCode });
+            toast.success(data.message);
+            refreshSubscription();
+            setCouponCode('');
+        } catch (error) {
+            console.error('Coupon redemption failed:', error);
+            toast.error(error.response?.data?.error || 'Invalid or expired code');
+        } finally {
+            setRedeeming(false);
+        }
+    };
+
     useEffect(() => {
+        // Check for Stripe success return
+        const sessionId = queryParams.get('session_id');
+        if (sessionId) {
+            toast.success('Subscription updated successfully! Your tokens have been added.');
+            // Refresh token balance
+            refreshSubscription();
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
@@ -210,6 +261,69 @@ const AccountSettings = () => {
                     </div>
                 </div>
 
+                {/* Subscription Settings */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h2 className="text-xl font-semibold text-slate-900 mb-4">Subscription & Billing</h2>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-slate-900 capitalize">Current Plan: {planTier === 'price_free' ? 'Free' : (planTier === 'pro' ? 'Pro' : planTier)}</p>
+                            <p className="text-sm text-slate-500">
+                                {subscription?.status === 'active' ? 'Active subscription' : 'Free tier (limited access)'}
+                            </p>
+                        </div>
+                        {planTier !== 'free' && planTier !== 'price_free' ? (
+                            <Button onClick={handleManageSubscription} variant="outline" className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4" />
+                                Manage Subscription
+                            </Button>
+                        ) : (
+                            <Button onClick={() => navigate('/pricing')} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
+                                <CreditCard className="w-4 h-4" />
+                                Upgrade to Pro
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="destructive"
+                            onClick={async () => {
+                                try {
+                                    await api.post('/test/burn-tokens');
+                                    toast.success('Burned 50 tokens!');
+                                    refreshSubscription();
+                                } catch (e) {
+                                    toast.error('Not enough tokens!');
+                                }
+                            }}
+                            className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                        >
+                            Test: Burn 50 Tokens
+                        </Button>
+                    </div>
+
+                    {/* Family Coupon Section */}
+                    <div className="mt-6 pt-6 border-t border-slate-100">
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Have a Family Code?
+                        </label>
+                        <div className="flex gap-3 max-w-md">
+                            <input
+                                type="text"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                placeholder="Enter secret code"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                            <Button
+                                onClick={handleRedeemCode}
+                                disabled={redeeming || !couponCode.trim()}
+                                className="bg-slate-800 hover:bg-slate-900 text-white"
+                            >
+                                {redeeming ? 'Redeeming...' : 'Redeem'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Google Integrations */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                     <h2 className="text-xl font-semibold text-slate-900 mb-2">Google Integrations</h2>
@@ -350,7 +464,7 @@ const AccountSettings = () => {
                     </Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

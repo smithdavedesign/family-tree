@@ -136,4 +136,55 @@ export const restoreSession = async () => {
     return null;
 };
 
+// Helper for authenticated API calls
+export const api = {
+    get: async (endpoint) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(`/api${endpoint}`, {
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
+            }
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return { data: await res.json() };
+    },
+    post: async (endpoint, body) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(`/api${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return { data: await res.json() };
+    },
+    put: async (endpoint, body) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(`/api${endpoint}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return { data: await res.json() };
+    },
+    delete: async (endpoint) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(`/api${endpoint}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
+            }
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return { data: await res.json() };
+    }
+};
+
 export { supabase };

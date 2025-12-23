@@ -27,6 +27,7 @@ const PersonPage = lazy(() => import('./pages/PersonPage'));
 const AlbumPage = lazy(() => import('./pages/AlbumPage'));
 const TreeMapPage = lazy(() => import('./pages/TreeMapPage'));
 const TreeStoriesPage = lazy(() => import('./pages/TreeStoriesPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -164,6 +165,7 @@ function App() {
             <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
             <Route path="/tree/:treeId/map" element={<TreeMapPage />} />
             <Route path="/tree/:treeId/stories" element={<TreeStoriesPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
           </Routes>
         </Suspense>
       </Router>

@@ -491,3 +491,56 @@ git push origin phase-g-collaboration
 **Last Updated:** Phase M Complete (Dec 2024)  
 **Current Branch:** `feature/user-registration` (Merged to `main`)  
 **Next Phase:** Launch 🚀
+
+## 13. Deployment Checklist & Environment Variables
+
+### Required Environment Variables
+
+#### Backend (Render.com)
+```bash
+# Core
+PORT=3000
+NODE_ENV=production
+CLIENT_URL=https://your-frontend-domain.vercel.app
+
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_API_KEY=your-google-api-key
+
+# Stripe Payments
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_PRO_MONTHLY=price_...
+STRIPE_PRICE_PRO_YEARLY=price_...
+
+# Family Coupon System
+FAMILY_SECRET_CODE=YourSecretCode
+FAMILY_GRANT_AMOUNT=1000
+```
+
+#### Frontend (Vercel)
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_API_URL=https://your-backend.onrender.com
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
+```
+
+### Pre-Deployment Steps
+1.  **Stripe**:
+    -   Create "Pro Monthly" and "Pro Yearly" products in Stripe Dashboard.
+    -   Get their Price IDs (`price_...`) and add to backend env vars.
+    -   Configure Webhook URL in Stripe: `https://your-backend.onrender.com/api/webhooks/stripe`.
+    -   Select events: `checkout.session.completed`, `invoice.payment_succeeded`, `customer.subscription.deleted`.
+2.  **Supabase**:
+    -   Ensure `token_balances` and `subscriptions` tables are created (migrations are in `server/sql-prompts`).
+    -   Verify RLS policies allow `service_role` full access.
+3.  **Google Cloud**:
+    -   Add your production domains to "Authorized Origins" and "Authorized Redirect URIs".
