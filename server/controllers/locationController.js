@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 // Create a new location
 exports.createLocation = async (req, res) => {
-    const { name, address, latitude, longitude, start_date, end_date, notes } = req.body;
+    const { name, address, latitude, longitude, google_place_id, start_date, end_date, notes } = req.body;
 
     logger.info('Creating location with data:', { body: req.body }, req);
 
@@ -15,6 +15,7 @@ exports.createLocation = async (req, res) => {
                 address,
                 latitude,
                 longitude,
+                google_place_id,
                 start_date,
                 end_date,
                 notes
@@ -36,7 +37,7 @@ exports.createLocation = async (req, res) => {
 
 // Get all locations (with optional search)
 exports.getLocations = async (req, res) => {
-    const { search } = req.query;
+    const { search, google_place_id } = req.query;
 
     try {
         let query = supabaseAdmin
@@ -46,6 +47,10 @@ exports.getLocations = async (req, res) => {
 
         if (search) {
             query = query.ilike('name', `%${search}%`);
+        }
+
+        if (google_place_id) {
+            query = query.eq('google_place_id', google_place_id);
         }
 
         const { data, error } = await query;

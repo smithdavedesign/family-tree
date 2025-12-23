@@ -1,4 +1,5 @@
 const { supabase, supabaseAdmin } = require('../db');
+const stripeService = require('../services/stripeService');
 const logger = require('../utils/logger');
 
 /**
@@ -45,7 +46,9 @@ const checkTokens = (requiredTokens) => {
                 const { data: sub } = await supabaseAdmin.from('subscriptions').select('stripe_plan_id, status').eq('user_id', userId).eq('status', 'active').single();
 
                 let refillAmount = 50; // Free
-                if (sub && sub.stripe_plan_id.includes('pro')) { // simplistic check
+                const isPro = sub && (sub.stripe_plan_id === stripeService.priceMonthly || sub.stripe_plan_id === stripeService.priceYearly);
+
+                if (isPro) {
                     refillAmount = 1000;
                 }
 
