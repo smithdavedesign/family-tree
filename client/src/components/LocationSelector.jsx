@@ -19,14 +19,12 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
 
             // Fetch Google API key from backend (runtime config)
             let googleApiKey = null;
-            if (isProd) {
-                try {
-                    const configRes = await fetch('/api/config');
-                    const config = await configRes.json();
-                    googleApiKey = config.googleApiKey;
-                } catch (err) {
-                    console.warn('Failed to fetch config:', err);
-                }
+            try {
+                const configRes = await fetch('/api/config');
+                const config = await configRes.json();
+                googleApiKey = config.googleApiKey;
+            } catch (err) {
+                console.warn('Failed to fetch config:', err);
             }
 
             // HYBRID STRATEGY:
@@ -35,7 +33,7 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
 
             if (search && search.length > 2) {
                 try {
-                    if (isProd && googleApiKey) {
+                    if (googleApiKey) {
                         // GOOGLE MAPS IMPLEMENTATION
                         if (!window.google || !window.google.maps || !window.google.maps.places) {
                             // Load Google Maps Script dynamically if not present
