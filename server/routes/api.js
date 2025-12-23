@@ -168,9 +168,6 @@ router.use('/test', testRoutes);
 const subscriptionRoutes = require('./subscriptionRoutes');
 router.use('/', subscriptionRoutes);
 
-// Test Endpoint for Token Draining
-router.post('/test/burn-tokens', requireAuth, checkTokens(50), (req, res) => {
-    res.json({ success: true, message: 'Burned 50 tokens', remaining: req.user.tokens });
-});
+
 
 module.exports = router;
