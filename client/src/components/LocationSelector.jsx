@@ -7,14 +7,36 @@ import LocationModal from './LocationModal';
 
 const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
     const queryClient = useQueryClient();
 
+    // Debounce search input
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // Google Session Token logic
+    const [sessionToken, setSessionToken] = useState(null);
+
+    const getSessionToken = () => {
+        if (!sessionToken && window.google && window.google.maps && window.google.maps.places) {
+            const token = new window.google.maps.places.AutocompleteSessionToken();
+            setSessionToken(token);
+            return token;
+        }
+        return sessionToken;
+    };
+
     // Fetch locations with search
     const { data: locations = [] } = useQuery({
-        queryKey: ['locations', search],
+        queryKey: ['locations', debouncedSearch],
         queryFn: async () => {
             const { data: { session } } = await supabase.auth.getSession();
+            const search = debouncedSearch;
             const isProd = import.meta.env.PROD;
 
             // Fetch Google API key from backend (runtime config)
@@ -27,16 +49,28 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                 console.warn('Failed to fetch config:', err);
             }
 
-            // HYBRID STRATEGY:
-            // Dev -> Local Nominatim (Docker)
-            // Prod -> Google Maps API
+            // 1. Fetch from our DB (Always check local first)
+            const localUrl = search
+                ? `/api/locations?search=${encodeURIComponent(search)}`
+                : '/api/locations';
 
+            let localResults = [];
+            try {
+                const response = await fetch(localUrl, {
+                    headers: { Authorization: `Bearer ${session?.access_token}` }
+                });
+                if (response.ok) localResults = await response.json();
+            } catch (err) {
+                console.warn('Local search failed:', err);
+            }
+
+            // 2. Fetch from External API (Google/Nominatim)
+            let externalResults = [];
             if (search && search.length > 2) {
                 try {
                     if (googleApiKey) {
                         // GOOGLE MAPS IMPLEMENTATION
                         if (!window.google || !window.google.maps || !window.google.maps.places) {
-                            // Load Google Maps Script dynamically if not present
                             if (!document.getElementById('google-maps-script')) {
                                 const script = document.createElement('script');
                                 script.id = 'google-maps-script';
@@ -45,15 +79,18 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                                 document.body.appendChild(script);
                                 await new Promise(resolve => script.onload = resolve);
                             } else {
-                                // Wait for existing script to be ready
                                 await new Promise(resolve => setTimeout(resolve, 500));
                             }
                         }
 
-                        // Use AutocompleteService
                         const service = new window.google.maps.places.AutocompleteService();
+                        const token = getSessionToken();
+
                         const predictions = await new Promise((resolve) => {
-                            service.getPlacePredictions({ input: search }, (results, status) => {
+                            service.getPlacePredictions({
+                                input: search,
+                                sessionToken: token
+                            }, (results, status) => {
                                 if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
                                     resolve(results);
                                 } else {
@@ -62,27 +99,13 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                             });
                         });
 
-                        // Get details for each prediction to get lat/lng (AutocompleteService doesn't return lat/lng)
-                        // Note: ensuring we don't spam details API, usually users select one. 
-                        // But here we need to display valid locations. 
-                        // Optimization: For the dropdown we might just show text, and fetch details ON SELECT.
-                        // However, existing UI expects latitude/longitude immediately?
-                        // The existing UI *renders* results. 
-                        // If we want to save costs, we should fetch lat/lng ONLY when user clicks "Add".
-                        // But current `handleSelectLocation` adds it directly.
-                        // Let's assume we map what we can. 
-
-                        // Actually, to get lat/lng for ALL suggestions is expensive (1 request per item).
-                        // BETTER APPROACH: Return predictions with a placeholder flag. 
-                        // Then fetch details in handleSelectLocation.
-
-                        return predictions.map(p => ({
+                        externalResults = predictions.map(p => ({
                             id: `google-${p.place_id}`,
                             name: p.structured_formatting.main_text,
                             address: p.description,
-                            latitude: 0, // Placeholder, fetch on select
-                            longitude: 0, // Placeholder
-                            is_google_prediction: true, // Flag to trigger details fetch
+                            latitude: 0,
+                            longitude: 0,
+                            is_google_prediction: true,
                             google_place_id: p.place_id,
                             is_new: true
                         }));
@@ -92,7 +115,7 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                         const nominatimRes = await fetch(`/nominatim/search?q=${encodeURIComponent(search)}&format=json&addressdetails=1&limit=5`);
                         if (nominatimRes.ok) {
                             const results = await nominatimRes.json();
-                            return results.map(item => ({
+                            externalResults = results.map(item => ({
                                 id: `nom-${item.place_id}`,
                                 name: item.display_name.split(',')[0],
                                 address: item.display_name,
@@ -107,17 +130,19 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                 }
             }
 
-            // Fallback: search existing backend locations
-            const url = search
-                ? `/api/locations?search=${encodeURIComponent(search)}`
-                : '/api/locations';
+            // Combine and prioritize local results
+            const combined = [...localResults];
 
-            const response = await fetch(url, {
-                headers: { Authorization: `Bearer ${session?.access_token}` }
+            // Add external results if they don't already exist locally by name/address
+            externalResults.forEach(ext => {
+                const exists = localResults.some(loc =>
+                    loc.google_place_id === ext.google_place_id ||
+                    (loc.name === ext.name && loc.address === ext.address)
+                );
+                if (!exists) combined.push(ext);
             });
 
-            if (!response.ok) return [];
-            return response.json();
+            return combined;
         }
     });
 
@@ -164,9 +189,11 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                     const cacheHits = await cacheRes.json();
                     if (cacheHits && cacheHits.length > 0) {
                         // Found in cache! Use this instead of calling Google Details API
+                        console.log('✅ Location found in local cache! Skipping Google Places API call.', cacheHits[0]);
                         selection = {
                             ...cacheHits[0],
-                            is_new: false // Already in DB
+                            is_new: false, // Already in DB
+                            cached: true
                         };
                     }
                 }
@@ -206,6 +233,9 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                     console.error('Failed to get place details from Google API:', err);
                 }
             }
+
+            // After a successful selection (and details fetch), refresh the session token for the NEXT search
+            setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
         }
 
         // If it's a new external suggestion (or a newly resolved Google prediction), save it to our DB first to get a UUID
@@ -255,7 +285,12 @@ const LocationSelector = ({ selectedLocations = [], onAdd, onRemove }) => {
                         >
                             <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium text-slate-900 truncate">{location.name}</p>
+                                <p className="font-medium text-slate-900 truncate">
+                                    {location.name}
+                                    {location.google_place_id && !location.is_google_prediction && (
+                                        <span className="ml-2 text-[10px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Cached</span>
+                                    )}
+                                </p>
                                 {location.address && (
                                     <p className="text-xs text-slate-500 truncate">{location.address}</p>
                                 )}
