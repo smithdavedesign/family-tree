@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../middleware/auth');
 const Joi = require('joi');
+const logger = require('../utils/logger');
 
 // Validation schema
 const eventSchema = Joi.object({
@@ -75,19 +76,19 @@ exports.getPersonEvents = async (req, res) => {
 
         res.json(events);
     } catch (error) {
-        console.error('Error fetching life events:', error);
+        logger.error('Error fetching life events:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
 
 exports.addEvent = async (req, res) => {
     const { id } = req.params;
-    console.log('Adding event for person:', id, 'Body:', req.body);
+    logger.info('Adding event for person', { personId: id, body: req.body }, req);
 
     const { error: validationError, value } = eventSchema.validate(req.body);
 
     if (validationError) {
-        console.error('Validation error:', validationError.details[0].message);
+        logger.warn('Validation error:', { error: validationError.details[0].message }, req);
         return res.status(400).json({ error: validationError.details[0].message });
     }
 
@@ -119,13 +120,13 @@ exports.addEvent = async (req, res) => {
                 .insert(locationLinks);
 
             if (linkError) {
-                console.error('Error linking locations to event:', linkError);
+                logger.error('Error linking locations to event:', linkError, req);
             }
         }
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding life event:', error);
+        logger.error('Error adding life event:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -177,14 +178,14 @@ exports.updateEvent = async (req, res) => {
                     .insert(locationLinks);
 
                 if (linkError) {
-                    console.error('Error syncing locations for event:', linkError);
+                    logger.error('Error syncing locations for event:', linkError, req);
                 }
             }
         }
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating life event:', error);
+        logger.error('Error updating life event:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -202,7 +203,7 @@ exports.deleteEvent = async (req, res) => {
 
         res.json({ message: 'Event deleted successfully' });
     } catch (error) {
-        console.error('Error deleting life event:', error);
+        logger.error('Error deleting life event:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -223,7 +224,7 @@ exports.getEventsForPhoto = async (req, res) => {
 
         res.json(data || []);
     } catch (error) {
-        console.error('Error fetching events for photo:', error);
+        logger.error('Error fetching events for photo:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -242,7 +243,7 @@ exports.getTreeEvents = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error fetching tree events:', error);
+        logger.error('Error fetching tree events:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -260,7 +261,7 @@ exports.addEventLocation = async (req, res) => {
         if (error) throw error;
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error linking location to event:', error);
+        logger.error('Error linking location to event:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -279,7 +280,7 @@ exports.removeEventLocation = async (req, res) => {
         if (error) throw error;
         res.json({ message: 'Location unlinked from event' });
     } catch (error) {
-        console.error('Error unlinking location from event:', error);
+        logger.error('Error unlinking location from event:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

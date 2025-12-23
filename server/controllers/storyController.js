@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.createStory = async (req, res) => {
     const { tree_id, title, content, person_ids = [], photo_ids = [] } = req.body;
@@ -49,7 +50,7 @@ exports.createStory = async (req, res) => {
 
         res.status(201).json(story);
     } catch (error) {
-        console.error('Error creating story:', error);
+        logger.error('Error creating story:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -120,7 +121,7 @@ exports.getStories = async (req, res) => {
 
         res.json(storiesWithLocations);
     } catch (error) {
-        console.error('Error fetching stories:', error);
+        logger.error('Error fetching stories:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -176,7 +177,7 @@ exports.getStory = async (req, res) => {
 
         res.json(story);
     } catch (error) {
-        console.error('Error fetching story:', error);
+        logger.error('Error fetching story:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -249,7 +250,7 @@ exports.updateStory = async (req, res) => {
 
         res.json(story);
     } catch (error) {
-        console.error('Error updating story:', error);
+        logger.error('Error updating story:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -267,7 +268,7 @@ exports.deleteStory = async (req, res) => {
 
         res.json({ message: 'Story deleted successfully' });
     } catch (error) {
-        console.error('Error deleting story:', error);
+        logger.error('Error deleting story:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

@@ -82,7 +82,7 @@ router.get('/reminders/upcoming', requireAuth, reminderController.getUpcomingEve
 // Story routes
 router.get('/stories', requireAuth, storyController.getStories);
 router.get('/story/:id', requireAuth, storyController.getStory);
-router.post('/story', requireAuth, requireStoryEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
+router.post('/story', requireAuth, requireTreeEditor, writeLimiter, auditLog('CREATE', 'story'), storyController.createStory);
 router.put('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('UPDATE', 'story'), storyController.updateStory);
 router.delete('/story/:id', requireAuth, requireStoryEditor, writeLimiter, auditLog('DELETE', 'story'), storyController.deleteStory);
 

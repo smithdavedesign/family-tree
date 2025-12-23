@@ -134,20 +134,21 @@ const TreeDashboard = (props) => {
         );
     }
 
-    const allTrees = [...ownedTrees, ...sharedTrees]
+    const rawTrees = [...ownedTrees, ...sharedTrees];
+    const allTrees = rawTrees
         // Filter out archived trees unless viewing archived
         .filter(t => activeView === 'archived' ? t.is_archived : !t.is_archived);
 
     const filteredTrees = activeView === 'all' ? allTrees :
         activeView === 'owned' ? ownedTrees.filter(t => !t.is_archived) :
             activeView === 'shared' ? sharedTrees.filter(t => !t.is_archived) :
-                activeView === 'favorites' ? allTrees.filter(t => t.is_favorite) :
-                    activeView === 'archived' ? [...ownedTrees, ...sharedTrees].filter(t => t.is_archived) :
-                        activeView === 'recent' ? [...allTrees].sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)).slice(0, 5) :
+                activeView === 'favorites' ? rawTrees.filter(t => t.is_favorite) :
+                    activeView === 'archived' ? rawTrees.filter(t => t.is_archived) :
+                        activeView === 'recent' ? [...rawTrees].sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)).slice(0, 5) :
                             [];
 
     // Show Welcome Wizard if no trees and not loading
-    if (!loading && allTrees.length === 0) {
+    if (!loading && rawTrees.length === 0) {
         return (
             <div className="min-h-screen bg-slate-50 py-12 px-4">
                 <Navbar user={user} onOpenSettings={() => setShowSettings(true)} />

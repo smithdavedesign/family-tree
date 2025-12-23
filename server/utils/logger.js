@@ -55,10 +55,45 @@ class Logger {
         const colorFn = LEVEL_COLORS[level] || chalk.white;
         const timestamp = chalk.gray(logEntry.timestamp);
         const levelStr = colorFn(`[${level}]`);
-        const contextStr = Object.keys(context).length > 0 ?
-            chalk.gray(JSON.stringify(context)) : '';
 
-        return `${timestamp} ${levelStr} ${message} ${contextStr}`;
+        // HTTP Request Formatting
+        let httpContextInfo = '';
+        const restContext = { ...context };
+
+        if (context.method && context.statusCode) {
+            const methodColor = {
+                GET: chalk.blue,
+                POST: chalk.green,
+                PUT: chalk.yellow,
+                DELETE: chalk.red,
+                PATCH: chalk.magenta,
+                OPTIONS: chalk.gray
+            }[context.method.toUpperCase()] || chalk.white;
+
+            const statusColor =
+                context.statusCode >= 500 ? chalk.red :
+                    context.statusCode >= 400 ? chalk.yellow :
+                        context.statusCode >= 300 ? chalk.cyan :
+                            context.statusCode >= 200 ? chalk.green : chalk.white;
+
+            const method = methodColor(context.method);
+            const url = context.url;
+            const status = statusColor(context.statusCode);
+            const duration = context.duration ? chalk.gray(context.duration) : '';
+
+            httpContextInfo = `${method} ${url} ${status} ${duration}`;
+
+            // Remove handled fields from restContext so they don't duplicate
+            delete restContext.method;
+            delete restContext.url;
+            delete restContext.statusCode;
+            delete restContext.duration;
+        }
+
+        const contextStr = Object.keys(restContext).length > 0 ?
+            chalk.gray(JSON.stringify(restContext)) : '';
+
+        return `${timestamp} ${levelStr} ${message} ${httpContextInfo} ${contextStr}`;
     }
 
     /**

@@ -660,6 +660,23 @@ const { captureException } = require('./utils/errorLogger');
 captureException(error, { userId: user.id });
 ```
 
+### Backend Structured Logging
+
+The backend utilizes a custom `Logger` class for consistent, color-coded console output in development and JSON in production.
+
+**Features:**
+- **Color Coding:** 
+  - Methods: GET (Blue), POST (Green), PUT (Yellow), DELETE (Red)
+  - Status: 2xx (Green), 3xx (Cyan), 4xx (Yellow), 5xx (Red)
+- **Inline Details:** HTTP method, URL, status code, and duration are printed inline for readability.
+- **Context:** Enriched with `userId`, `requestId` for tracing.
+
+```javascript
+/* Usage */
+const logger = require('../utils/logger');
+logger.info('Action performed', { userId: '123' });
+```
+
 ### Audit Logs
 All user actions are logged to the database for security and compliance:
 - **Table:** `audit_logs`
@@ -720,6 +737,7 @@ client/src/test/
 │   ├── testUtils.jsx              # Custom render with providers
 │   └── mockData.js                # Mock data for tests
 ├── components/
+│   ├── TreeDashboard.test.jsx     # Dashboard & Filtering tests
 │   ├── Button.test.jsx            # Component tests
 │   └── SearchBar.test.jsx
 ├── unit/
@@ -732,7 +750,26 @@ client/src/test/
     └── critical-journey.spec.js   # E2E tests (Playwright)
 ```
 
-### Writing Tests
+### Running Tests
+
+```bash
+cd client
+
+# Run all tests in watch mode
+npm test
+
+# Run tests once (CI mode)
+npm test -- --run
+
+# Run specific test file (e.g., TreeDashboard)
+npm test -- src/test/components/TreeDashboard.test.jsx
+
+# Run tests with UI
+npm test:ui
+
+# Generate coverage report
+npm test:coverage
+```
 
 **Component Test Example:**
 ```javascript
@@ -790,6 +827,7 @@ describe('Tree CRUD', () => {
 3. **Test user behavior:** Focus on what users see and do
 4. **Keep tests isolated:** Each test should be independent
 5. **Use descriptive names:** Test names should explain what they verify
+6. **ESM Compatibility:** Use `vi.hoisted()` for top-level mocks and ensure all local imports have `.js` extensions. Use dynamic `await import()` for modules that need to be mocked to avoid ESM hoisting issues.
 
 ### CI/CD Integration
 

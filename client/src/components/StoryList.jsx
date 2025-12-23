@@ -166,15 +166,15 @@ const StoryList = ({ personId, treeId, isEditor }) => {
                         />
                     </div>
 
-                    <div className="flex gap-2">
-                        <Button variant="primary" onClick={handleSave}>
+                    <div className="flex flex-col gap-2">
+                        <Button variant="primary" fullWidth size="sm" onClick={handleSave}>
                             Save Story
                         </Button>
-                        <Button variant="outline" onClick={() => setShowPhotoSelector(true)}>
+                        <Button variant="outline" fullWidth size="sm" onClick={() => setShowPhotoSelector(true)}>
                             <ImageIcon className="w-4 h-4 mr-2" />
                             Attach Photos ({formData.photo_ids?.length || 0})
                         </Button>
-                        <Button variant="outline" onClick={handleCancel}>
+                        <Button variant="ghost" fullWidth size="sm" onClick={handleCancel}>
                             Cancel
                         </Button>
                     </div>

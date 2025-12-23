@@ -1,5 +1,6 @@
 const { google } = require('googleapis');
 const { supabase, supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 // Initialize OAuth2 Client
 const oauth2Client = new google.auth.OAuth2(
@@ -52,7 +53,7 @@ exports.initiateConnection = async (req, res) => {
 
         res.redirect(authUrl);
     } catch (error) {
-        console.error('Error initiating Google connection:', error);
+        logger.error('Error initiating Google connection:', error, req);
         res.status(500).json({ error: 'Failed to initiate Google connection' });
     }
 };
@@ -113,7 +114,7 @@ exports.handleCallback = async (req, res) => {
             });
 
         if (error) {
-            console.error('Error storing Google connection:', error);
+            logger.error('Error storing Google connection:', error, req);
             const separator = returnUrl.includes('?') ? '&' : '?';
             return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}error=storage_failed`);
         }
@@ -122,7 +123,7 @@ exports.handleCallback = async (req, res) => {
         const separator = returnUrl.includes('?') ? '&' : '?';
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}${returnUrl}${separator}google_connected=true`);
     } catch (error) {
-        console.error('Error handling Google callback:', error);
+        logger.error('Error handling Google callback:', error, req);
         res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/settings?error=callback_failed`);
     }
 };
@@ -146,7 +147,7 @@ exports.getConnectionStatus = async (req, res) => {
             .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-            console.error('Error fetching connection status:', error);
+            logger.error('Error fetching connection status:', error, req);
             return res.status(500).json({ error: 'Failed to fetch connection status' });
         }
 
@@ -168,7 +169,7 @@ exports.getConnectionStatus = async (req, res) => {
             needs_refresh: isExpired
         });
     } catch (error) {
-        console.error('Error in getConnectionStatus:', error);
+        logger.error('Error in getConnectionStatus:', error, req);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -210,7 +211,7 @@ exports.refreshToken = async (req, res) => {
             .eq('user_id', userId);
 
         if (updateError) {
-            console.error('Error updating refreshed token:', updateError);
+            logger.error('Error updating refreshed token:', updateError, req);
             return res.status(500).json({ error: 'Failed to update token' });
         }
 
@@ -219,7 +220,7 @@ exports.refreshToken = async (req, res) => {
             expires_at: expiresAt.toISOString()
         });
     } catch (error) {
-        console.error('Error refreshing token:', error);
+        logger.error('Error refreshing token:', error, req);
         res.status(500).json({ error: 'Failed to refresh token' });
     }
 };
@@ -238,13 +239,13 @@ exports.disconnect = async (req, res) => {
             .eq('user_id', userId);
 
         if (error) {
-            console.error('Error disconnecting Google account:', error);
+            logger.error('Error disconnecting Google account:', error, req);
             return res.status(500).json({ error: 'Failed to disconnect' });
         }
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error in disconnect:', error);
+        logger.error('Error in disconnect:', error, req);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -299,7 +300,7 @@ exports.getValidToken = async (req, res) => {
 
         res.json({ access_token: credentials.access_token });
     } catch (error) {
-        console.error('Error getting valid token:', error);
+        logger.error('Error getting valid token:', error, req);
         res.status(500).json({ error: 'Failed to get valid token' });
     }
 };

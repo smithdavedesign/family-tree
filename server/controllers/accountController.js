@@ -1,10 +1,11 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.deleteAccount = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        console.log(`Deleting account for user: ${userId}`);
+        logger.info(`Deleting account for user: ${userId}`, { userId }, req);
 
         // 1. Delete all media associated with user's persons
         const { error: mediaError } = await supabaseAdmin
@@ -22,7 +23,7 @@ exports.deleteAccount = async (req, res) => {
                     )
             );
 
-        if (mediaError) console.error('Error deleting media:', mediaError);
+        if (mediaError) logger.error('Error deleting media:', mediaError, req);
 
         // 2. Delete all relationships in user's trees
         const { error: relError } = await supabaseAdmin
@@ -35,7 +36,7 @@ exports.deleteAccount = async (req, res) => {
                     .eq('owner_id', userId)
             );
 
-        if (relError) console.error('Error deleting relationships:', relError);
+        if (relError) logger.error('Error deleting relationships:', relError, req);
 
         // 3. Delete all persons in user's trees
         const { error: personsError } = await supabaseAdmin
@@ -46,7 +47,7 @@ exports.deleteAccount = async (req, res) => {
             .eq('owner_id', userId);
 
         if (fetchTreesError) {
-            console.error('Error fetching user trees:', fetchTreesError);
+            logger.error('Error fetching user trees:', fetchTreesError, req);
             throw fetchTreesError;
         }
 
@@ -60,7 +61,7 @@ exports.deleteAccount = async (req, res) => {
                 .in('tree_id', treeIds);
 
             if (fetchPersonsError) {
-                console.error('Error fetching persons in user trees:', fetchPersonsError);
+                logger.error('Error fetching persons in user trees:', fetchPersonsError, req);
                 throw fetchPersonsError;
             }
 
@@ -73,7 +74,7 @@ exports.deleteAccount = async (req, res) => {
                     .delete()
                     .in('person_id', personIds);
 
-                if (mediaError) console.error('Error deleting media:', mediaError);
+                if (mediaError) logger.error('Error deleting media:', mediaError, req);
             }
 
             // 2. Delete all relationships in user's trees
@@ -82,7 +83,7 @@ exports.deleteAccount = async (req, res) => {
                 .delete()
                 .in('tree_id', treeIds);
 
-            if (relError) console.error('Error deleting relationships:', relError);
+            if (relError) logger.error('Error deleting relationships:', relError, req);
 
             // 3. Delete all persons in user's trees
             const { error: personsError } = await supabaseAdmin
@@ -90,7 +91,7 @@ exports.deleteAccount = async (req, res) => {
                 .delete()
                 .in('tree_id', treeIds);
 
-            if (personsError) console.error('Error deleting persons:', personsError);
+            if (personsError) logger.error('Error deleting persons:', personsError, req);
 
             // 4. Delete all trees owned by user
             const { error: treesError } = await supabaseAdmin
@@ -98,7 +99,7 @@ exports.deleteAccount = async (req, res) => {
                 .delete()
                 .in('id', treeIds); // Use .in('id', treeIds) for deleting trees
 
-            if (treesError) console.error('Error deleting trees:', treesError);
+            if (treesError) logger.error('Error deleting trees:', treesError, req);
         }
 
 
@@ -106,15 +107,15 @@ exports.deleteAccount = async (req, res) => {
         const { error: userError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
         if (userError) {
-            console.error('Error deleting user from auth:', userError);
+            logger.error('Error deleting user from auth:', userError, req);
             throw userError;
         }
 
-        console.log(`Account deleted successfully for user: ${userId}`);
+        logger.info(`Account deleted successfully for user: ${userId}`, { userId }, req);
 
         res.status(200).json({ message: 'Account deleted successfully' });
     } catch (error) {
-        console.error('Error deleting account:', error);
+        logger.error('Error deleting account:', error, req);
         res.status(500).json({ error: error.message || 'Failed to delete account' });
     }
 };
@@ -139,7 +140,7 @@ exports.updateAccount = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating account:', error);
+        logger.error('Error updating account:', error, req);
         res.status(500).json({ error: 'Failed to update account' });
     }
 };

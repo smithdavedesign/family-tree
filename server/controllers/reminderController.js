@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.getUpcomingEvents = async (req, res) => {
     // We'll look for events in the next 30 days
@@ -175,7 +176,7 @@ exports.getUpcomingEvents = async (req, res) => {
         res.json(upcomingEvents);
 
     } catch (error) {
-        console.error('Error fetching upcoming events:', error);
+        logger.error('Error fetching upcoming events:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 // Helper to calculate distance between two points in km using Haversine formula
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -67,7 +68,7 @@ exports.getNearbyPhotos = async (req, res) => {
 
         res.json(nearbyPhotos);
     } catch (error) {
-        console.error('Error fetching nearby photos:', error);
+        logger.error('Error fetching nearby photos:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -319,7 +320,7 @@ exports.getPersonLocationStats = async (req, res) => {
 
         res.json(stats);
     } catch (error) {
-        console.error('Error fetching person location stats:', error);
+        logger.error('Error fetching person location stats:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -663,7 +664,7 @@ exports.getGlobalTravelStats = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching global travel stats:', error);
+        logger.error('Error fetching global travel stats:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

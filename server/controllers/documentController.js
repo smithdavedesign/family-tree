@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.addDocument = async (req, res) => {
     const { person_id, url, title, type, source, external_id, description } = req.body;
@@ -16,7 +17,7 @@ exports.addDocument = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding document:', error);
+        logger.error('Error adding document:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -35,7 +36,7 @@ exports.getDocuments = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error fetching documents:', error);
+        logger.error('Error fetching documents:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -56,7 +57,7 @@ exports.updateDocument = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating document:', error);
+        logger.error('Error updating document:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -88,11 +89,11 @@ exports.deleteDocument = async (req, res) => {
                         .remove([path]);
 
                     if (storageError) {
-                        console.warn('Failed to delete file from storage:', storageError);
+                        logger.warn('Failed to delete file from storage:', storageError, req);
                     }
                 }
             } catch (err) {
-                console.warn('Error parsing URL for storage deletion:', err);
+                logger.warn('Error parsing URL for storage deletion:', err, req);
             }
         }
 
@@ -106,7 +107,7 @@ exports.deleteDocument = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error deleting document:', error);
+        logger.error('Error deleting document:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 const Joi = require('joi');
 
 // Validation schemas
@@ -43,7 +44,7 @@ const getComments = async (req, res) => {
 
         res.json(comments);
     } catch (error) {
-        console.error('Error fetching comments:', error);
+        logger.error('Error fetching comments:', error, req);
         res.status(500).json({ error: 'Failed to fetch comments' });
     }
 };
@@ -89,7 +90,7 @@ const addComment = async (req, res) => {
 
         res.status(201).json(comment);
     } catch (error) {
-        console.error('Error adding comment:', error);
+        logger.error('Error adding comment:', error, req);
         res.status(500).json({ error: 'Failed to add comment' });
     }
 };
@@ -133,7 +134,7 @@ const deleteComment = async (req, res) => {
 
         res.json({ message: 'Comment deleted' });
     } catch (error) {
-        console.error('Error deleting comment:', error);
+        logger.error('Error deleting comment:', error, req);
         res.status(500).json({ error: 'Failed to delete comment' });
     }
 };

@@ -1,5 +1,5 @@
 // Session Manager - Handles persistent login and token refresh
-import { supabase } from '../auth';
+import { supabase } from '../auth.js';
 
 const SESSION_KEY = 'roots_branches_session';
 const TOKEN_REFRESH_THRESHOLD = 30 * 60 * 1000; // 30 minutes in ms

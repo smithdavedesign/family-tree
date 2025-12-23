@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 /**
  * Album Controller
@@ -57,7 +58,7 @@ const getTreeAlbums = async (req, res) => {
 
         res.json(formatted);
     } catch (error) {
-        console.error('Error fetching albums:', error);
+        logger.error('Error fetching albums:', error, req);
         res.status(500).json({ error: 'Failed to fetch albums' });
     }
 };
@@ -98,7 +99,7 @@ const createAlbum = async (req, res) => {
 
         res.status(201).json(album);
     } catch (error) {
-        console.error('Error creating album:', error);
+        logger.error('Error creating album:', error, req);
         res.status(500).json({ error: 'Failed to create album' });
     }
 };
@@ -172,7 +173,7 @@ const getAlbum = async (req, res) => {
 
         res.json(response);
     } catch (error) {
-        console.error('Error fetching album:', error);
+        logger.error('Error fetching album:', error, req);
         res.status(500).json({ error: 'Failed to fetch album' });
     }
 };
@@ -224,7 +225,7 @@ const updateAlbum = async (req, res) => {
 
         res.json(updated);
     } catch (error) {
-        console.error('Error updating album:', error);
+        logger.error('Error updating album:', error, req);
         res.status(500).json({ error: 'Failed to update album' });
     }
 };
@@ -267,7 +268,7 @@ const deleteAlbum = async (req, res) => {
 
         res.json({ message: 'Album deleted successfully' });
     } catch (error) {
-        console.error('Error deleting album:', error);
+        logger.error('Error deleting album:', error, req);
         res.status(500).json({ error: 'Failed to delete album' });
     }
 };
@@ -288,11 +289,11 @@ const addPhotosToAlbum = async (req, res) => {
             .eq('id', albumId)
             .single();
 
-        console.log('[addPhotosToAlbum] Album state:', {
+        logger.info('[addPhotosToAlbum] Album state:', {
             id: albumId,
             hasCover: !!album?.cover_photo_id,
             coverId: album?.cover_photo_id
-        });
+        }, req);
 
         if (albumError) throw albumError;
         if (!album) {
@@ -336,27 +337,27 @@ const addPhotosToAlbum = async (req, res) => {
         if (error) throw error;
 
         // Set default cover photo if none exists and photos were added
-        console.log('[addPhotosToAlbum] Checking default cover:', {
+        logger.info('[addPhotosToAlbum] Checking default cover:', {
             currentCover: album.cover_photo_id,
             newPhotos: photoIds.length,
             firstPhoto: photoIds[0]
-        });
+        }, req);
 
         if (!album.cover_photo_id && photoIds.length > 0) {
-            console.log('[addPhotosToAlbum] Setting default cover to:', photoIds[0]);
+            logger.info('[addPhotosToAlbum] Setting default cover to:', { photoId: photoIds[0] }, req);
             const { error: updateError } = await supabaseAdmin
                 .from('albums')
                 .update({ cover_photo_id: photoIds[0] })
                 .eq('id', albumId);
 
             if (updateError) {
-                console.error('[addPhotosToAlbum] Failed to set default cover:', updateError);
+                logger.error('[addPhotosToAlbum] Failed to set default cover:', updateError, req);
             }
         }
 
         res.json({ success: true, added: photoIds.length });
     } catch (error) {
-        console.error('Error adding photos to album:', error);
+        logger.error('Error adding photos to album:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -400,7 +401,7 @@ const removePhotoFromAlbum = async (req, res) => {
 
         res.json({ message: 'Photo removed from album' });
     } catch (error) {
-        console.error('Error removing photo from album:', error);
+        logger.error('Error removing photo from album:', error, req);
         res.status(500).json({ error: 'Failed to remove photo' });
     }
 };
@@ -451,7 +452,7 @@ const reorderAlbumPhotos = async (req, res) => {
 
         res.json({ message: 'Photo order updated' });
     } catch (error) {
-        console.error('Error reordering photos:', error);
+        logger.error('Error reordering photos:', error, req);
         res.status(500).json({ error: 'Failed to reorder photos' });
     }
 };
@@ -489,7 +490,7 @@ const getPersonAlbums = async (req, res) => {
 
         res.json(Array.from(albumMap.values()));
     } catch (error) {
-        console.error('Error fetching person albums:', error);
+        logger.error('Error fetching person albums:', error, req);
         res.status(500).json({ error: 'Failed to fetch person albums' });
     }
 };
@@ -512,7 +513,7 @@ const getPhotoAlbums = async (req, res) => {
 
         res.json(albums.map(a => ({ id: a.id, name: a.name })));
     } catch (error) {
-        console.error('Error fetching photo albums:', error);
+        logger.error('Error fetching photo albums:', error, req);
         res.status(500).json({ error: 'Failed to fetch photo albums' });
     }
 };

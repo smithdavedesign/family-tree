@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.addMedia = async (req, res) => {
     const { person_id, url, type, google_media_id } = req.body;
@@ -49,7 +50,7 @@ exports.addMedia = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding media:', error);
+        logger.error('Error adding media:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -74,7 +75,7 @@ exports.getMediaForPerson = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error fetching media:', error);
+        logger.error('Error fetching media:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -153,7 +154,7 @@ exports.addPhoto = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding photo:', error);
+        logger.error('Error adding photo:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -180,7 +181,7 @@ exports.getPhotos = async (req, res) => {
 
         res.json(photos);
     } catch (error) {
-        console.error('Error fetching photos:', error);
+        logger.error('Error fetching photos:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -224,7 +225,7 @@ exports.updatePhoto = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating photo:', error);
+        logger.error('Error updating photo:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -242,7 +243,7 @@ exports.deletePhoto = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error deleting photo:', error);
+        logger.error('Error deleting photo:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -292,7 +293,7 @@ exports.getTreePhotos = async (req, res) => {
 
         res.json(photos);
     } catch (error) {
-        console.error('Error fetching tree photos:', error);
+        logger.error('Error fetching tree photos:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

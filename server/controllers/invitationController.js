@@ -1,5 +1,6 @@
 const { supabase, supabaseAdmin } = require('../middleware/auth');
 const { ROLES } = require('../middleware/rbac');
+const logger = require('../utils/logger');
 const crypto = require('crypto');
 
 // Generate a random 8-character token
@@ -64,7 +65,7 @@ exports.createInvitation = async (req, res) => {
                 // If user already exists, Supabase might return an error or just send a magic link?
                 // inviteUserByEmail usually returns error if user is registered.
                 if (inviteError.message?.includes('already has been registered') || inviteError.status === 422) {
-                    console.log(`User ${email} exists, sending magic link instead.`);
+                    logger.info(`User ${email} exists, sending magic link instead.`, { email }, req);
                     // Send magic link (SignInWithOtp)
                     const { error: otpError } = await supabaseAdmin.auth.signInWithOtp({
                         email: email,
@@ -73,13 +74,13 @@ exports.createInvitation = async (req, res) => {
                         }
                     });
                     if (otpError) {
-                        console.error('Error sending magic link for invite:', otpError);
+                        logger.error('Error sending magic link for invite:', otpError, req);
                         // Don't fail the whole request, return warning?
                     } else {
-                        console.log('Magic link sent successfully via signInWithOtp to', email);
+                        logger.info('Magic link sent successfully via signInWithOtp', { email }, req);
                     }
                 } else {
-                    console.error('Error inviting user:', inviteError);
+                    logger.error('Error inviting user:', inviteError, req);
                     // Proceed but log error
                 }
             }
@@ -92,7 +93,7 @@ exports.createInvitation = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating invitation:', error);
+        logger.error('Error creating invitation:', error, req);
         res.status(500).json({ error: 'Failed to create invitation' });
     }
 };
@@ -126,7 +127,7 @@ exports.getInvitation = async (req, res) => {
         res.json({ invitation });
 
     } catch (error) {
-        console.error('Error fetching invitation:', error);
+        logger.error('Error fetching invitation:', error, req);
         res.status(500).json({ error: 'Failed to fetch invitation' });
     }
 };
@@ -139,7 +140,7 @@ exports.acceptInvitation = async (req, res) => {
         const { token } = req.params;
         const userId = req.user.id;
 
-        console.log('Accept invitation called - Token:', token, 'UserId:', userId);
+        logger.info('Accept invitation called', { token, userId }, req);
 
         // 1. Get invitation
         const { data: invitation, error: inviteError } = await supabaseAdmin
@@ -149,10 +150,10 @@ exports.acceptInvitation = async (req, res) => {
             .eq('is_active', true)
             .single();
 
-        console.log('Invitation lookup result:', { invitation, inviteError });
+        logger.info('Invitation lookup result:', { invitation: !!invitation, inviteError: !!inviteError }, req);
 
         if (inviteError || !invitation) {
-            console.log('Returning 404 - invitation not found');
+            logger.warn('Returning 404 - invitation not found', {}, req);
             return res.status(404).json({ error: 'Invitation not found or expired' });
         }
 
@@ -164,10 +165,10 @@ exports.acceptInvitation = async (req, res) => {
             .eq('user_id', userId)
             .single();
 
-        console.log('Existing member check:', existingMember);
+        logger.info('Existing member check:', { existingMember: !!existingMember }, req);
 
         if (existingMember) {
-            console.log('Returning 400 - already a member');
+            logger.warn('Returning 400 - already a member', {}, req);
             return res.status(400).json({ error: 'You are already a member of this tree' });
         }
 
@@ -180,7 +181,7 @@ exports.acceptInvitation = async (req, res) => {
             }, { onConflict: 'id', ignoreDuplicates: true });
 
         if (userError) {
-            console.error('Error ensuring user exists in public.users:', userError);
+            logger.error('Error ensuring user exists in public.users:', userError, req);
             return res.status(500).json({ error: 'Failed to process invitation' });
         }
 
@@ -205,7 +206,7 @@ exports.acceptInvitation = async (req, res) => {
         res.json({ message: 'Invitation accepted', treeId: invitation.tree_id });
 
     } catch (error) {
-        console.error('Error accepting invitation:', error);
+        logger.error('Error accepting invitation:', error, req);
         res.status(500).json({ error: 'Failed to accept invitation' });
     }
 };
@@ -217,7 +218,7 @@ exports.getTreeMembers = async (req, res) => {
     try {
         const { treeId } = req.params;
 
-        console.log('Fetching members for tree:', treeId);
+        logger.info('Fetching members for tree:', { treeId }, req);
 
         const { data: members, error } = await supabaseAdmin
             .from('tree_members')
@@ -227,17 +228,17 @@ exports.getTreeMembers = async (req, res) => {
             `)
             .eq('tree_id', treeId);
 
-        console.log('Members query result:', { members, error });
+        logger.info('Members query result:', { count: members?.length || 0, error: !!error }, req);
 
         if (error) {
-            console.error('Error fetching members:', error);
+            logger.error('Error fetching members:', error, req);
             throw error;
         }
 
         res.json({ members });
 
     } catch (error) {
-        console.error('Error fetching members:', error);
+        logger.error('Error fetching members:', error, req);
         res.status(500).json({ error: 'Failed to fetch members' });
     }
 };
@@ -265,7 +266,7 @@ exports.removeMember = async (req, res) => {
         res.json({ message: 'Member removed' });
 
     } catch (error) {
-        console.error('Error removing member:', error);
+        logger.error('Error removing member:', error, req);
         res.status(500).json({ error: 'Failed to remove member' });
     }
 };
@@ -293,7 +294,7 @@ exports.updateMemberRole = async (req, res) => {
         res.json({ message: 'Member role updated' });
 
     } catch (error) {
-        console.error('Error updating member role:', error);
+        logger.error('Error updating member role:', error, req);
         res.status(500).json({ error: 'Failed to update member role' });
     }
 };

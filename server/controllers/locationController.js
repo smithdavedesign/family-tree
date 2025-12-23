@@ -1,10 +1,11 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 // Create a new location
 exports.createLocation = async (req, res) => {
     const { name, address, latitude, longitude, start_date, end_date, notes } = req.body;
 
-    console.log('Creating location with data:', req.body);
+    logger.info('Creating location with data:', { body: req.body }, req);
 
     try {
         const { data, error } = await supabaseAdmin
@@ -22,13 +23,13 @@ exports.createLocation = async (req, res) => {
             .single();
 
         if (error) {
-            console.error('Supabase error creating location:', error);
+            logger.error('Supabase error creating location:', error, req);
             throw error;
         }
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error creating location:', error);
+        logger.error('Error creating location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -53,7 +54,7 @@ exports.getLocations = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error fetching locations:', error);
+        logger.error('Error fetching locations:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -73,7 +74,7 @@ exports.getLocation = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error fetching location:', error);
+        logger.error('Error fetching location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -95,7 +96,7 @@ exports.updateLocation = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating location:', error);
+        logger.error('Error updating location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -114,7 +115,7 @@ exports.deleteLocation = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error deleting location:', error);
+        logger.error('Error deleting location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -199,7 +200,7 @@ exports.getLocationDetails = async (req, res) => {
             people
         });
     } catch (error) {
-        console.error('Error fetching location details:', error);
+        logger.error('Error fetching location details:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -220,7 +221,7 @@ exports.addStoryLocation = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding story location:', error);
+        logger.error('Error adding story location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -240,7 +241,7 @@ exports.removeStoryLocation = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error removing story location:', error);
+        logger.error('Error removing story location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -262,7 +263,7 @@ exports.getStoryLocations = async (req, res) => {
 
         res.json(data.map(sl => sl.locations));
     } catch (error) {
-        console.error('Error fetching story locations:', error);
+        logger.error('Error fetching story locations:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -272,7 +273,7 @@ exports.addPersonLocation = async (req, res) => {
     const { personId } = req.params;
     const { location_id, start_date, end_date, notes } = req.body;
 
-    console.log('Adding location to person:', { personId, location_id, start_date, end_date, notes });
+    logger.info('Adding location to person:', { personId, location_id, start_date, end_date, notes }, req);
 
     try {
         const { data, error } = await supabaseAdmin
@@ -288,14 +289,14 @@ exports.addPersonLocation = async (req, res) => {
             .single();
 
         if (error) {
-            console.error('Supabase error adding person location:', error);
+            logger.error('Supabase error adding person location:', error, req);
             throw error;
         }
 
-        console.log('Successfully linked location to person');
+        logger.info('Successfully linked location to person', {}, req);
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding person location:', error);
+        logger.error('Error adding person location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -315,7 +316,7 @@ exports.removePersonLocation = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error removing person location:', error);
+        logger.error('Error removing person location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -324,7 +325,7 @@ exports.removePersonLocation = async (req, res) => {
 exports.getPersonLocations = async (req, res) => {
     const { personId } = req.params;
 
-    console.log('Fetching locations for person:', personId);
+    logger.info('Fetching locations for person:', { personId }, req);
 
     try {
         const { data, error } = await supabaseAdmin
@@ -337,11 +338,11 @@ exports.getPersonLocations = async (req, res) => {
             .order('start_date', { ascending: false, nullsFirst: false });
 
         if (error) {
-            console.error('Supabase error fetching person locations:', error);
+            logger.error('Supabase error fetching person locations:', error, req);
             throw error;
         }
 
-        console.log('Found person locations:', data?.length || 0);
+        logger.info('Found person locations:', { count: data?.length || 0 }, req);
 
         res.json(data.map(pl => ({
             ...pl.locations,
@@ -350,7 +351,7 @@ exports.getPersonLocations = async (req, res) => {
             notes: pl.notes
         })));
     } catch (error) {
-        console.error('Error fetching person locations:', error);
+        logger.error('Error fetching person locations:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -370,7 +371,7 @@ exports.addEventLocation = async (req, res) => {
         if (error) throw error;
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error adding event location:', error);
+        logger.error('Error adding event location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -389,7 +390,7 @@ exports.removeEventLocation = async (req, res) => {
         if (error) throw error;
         res.status(204).send();
     } catch (error) {
-        console.error('Error removing event location:', error);
+        logger.error('Error removing event location:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

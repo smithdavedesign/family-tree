@@ -1,4 +1,5 @@
 const { supabase } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.createPerson = async (req, res) => {
     const {
@@ -27,10 +28,10 @@ exports.createPerson = async (req, res) => {
             place_of_death, cause_of_death, burial_place, occupation_history, education
         };
         if (id) {
-            console.log("createPerson called WITH ID:", id);
+            logger.info("createPerson called WITH ID:", { id }, req);
             payload.id = id;
         } else {
-            console.log("createPerson called WITHOUT ID");
+            logger.info("createPerson called WITHOUT ID", {}, req);
         }
 
         const { data, error } = await supabase
@@ -43,7 +44,7 @@ exports.createPerson = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error creating person:', error);
+        logger.error('Error creating person:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -80,7 +81,7 @@ exports.updatePerson = async (req, res) => {
 
         res.json(data);
     } catch (error) {
-        console.error('Error updating person:', error);
+        logger.error('Error updating person:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -109,7 +110,7 @@ exports.deletePerson = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error deleting person:', error);
+        logger.error('Error deleting person:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -152,7 +153,7 @@ exports.mergePersons = async (req, res) => {
 
         res.json({ message: 'Merge successful' });
     } catch (error) {
-        console.error('Error merging persons:', error);
+        logger.error('Error merging persons:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

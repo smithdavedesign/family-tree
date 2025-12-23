@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { mockSupabase } from './mockSupabase';
-import { sessionManager } from './utils/sessionManager';
+import { mockSupabase } from './mockSupabase.js';
+import { sessionManager } from './utils/sessionManager.js';
 
 const useMock = import.meta.env.VITE_USE_MOCK === 'true';
 

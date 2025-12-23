@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 exports.createRelationship = async (req, res) => {
     const { id, tree_id, person_1_id, person_2_id, type } = req.body;
@@ -28,7 +29,7 @@ exports.createRelationship = async (req, res) => {
 
         res.status(201).json(data);
     } catch (error) {
-        console.error('Error creating relationship:', error);
+        logger.error('Error creating relationship:', error, req);
         res.status(500).json({ error: error.message });
     }
 };
@@ -57,7 +58,7 @@ exports.deleteRelationship = async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error deleting relationship:', error);
+        logger.error('Error deleting relationship:', error, req);
         res.status(500).json({ error: error.message });
     }
 };

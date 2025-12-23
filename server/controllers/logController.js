@@ -1,6 +1,7 @@
 /**
  * Controller for handling client-side logs
  */
+const logger = require('../utils/logger');
 exports.createLog = async (req, res) => {
     try {
         const { type, data } = req.body;
@@ -10,16 +11,18 @@ exports.createLog = async (req, res) => {
         const logPrefix = `[CLIENT-${type?.toUpperCase() || 'LOG'}]`;
 
         if (type === 'error' || type === 'unhandled') {
-            console.error(`${logPrefix} ${data?.message || 'Unknown error'}`, {
+            logger.error(`${logPrefix} ${data?.message || 'Unknown error'}`, {
                 url: data?.url,
                 user: data?.user?.email,
-                stack: data?.stack
-            });
+                stack: data?.stack,
+                source: 'client'
+            }, req);
         } else {
-            console.log(`${logPrefix} ${data?.message || 'Log received'}`, {
+            logger.info(`${logPrefix} ${data?.message || 'Log received'}`, {
                 url: data?.url,
-                user: data?.user?.email
-            });
+                user: data?.user?.email,
+                source: 'client'
+            }, req);
         }
 
         // In a real app, you might save this to a database or monitoring service (Sentry, Datadog etc)
@@ -27,7 +30,7 @@ exports.createLog = async (req, res) => {
 
         res.status(200).json({ received: true });
     } catch (error) {
-        console.error('Error processing client log:', error);
+        logger.error('Error processing client log:', error, req);
         res.status(500).json({ error: 'Failed to process log' });
     }
 };
