@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 import { ToastProvider } from './components/ui';
+import { SearchProvider } from './context/SearchContext';
 
 // Lazy load page components for code splitting
 const TreePage = lazy(() => import('./pages/TreePage'));
@@ -28,6 +29,7 @@ const AlbumPage = lazy(() => import('./pages/AlbumPage'));
 const TreeMapPage = lazy(() => import('./pages/TreeMapPage'));
 const TreeStoriesPage = lazy(() => import('./pages/TreeStoriesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -139,35 +141,39 @@ function App() {
     <ToastProvider>
       <Router>
         <ToastContainer />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/trees" element={<TreeDashboard />} />
-            <Route path="/tree/:id" element={<TreePage />} />
-            <Route path="/tree/:id/timeline" element={<TimelinePage />} />
-            <Route path="/tree/:id/gallery" element={<TreeGalleryPage />} />
-            <Route path="/invite/:token" element={<InviteAcceptPage />} />
-            <Route path="/magic-link" element={<MagicLinkAuth />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/auth/confirm" element={<EmailConfirm />} />
-            <Route path="/auth/verify-email" element={<VerifyEmail />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/auth-error" element={<AuthError />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/settings" element={<AccountSettings />} />
-            <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
-            <Route path="/story/:id" element={<StoryPage />} />
-            <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
-            <Route path="/tree/:treeId/albums" element={<AlbumPage />} />
-            <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
-            <Route path="/tree/:treeId/map" element={<TreeMapPage />} />
-            <Route path="/tree/:treeId/stories" element={<TreeStoriesPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-          </Routes>
-        </Suspense>
+        <SearchProvider>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* ... routes ... */}
+              <Route path="/" element={<Login />} />
+              <Route path="/trees" element={<TreeDashboard />} />
+              <Route path="/tree/:id" element={<TreePage />} />
+              <Route path="/tree/:id/timeline" element={<TimelinePage />} />
+              <Route path="/tree/:id/gallery" element={<TreeGalleryPage />} />
+              <Route path="/invite/:token" element={<InviteAcceptPage />} />
+              <Route path="/magic-link" element={<MagicLinkAuth />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/auth/confirm" element={<EmailConfirm />} />
+              <Route path="/auth/verify-email" element={<VerifyEmail />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth-error" element={<AuthError />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/settings" element={<AccountSettings />} />
+              <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
+              <Route path="/story/:id" element={<StoryPage />} />
+              <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
+              <Route path="/tree/:treeId/albums" element={<AlbumPage />} />
+              <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
+              <Route path="/tree/:treeId/map" element={<TreeMapPage />} />
+              <Route path="/tree/:treeId/stories" element={<TreeStoriesPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/search" element={<SearchPage />} />
+            </Routes>
+          </Suspense>
+        </SearchProvider>
       </Router>
     </ToastProvider>
   );

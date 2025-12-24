@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Settings, ChevronDown, TreePine, Zap } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, TreePine, Zap, Search, Command } from 'lucide-react';
 import { supabase } from '../auth';
 import { Avatar } from './ui';
 import { useSubscription } from '../context/SubscriptionContext';
+import { useSearch } from '../context/SearchContext';
 
 const Navbar = ({
     title = "Roots & Branches",
@@ -13,6 +14,7 @@ const Navbar = ({
     onOpenSettings
 }) => {
     const { tokenBalance, planTier, loading, refreshSubscription } = useSubscription() || {};
+    const { toggleSearch } = useSearch();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const navigate = useNavigate();
@@ -60,8 +62,31 @@ const Navbar = ({
                         )}
                     </div>
 
+                    {/* Search Trigger */}
+                    <div className="flex-1 max-w-md hidden md:block px-8">
+                        <button
+                            onClick={() => toggleSearch()}
+                            className="w-full flex items-center justify-between px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg border border-slate-200 transition-all text-sm group"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Search className="w-4 h-4 group-hover:text-teal-600 transition-colors" />
+                                <span>Search family...</span>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-60">
+                                <Command className="w-3 h-3" />
+                                <span className="text-[10px] font-bold">K</span>
+                            </div>
+                        </button>
+                    </div>
+
                     {/* Right Side */}
                     <div className="flex items-center gap-3 sm:gap-4">
+                        <button
+                            onClick={() => toggleSearch()}
+                            className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
                         {rightContent}
 
                         {/* Credits Badge */}

@@ -22,6 +22,7 @@ const mapController = require('../controllers/mapController');
 const locationController = require('../controllers/locationController');
 const commentController = require('../controllers/commentController');
 const activityController = require('../controllers/activityController');
+const searchController = require('../controllers/searchController');
 const upload = require('../middleware/upload');
 
 // Tree routes
@@ -152,6 +153,9 @@ router.get('/person/:personId/locations', requireAuth, locationController.getPer
 // Event-Location linking (Phase 2)
 router.post('/event/:eventId/locations', requireAuth, requireEventEditor, writeLimiter, locationController.addEventLocation);
 router.delete('/event/:eventId/location/:locationId', requireAuth, requireEventEditor, writeLimiter, locationController.removeEventLocation);
+
+// Global Search
+router.get('/search', requireAuth, searchController.search);
 
 // Log routes
 const logController = require('../controllers/logController');
