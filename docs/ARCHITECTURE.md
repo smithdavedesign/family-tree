@@ -8,7 +8,7 @@
 ```mermaid
 graph TD
     User[User] -->|HTTPS| CDN[Vercel CDN]
-    CDN -->|Serve Static Assets| Client[React Frontend (Vite)]
+    CDN -->|Serve Static Assets| Client["React Frontend (Vite)"]
     
     subgraph "Frontend Layer (Client)"
         Client -->|Auth API| SupabaseAuth[Supabase Auth]

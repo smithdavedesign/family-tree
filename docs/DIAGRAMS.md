@@ -54,8 +54,8 @@ flowchart TD
     B -->|No| D[Redirect to Dashboard]
     
     C --> E[Backend: Fetch Tree Metadata]
-    E --> F[Backend: Fetch Persons (Array)]
-    F --> G[Backend: Fetch Relationships (Array)]
+    E --> F["Backend: Fetch Persons (Array)"]
+    F --> G["Backend: Fetch Relationships (Array)"]
     G --> H[Return JSON Payload]
     
     H --> I[Client: React Query Cache]
@@ -64,7 +64,7 @@ flowchart TD
     subgraph "Client: Data Transformation"
         J --> K[Map Persons to React Flow Nodes]
         J --> L[Map Relationships to React Flow Edges]
-        K --> M[Layout Engine (Dagre)]
+        K --> M["Layout Engine (Dagre)"]
         L --> M
         M --> N[Calculate X/Y Coordinates]
     end

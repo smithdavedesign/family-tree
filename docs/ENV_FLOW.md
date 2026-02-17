@@ -4,7 +4,7 @@ This document details the flow and purpose of each environment variable in the a
 
 ```mermaid
 graph TD
-    subgraph Client [Frontend (Vercel)]
+    subgraph Client ["Frontend (Vercel)"]
         direction TB
         C_SUPA_URL[VITE_SUPABASE_URL] -->|Connects to| Supabase
         C_SUPA_KEY[VITE_SUPABASE_ANON_KEY] -->|Auth & Public Access| Supabase
@@ -12,7 +12,7 @@ graph TD
         C_MOCK[VITE_USE_MOCK] -->|Toggle| MockData[Mock Mode]
     end
 
-    subgraph Server [Backend (Render)]
+    subgraph Server ["Backend (Render)"]
         direction TB
         S_PORT[PORT] -->|Listens on| Port3000
         S_NODE_ENV[NODE_ENV] -->|Configures| AppMode[Production/Dev]
@@ -47,7 +47,7 @@ graph TD
     end
 
     subgraph External Services
-        Supabase[(Supabase DB & Auth)]
+        Supabase[("Supabase DB & Auth")]
         Google[Google Cloud]
         Stripe[Stripe Payments]
         Resend[Resend Email]
