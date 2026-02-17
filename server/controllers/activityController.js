@@ -15,7 +15,7 @@ async function getRecentActivity(req, res) {
             .eq('user_id', userId);
 
         if (treesError) {
-            logger.error('Failed to fetch accessible trees', treesError, { req });
+            logger.error('Failed to fetch accessible trees', treesError, {}, req);
             return res.status(500).json({ error: 'Failed to fetch activity' });
         }
 
@@ -33,7 +33,7 @@ async function getRecentActivity(req, res) {
             .limit(100); // Fetch more than needed for filtering
 
         if (activitiesError) {
-            logger.error('Failed to fetch activities', activitiesError, { req });
+            logger.error('Failed to fetch activities', activitiesError, {}, req);
             return res.status(500).json({ error: 'Failed to fetch activity' });
         }
 
@@ -216,7 +216,7 @@ async function getRecentActivity(req, res) {
 
         res.json(filteredActivities);
     } catch (error) {
-        logger.error('Error fetching recent activity', error, { req });
+        logger.error('Error fetching recent activity', error, {}, req);
         res.status(500).json({ error: 'Failed to fetch activity' });
     }
 }

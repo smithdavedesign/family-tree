@@ -70,9 +70,23 @@ class Logger {
             ...enrichedContext,
         };
 
+        // Helper for circular reference handling
+        const getCircularReplacer = () => {
+            const seen = new WeakSet();
+            return (key, value) => {
+                if (typeof value === 'object' && value !== null) {
+                    if (seen.has(value)) {
+                        return '[Circular]';
+                    }
+                    seen.add(value);
+                }
+                return value;
+            };
+        };
+
         // In production, output JSON for log aggregation
         if (this.environment === 'production') {
-            return JSON.stringify(logEntry);
+            return JSON.stringify(logEntry, getCircularReplacer());
         }
 
         // In development, human-readable with colors
@@ -113,21 +127,6 @@ class Logger {
             delete restContext.statusCode;
             delete restContext.duration;
         }
-
-
-        // Safely stringify context, handling circular references
-        const getCircularReplacer = () => {
-            const seen = new WeakSet();
-            return (key, value) => {
-                if (typeof value === 'object' && value !== null) {
-                    if (seen.has(value)) {
-                        return '[Circular]';
-                    }
-                    seen.add(value);
-                }
-                return value;
-            };
-        };
 
         const contextStr = Object.keys(restContext).length > 0 ?
             chalk.gray(JSON.stringify(restContext, getCircularReplacer())) : '';
