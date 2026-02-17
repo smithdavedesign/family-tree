@@ -17,7 +17,15 @@ const personSchema = Joi.object({
         'date.max': 'Date of death cannot be in the future',
         'date.format': 'Date of death must be a valid date'
     }),
-    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
+    gender: Joi.string()
+        .valid('Male', 'Female', 'Other', 'Unknown', 'M', 'F')
+        .empty('')
+        .allow(null)
+        .custom((value, helpers) => {
+            // Convert shorthand to full names
+            const mapping = { 'M': 'Male', 'F': 'Female' };
+            return mapping[value] || value;
+        }),
     bio: Joi.string().max(5000).empty('').allow(null),
     occupation: Joi.string().max(200).empty('').allow(null),
     occupation_history: Joi.alternatives().try(
@@ -27,7 +35,16 @@ const personSchema = Joi.object({
             return value.split(',').map(s => s.trim()).filter(s => s);
         })
     ).empty('').allow(null),
-    education: Joi.string().max(500).empty('').allow(null),
+    education: Joi.alternatives().try(
+        Joi.array().items(Joi.string().max(500)).max(20),
+        Joi.string().max(500).custom((value, helpers) => {
+            if (!value) return null;
+            if (value.includes(',')) {
+                return value.split(',').map(s => s.trim()).filter(s => s);
+            }
+            return [value];
+        })
+    ).empty('').allow(null),
     pob: Joi.string().max(200).empty('').allow(null),
     place_of_death: Joi.string().max(200).empty('').allow(null),
     cause_of_death: Joi.string().max(500).empty('').allow(null),
@@ -79,7 +96,15 @@ const personUpdateSchema = Joi.object({
     last_name: Joi.string().min(1).max(100).empty('').allow(null),
     dob: Joi.date().iso().max('now').empty('').allow(null),
     dod: Joi.date().iso().max('now').empty('').allow(null),
-    gender: Joi.string().valid('Male', 'Female', 'Other', 'Unknown').empty('').allow(null),
+    gender: Joi.string()
+        .valid('Male', 'Female', 'Other', 'Unknown', 'M', 'F')
+        .empty('')
+        .allow(null)
+        .custom((value, helpers) => {
+            // Convert shorthand to full names
+            const mapping = { 'M': 'Male', 'F': 'Female' };
+            return mapping[value] || value;
+        }),
     bio: Joi.string().max(5000).empty('').allow(null),
     occupation: Joi.string().max(200).empty('').allow(null),
     occupation_history: Joi.alternatives().try(
@@ -89,7 +114,18 @@ const personUpdateSchema = Joi.object({
             return value.split(',').map(s => s.trim()).filter(s => s);
         })
     ).empty('').allow(null),
-    education: Joi.string().max(500).empty('').allow(null),
+    education: Joi.alternatives().try(
+        Joi.array().items(Joi.string().max(500)).max(20),
+        Joi.string().max(500).custom((value, helpers) => {
+            if (!value) return null;
+            // If it's a comma-separated string, split it
+            if (value.includes(',')) {
+                return value.split(',').map(s => s.trim()).filter(s => s);
+            }
+            // Otherwise return as single-item array for DB consistency
+            return [value];
+        })
+    ).empty('').allow(null),
     pob: Joi.string().max(200).empty('').allow(null),
     place_of_death: Joi.string().max(200).empty('').allow(null),
     cause_of_death: Joi.string().max(500).empty('').allow(null),
