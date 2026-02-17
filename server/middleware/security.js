@@ -143,7 +143,8 @@ function csrfProtection(req, res, next) {
         'http://localhost:4173',
         'http://localhost:3000',
         'https://family-tree-blue-kappa.vercel.app',
-        'https://family-tree-app.vercel.app' // Add production URL if different
+        'https://familytree-e.com',
+        'https://www.familytree-e.com'
     ];
 
     // Check if origin is allowed
