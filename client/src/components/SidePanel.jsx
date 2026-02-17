@@ -74,7 +74,7 @@ const SidePanel = ({ person, onClose, onUpdate, onOpenPhotoPicker, userRole = 'v
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`/ api / person / ${person.id}/media`, {
+            const response = await fetch(`/api/person/${person.id}/media`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
