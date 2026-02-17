@@ -32,7 +32,7 @@ export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${window.location.origin}/trees`,
+            redirectTo: `${window.location.origin}/`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -68,7 +68,7 @@ export const signUpWithPassword = async (email, password, fullName = '') => {
         email,
         password,
         options: {
-            emailRedirectTo: `${window.location.origin}/auth/confirm`,
+            emailRedirectTo: `${window.location.origin}/`,
             data: {
                 full_name: fullName,
                 onboarding_completed: false,
@@ -160,7 +160,17 @@ export const api = {
             },
             body: JSON.stringify(body)
         });
-        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+
+        if (!res.ok) {
+            let errorMsg = res.statusText;
+            try {
+                const errBody = await res.json();
+                errorMsg = errBody.details || errBody.error || errorMsg;
+            } catch (e) {
+                // Not JSON
+            }
+            throw new Error(errorMsg);
+        }
         return { data: await res.json() };
     },
     put: async (endpoint, body) => {

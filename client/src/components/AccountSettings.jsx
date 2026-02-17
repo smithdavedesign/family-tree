@@ -174,7 +174,7 @@ const AccountSettings = ({ user, onClose, returnLabel = '' }) => {
 
     const handleSignOut = async () => {
         await signOut();
-        navigate('/');
+        navigate('/login');
     };
 
     return (

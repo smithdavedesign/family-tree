@@ -30,7 +30,7 @@ const EmailConfirm = () => {
             // Supabase automatically handles token verification
             // After a short delay, redirect to trees dashboard
             const timer = setTimeout(() => {
-                navigate('/trees');
+                navigate('/');
             }, 2000);
 
             return () => clearTimeout(timer);
@@ -65,7 +65,7 @@ const EmailConfirm = () => {
                     {/* Manual Continue */}
                     <div className="mt-8">
                         <Button
-                            onClick={() => navigate('/trees')}
+                            onClick={() => navigate('/')}
                             fullWidth
                             className="bg-teal-600 hover:bg-teal-700"
                         >

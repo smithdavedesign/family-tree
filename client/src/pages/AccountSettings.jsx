@@ -37,7 +37,7 @@ const AccountSettings = () => {
         disconnect
     } = useGoogleConnection();
 
-    const { subscription, planTier, currentPlan, loading: subLoading, refreshSubscription } = useSubscription() || {};
+    const { subscription, planTier, currentPlan, hasStripeAccount, loading: subLoading, refreshSubscription } = useSubscription() || {};
 
     const formatPlanName = (plan) => {
         if (!plan || plan === 'free' || plan === 'price_free') return 'Free';
@@ -54,7 +54,10 @@ const AccountSettings = () => {
             }
         } catch (error) {
             console.error('Failed to open billing portal:', error);
-            alert('Failed to open billing portal');
+            const message = error.message || 'Failed to open billing portal';
+            toast.error(message);
+            // Refresh to sync UI with backend (e.g. if stale ID was cleared)
+            refreshSubscription();
         }
     };
 
@@ -194,7 +197,7 @@ const AccountSettings = () => {
 
             await supabase.auth.signOut();
             toast.success('Account deleted successfully');
-            navigate('/');
+            navigate('/login');
         } catch (error) {
             console.error('Error deleting account:', error);
             toast.error(error.message || 'Error deleting account');
@@ -300,7 +303,7 @@ const AccountSettings = () => {
                                 {subscription?.status === 'active' ? 'Active subscription' : 'Free tier (limited access)'}
                             </p>
                         </div>
-                        {planTier !== 'free' && planTier !== 'price_free' ? (
+                        {planTier !== 'free' && planTier !== 'price_free' && hasStripeAccount ? (
                             <Button onClick={handleManageSubscription} variant="outline" className="flex items-center gap-2">
                                 <CreditCard className="w-4 h-4" />
                                 Manage Subscription
@@ -311,22 +314,6 @@ const AccountSettings = () => {
                                 Upgrade to Pro
                             </Button>
                         )}
-
-                        <Button
-                            variant="destructive"
-                            onClick={async () => {
-                                try {
-                                    await api.post('/test/burn-tokens');
-                                    toast.success('Burned 50 tokens!');
-                                    refreshSubscription();
-                                } catch (e) {
-                                    toast.error('Not enough tokens!');
-                                }
-                            }}
-                            className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
-                        >
-                            Test: Burn 50 Tokens
-                        </Button>
                     </div>
 
                     {/* Family Coupon Section */}

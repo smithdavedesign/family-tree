@@ -24,7 +24,7 @@ const MagicLinkAuth = () => {
                 const { error } = await supabase.auth.signInWithOtp({
                     email: email,
                     options: {
-                        emailRedirectTo: `${window.location.origin}/trees`,
+                        emailRedirectTo: `${window.location.origin}/`,
                         shouldCreateUser: false // STRICT MODE: Prevent auto-registration
                     }
                 });

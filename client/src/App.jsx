@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { signInWithGoogle, signOut, getCurrentUser, restoreSession, supabase } from './auth';
 import { ToastContainer } from './components/Toast';
 import { ToastProvider } from './components/ui';
@@ -47,94 +47,50 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 });
 
-function Home() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(true);
+// Auth wrapper components
+const ProtectedRoute = ({ children }) => {
   const [user, setUser] = React.useState(null);
-  // The 'creating' state is removed as per the instruction's implied change for handleCreateTree's new location/logic.
+  const [loading, setLoading] = React.useState(true);
 
-  // Check for session on mount
   React.useEffect(() => {
-    checkSession();
+    const checkAuth = async () => {
+      const session = await restoreSession();
+      if (session) {
+        setUser(session.user);
+      } else {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
-  const checkSession = async () => {
-    // Try to restore existing session
-    const session = await restoreSession();
+  if (loading) return <PageLoader />;
+  if (!user) return <Navigate to="/login" replace />;
 
-    if (session && session.user) {
-      setUser(session.user);
+  return children;
+};
 
-      // Redirect to tree dashboard instead of first tree
-      navigate('/trees');
-      return;
-    } else {
-      // No session, check if user just logged in
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+const PublicRoute = ({ children }) => {
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const navigate = useNavigate();
 
-      if (currentUser) {
-        navigate('/trees');
-        return;
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const session = await restoreSession();
+      if (session || await getCurrentUser()) {
+        navigate('/');
       }
-    }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
 
-    setLoading(false);
-  };
-
-  const handleSignIn = async () => {
-    await signInWithGoogle();
-  };
-
-  if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center">
-      <div>Loading...</div>
-    </div>;
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-        <h1 className="text-4xl font-bold text-teal-800 mb-2">Roots & Branches</h1>
-        <p className="text-gray-600 mb-8">Discover and preserve your family history</p>
-
-        {!user ? (
-          <div className="space-y-3">
-            <button
-              onClick={handleSignIn}
-              className="w-full px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold"
-            >
-              🌳 Sign In with Google
-            </button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
-            <Link
-              to="/magic-link"
-              className="block w-full px-6 py-3 bg-white text-teal-600 border-2 border-teal-600 rounded-lg hover:bg-teal-50 transition font-semibold text-center"
-            >
-              📧 Sign In with Email
-            </Link>
-          </div>
-        ) : (
-          <div>
-            <p className="text-gray-700 mb-4">Welcome back, {user.email}!</p>
-            <p className="text-sm text-gray-500">Redirecting to your trees...</p>
-          </div>
-        )}
-        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center gap-6 text-sm text-gray-500">
-          <Link to="/privacy" className="hover:text-teal-600 transition-colors">Privacy Policy</Link>
-          <Link to="/terms" className="hover:text-teal-600 transition-colors">Terms of Service</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+  if (loading) return <PageLoader />;
+  return children;
+};
 
 function App() {
   return (
@@ -144,33 +100,37 @@ function App() {
         <SearchProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* ... routes ... */}
-              <Route path="/" element={<Login />} />
-              <Route path="/trees" element={<TreeDashboard />} />
-              <Route path="/tree/:id" element={<TreePage />} />
-              <Route path="/tree/:id/timeline" element={<TimelinePage />} />
-              <Route path="/tree/:id/gallery" element={<TreeGalleryPage />} />
-              <Route path="/invite/:token" element={<InviteAcceptPage />} />
+              {/* Protected Routes */}
+              <Route path="/" element={<ProtectedRoute><TreeDashboard /></ProtectedRoute>} />
+              <Route path="/trees" element={<ProtectedRoute><TreeDashboard /></ProtectedRoute>} />
+              <Route path="/tree/:id" element={<ProtectedRoute><TreePage /></ProtectedRoute>} />
+              <Route path="/tree/:id/timeline" element={<ProtectedRoute><TimelinePage /></ProtectedRoute>} />
+              <Route path="/tree/:id/gallery" element={<ProtectedRoute><TreeGalleryPage /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+              <Route path="/tree/:treeId/person/:personId" element={<ProtectedRoute><PersonPage /></ProtectedRoute>} />
+              <Route path="/tree/:treeId/albums" element={<ProtectedRoute><AlbumPage /></ProtectedRoute>} />
+              <Route path="/tree/:treeId/album/:albumId" element={<ProtectedRoute><AlbumPage /></ProtectedRoute>} />
+              <Route path="/tree/:treeId/map" element={<ProtectedRoute><TreeMapPage /></ProtectedRoute>} />
+              <Route path="/tree/:treeId/stories" element={<ProtectedRoute><TreeStoriesPage /></ProtectedRoute>} />
+              <Route path="/story/:id" element={<ProtectedRoute><StoryPage /></ProtectedRoute>} />
+              <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+
+              {/* Public/Auth Routes */}
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
               <Route path="/magic-link" element={<MagicLinkAuth />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/auth/confirm" element={<EmailConfirm />} />
               <Route path="/auth/verify-email" element={<VerifyEmail />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/invite/:token" element={<InviteAcceptPage />} />
+
+              {/* Utilities & Legal */}
               <Route path="/auth-error" element={<AuthError />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/settings" element={<AccountSettings />} />
-              <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
-              <Route path="/story/:id" element={<StoryPage />} />
-              <Route path="/tree/:treeId/person/:personId" element={<PersonPage />} />
-              <Route path="/tree/:treeId/albums" element={<AlbumPage />} />
-              <Route path="/tree/:treeId/album/:albumId" element={<AlbumPage />} />
-              <Route path="/tree/:treeId/map" element={<TreeMapPage />} />
-              <Route path="/tree/:treeId/stories" element={<TreeStoriesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/search" element={<SearchPage />} />
+              <Route path="/photo-picker-test" element={<PhotoPickerTest />} />
             </Routes>
           </Suspense>
         </SearchProvider>

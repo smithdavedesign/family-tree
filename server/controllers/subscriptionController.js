@@ -44,7 +44,22 @@ const createCheckoutSession = async (req, res) => {
 
 
 
-        const sessionUrl = await stripeService.createCheckoutSession(stripeCustomerId, stripePriceId, returnUrl);
+        let sessionUrl;
+        try {
+            sessionUrl = await stripeService.createCheckoutSession(stripeCustomerId, stripePriceId, returnUrl);
+        } catch (error) {
+            // Handle stale customer ID
+            if (error.type === 'StripeInvalidRequestError' && error.code === 'resource_missing' && error.param === 'customer') {
+                logger.warn('Stale Stripe customer ID during checkout, re-creating...', { userId });
+                // Create new customer
+                stripeCustomerId = await stripeService.createStripeCustomer(email, userId, name);
+                await supabaseAdmin.from('users').update({ stripe_customer_id: stripeCustomerId }).eq('id', userId);
+                // Try again
+                sessionUrl = await stripeService.createCheckoutSession(stripeCustomerId, stripePriceId, returnUrl);
+            } else {
+                throw error;
+            }
+        }
 
         res.json({ url: sessionUrl });
 
@@ -55,17 +70,30 @@ const createCheckoutSession = async (req, res) => {
 };
 
 const createPortalSession = async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     try {
-        const { data: user, error } = await supabaseAdmin
+        if (!supabaseAdmin) {
+            logger.error('supabaseAdmin is null - check SUPABASE_SERVICE_ROLE_KEY');
+            return res.status(500).json({ error: 'Server configuration error' });
+        }
+
+        const { data: user, error: userError } = await supabaseAdmin
             .from('users')
             .select('stripe_customer_id')
             .eq('id', userId)
             .single();
 
-        if (error || !user.stripe_customer_id) {
-            return res.status(400).json({ error: 'No billing account found' });
+        if (userError) {
+            logger.error('Error fetching user for portal', userError, { userId });
+            return res.status(400).json({ error: 'No user account found' });
+        }
+
+        if (!user || !user.stripe_customer_id) {
+            return res.status(400).json({ error: 'No billing account found. Please subscribe first.' });
         }
 
         const baseUrl = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? null : 'http://localhost:5173');
@@ -75,13 +103,25 @@ const createPortalSession = async (req, res) => {
         }
         const returnUrl = `${baseUrl}/settings`;
 
+        logger.info('Creating portal session', { stripeCustomerId: user.stripe_customer_id, returnUrl });
         const url = await stripeService.createPortalSession(user.stripe_customer_id, returnUrl);
 
         res.json({ url });
 
-    } catch (error) {
-        logger.error('Create portal session error', error, req);
-        res.status(500).json({ error: 'Failed to create portal session' });
+    } catch (catchErr) {
+        // Handle case where Stripe customer was deleted or we are in a different Stripe account
+        if (catchErr.type === 'StripeInvalidRequestError' && catchErr.code === 'resource_missing' && catchErr.param === 'customer') {
+            logger.warn('Stale Stripe customer ID found, clearing from DB', { userId });
+            await supabaseAdmin.from('users').update({ stripe_customer_id: null }).eq('id', userId);
+            return res.status(400).json({ error: 'No billing account found. Please subscribe first.' });
+        }
+
+        logger.error('Create portal session error', catchErr, req);
+        res.status(500).json({
+            error: 'Failed to create portal session',
+            details: catchErr.message,
+            stack: process.env.NODE_ENV === 'production' ? null : catchErr.stack
+        });
     }
 };
 
@@ -138,7 +178,8 @@ const getSubscriptionStatus = async (req, res) => {
             subscription,
             tokens: tokens.balance,
             plan: planTier,
-            currentPlan: currentPlan
+            currentPlan: currentPlan,
+            hasStripeAccount: !!user.stripe_customer_id
         });
 
     } catch (error) {
