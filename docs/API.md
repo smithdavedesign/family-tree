@@ -4,7 +4,9 @@
 
 The Family Tree API provides RESTful endpoints for managing family trees, persons, relationships, and media.
 
-**Base URL:** `http://localhost:3000/api` (development)
+**Base URL:** 
+- Production: `https://api.familytree-e.com/api`
+- Development: `http://localhost:3000/api`
 
 **Authentication:** JWT tokens via Supabase Auth
 

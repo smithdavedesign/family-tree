@@ -16,6 +16,7 @@ import AccountSettings from '../components/AccountSettings';
 import PersonHeatmap from '../components/PersonHeatmap';
 import PersonLocations from '../components/PersonLocations';
 import { Map as MapIcon } from 'lucide-react';
+import PhotoPicker from '../components/PhotoPicker';
 
 // Fetch aggregated person data
 const fetchPersonProfile = async (treeId, personId) => {
@@ -53,6 +54,8 @@ const PersonPage = () => {
     const [user, setUser] = React.useState(null);
     const [showSidePanel, setShowSidePanel] = React.useState(false);
     const [showSettings, setShowSettings] = React.useState(false);
+    const [isPhotoPickerOpen, setIsPhotoPickerOpen] = React.useState(false);
+    const [photoSelectHandler, setPhotoSelectHandler] = React.useState(null);
     const [refreshKey, setRefreshKey] = React.useState(0);
 
     React.useEffect(() => {
@@ -196,25 +199,39 @@ const PersonPage = () => {
             </main>
 
             {showSidePanel && (
-                <div className="fixed inset-0 z-[10002] flex items-start justify-end">
-                    {/* Backdrop */}
+                <div className="fixed inset-0 z-[10002] flex items-start justify-end pointer-events-none">
+                    {/* Backdrop - only on mobile */}
                     <div
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm md:hidden pointer-events-auto"
                         onClick={() => setShowSidePanel(false)}
                     />
 
                     {/* Panel */}
-                    <div className="relative w-full max-w-2xl h-full bg-white shadow-2xl overflow-hidden">
+                    <div className="relative w-full md:w-96 h-full bg-white shadow-2xl overflow-hidden pointer-events-auto md:border-l border-slate-200">
                         <SidePanel
                             person={sidePanelPerson}
                             onClose={() => setShowSidePanel(false)}
                             onUpdate={handleUpdate}
-                            onOpenPhotoPicker={() => { }}
+                            onOpenPhotoPicker={(handler) => {
+                                setPhotoSelectHandler(() => handler);
+                                setIsPhotoPickerOpen(true);
+                            }}
                             userRole={userRole}
                         />
                     </div>
                 </div>
             )}
+
+            <PhotoPicker
+                isOpen={isPhotoPickerOpen}
+                onClose={() => setIsPhotoPickerOpen(false)}
+                onSelect={(photo) => {
+                    if (photoSelectHandler) {
+                        photoSelectHandler(photo);
+                    }
+                    setIsPhotoPickerOpen(false);
+                }}
+            />
             {showSettings && (
                 <AccountSettings
                     user={user}

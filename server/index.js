@@ -38,7 +38,9 @@ app.use(cors({
 
         const allowedOrigins = [
             'http://localhost:5173',
+            'http://localhost:5174',
             'http://localhost:4173',
+            'http://localhost:3000',
             'https://familytree-e.com',
             'https://www.familytree-e.com',
             process.env.CLIENT_URL,
