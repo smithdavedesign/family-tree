@@ -42,6 +42,40 @@ exports.createPerson = async (req, res) => {
 
         if (error) throw error;
 
+        // Trigger notification for tree members (async)
+        setImmediate(async () => {
+            try {
+                const { data: members } = await supabaseAdmin
+                    .from('tree_members')
+                    .select('user_id')
+                    .eq('tree_id', tree_id)
+                    .neq('user_id', req.user.id);
+
+                const { data: tree } = await supabaseAdmin
+                    .from('trees')
+                    .select('name')
+                    .eq('id', tree_id)
+                    .single();
+
+                if (members && members.length > 0) {
+                    const fullName = `${first_name} ${last_name || ''}`.trim();
+                    const payload = {
+                        treeId: tree_id,
+                        treeName: tree?.name || 'Family Tree',
+                        actorName: req.user.name || req.user.email,
+                        itemTitle: fullName,
+                        personId: data.id
+                    };
+
+                    for (const member of members) {
+                        await emailService.queueNotification(member.user_id, 'person', payload);
+                    }
+                }
+            } catch (notifError) {
+                logger.error('Person notification failed', notifError);
+            }
+        });
+
         res.status(201).json(data);
     } catch (error) {
         logger.error('Error creating person:', error, req);

@@ -4,8 +4,9 @@ Roots & Branches is a modern, interactive family tree application that allows us
 
 ## 🚀 Deployment Status
 
-- **Frontend (Vercel):** [https://family-tree-blue-kappa.vercel.app/](https://family-tree-blue-kappa.vercel.app/)
-- **Backend (Render):** [https://family-tree-yogh.onrender.com/](https://family-tree-yogh.onrender.com/)
+- **Frontend (Vercel):** [https://www.familytree-e.com](https://www.familytree-e.com)
+- **Backend (Render):** [https://api.familytree-e.com](https://api.familytree-e.com)
+- **Status:** 🟢 Live & Verified
 
 ## ✨ Features
 
@@ -30,6 +31,8 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - ✅ **Interactive MiniMap** - Click and drag to navigate large trees
 - ✅ **View Lock** - Prevent accidental panning/zooming
 - ✅ **Timeline Visualization** - Chronological event view with color-coded dots and density heatmap
+- ✅ **Global Search & Discovery** - Filterable search across persons, stories, albums, and locations
+- ✅ **Email Notifications** - Automated behavioral emails for comments, new stories, and invitations via Resend (configured on `contact.familytree-e.com`)
 
 ### 💰 Payments & Subscription
 - ✅ **Free Tier** - Basic access with 50 AI tokens/month
@@ -44,6 +47,7 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - **Backend:** Node.js, Express
 - **Database:** PostgreSQL (via Supabase)
 - **Authentication:** Supabase Auth (Google OAuth + Magic Links)
+- **Email:** Resend (Transactional emails)
 - **Deployment:** Vercel (Frontend), Render (Backend)
 
 > **Note:** Using stable Tailwind CSS v3.4.17 for reliable utility class generation and consistent styling across all components.
@@ -97,7 +101,15 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] Search & filter (collapsible interface with toggle button)
 - [x] Highlight selected lineage
 - [x] **UI/UX Enhancement (Production Ready)** (100%)
-  - [x] Design system setup (Tailwind v3 config, Inter font, design tokens)
+- [x] **Phase 9: Global Search & Discovery** (100%)
+    - [x] Unified search API
+    - [x] Frontend Search Page & Command Palette
+    - [x] Permission-based result filtering
+- [/] **Phase 10: Email Notifications & Engagement** (95%)
+    - [x] Resend & React Email integration
+    - [x] Notification preference settings
+    - [x] Activity-based triggers (Comments, Stories, Albums, Persons)
+    - [ ] 🚧 Production Domain Verification (Pending)
   - [x] Core component library (Button, Input, Modal, Toast, Avatar)
   - [x] Component migration (SidePanel, all modals)
   - [x] Navigation enhancements (Navbar, TreeSwitcher, Breadcrumbs, Sidebar)
@@ -914,10 +926,15 @@ For more details, see:
 **Frontend** (Vercel/Build):
 - `VITE_SUPABASE_URL` - Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `VITE_API_URL` - `https://api.familytree-e.com`
 
 **Backend** (Render):
+- `PORT` - 3000
+- `CLIENT_URL` - `https://www.familytree-e.com` (Main) or `https://familytree-e.com`
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
+- `RESEND_API_KEY` - API Key for sending emails (via `contact.familytree-e.com`)
+- `NOTIFICATION_FROM_EMAIL` - `notifications@contact.familytree-e.com`
 - `GOOGLE_CLIENT_ID` - OAuth 2.0 client ID
 - `GOOGLE_CLIENT_SECRET` - OAuth 2.0 client secret
 - `GOOGLE_API_KEY` - Google Maps/Places API key (served to frontend via `/api/config`)

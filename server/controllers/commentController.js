@@ -1,6 +1,7 @@
 const { supabaseAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const Joi = require('joi');
+const emailService = require('../services/emailService');
 
 // Validation schemas
 const commentSchema = Joi.object({
@@ -87,6 +88,43 @@ const addComment = async (req, res) => {
             .single();
 
         if (error) throw error;
+
+        // Trigger notification for tree members (async, don't block response)
+        setImmediate(async () => {
+            try {
+                // Get all tree members except the commenter
+                const { data: members } = await supabaseAdmin
+                    .from('tree_members')
+                    .select('user_id')
+                    .eq('tree_id', tree_id)
+                    .neq('user_id', req.user.id);
+
+                // Get tree and resource names for email context
+                const { data: tree } = await supabaseAdmin
+                    .from('trees')
+                    .select('name')
+                    .eq('id', tree_id)
+                    .single();
+
+                // Queue notifications for each member
+                if (members && members.length > 0) {
+                    const payload = {
+                        treeId: tree_id,
+                        treeName: tree?.name || 'Family Tree',
+                        actorName: req.user.name || req.user.email,
+                        itemTitle: `${resource_type} comment`,
+                        resourceType: resource_type,
+                        resourceId: resource_id
+                    };
+
+                    for (const member of members) {
+                        await emailService.queueNotification(member.user_id, 'comment', payload);
+                    }
+                }
+            } catch (notifError) {
+                logger.error('Comment notification failed', notifError);
+            }
+        });
 
         res.status(201).json(comment);
     } catch (error) {

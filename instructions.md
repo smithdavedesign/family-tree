@@ -18,7 +18,7 @@ Build a web-based Family Tree application where users log in via Google SSO, ema
 
 ## 📊 Current Project Status
 
-**Overall Progress:** 100% Complete | **Current Phase:** Phase K (Production Readiness) | **Next:** Final Launch 🚀
+**Overall Progress:** 95% Complete | **Current Phase:** Phase 10 (Email Notifications) | **Branch:** `feat/notifications-and-prompts`
 
 ### Completed Phases:
 - ✅ **Phase A:** Backend & Auth (100%)
@@ -41,7 +41,9 @@ Build a web-based Family Tree application where users log in via Google SSO, ema
 - ✅ **Phase S:** Hybrid Geocoding (100%)
 - ✅ **Phase T:** UX Polish & Performance (100%)
 - ✅ **Phase 7:** Security & Performance Hardening (100%)
-- 🚀 **Phase 8:** Family Coupon System (Next)
+- ✅ **Phase 8:** Family Coupon System (100%)
+- ✅ **Phase 9:** Global Search & Discovery (100%)
+- [/] **Phase 10:** Email Notifications & Engagement (95%) - *Currently in `feat/notifications-and-prompts`*
 
 ## 1. Architecture & Data Schema
 
@@ -496,6 +498,8 @@ git push origin phase-g-collaboration
 
 ## 13. Deployment Checklist & Environment Variables
 
+> **For a visual flow of how these variables connect, see [docs/ENV_FLOW.md](./docs/ENV_FLOW.md)**
+
 ### Required Environment Variables
 
 #### Backend (Render.com)
@@ -503,7 +507,8 @@ git push origin phase-g-collaboration
 # Core
 PORT=3000
 NODE_ENV=production
-CLIENT_URL=https://your-frontend-domain.vercel.app
+CLIENT_URL=https://www.familytree-e.com
+NOTIFICATION_FROM_EMAIL=notifications@contact.familytree-e.com
 
 # Database (Supabase)
 SUPABASE_URL=https://your-project.supabase.co
@@ -524,13 +529,17 @@ STRIPE_PRICE_PRO_YEARLY=price_...
 # Family Coupon System
 FAMILY_SECRET_CODE=YourSecretCode
 FAMILY_GRANT_AMOUNT=1000
+
+# Email
+RESEND_API_KEY=re_...
 ```
 
 #### Frontend (Vercel)
 ```bash
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_API_URL=https://your-backend.onrender.com
+VITE_API_URL=https://api.familytree-e.com
+VITE_USE_MOCK=false
 ```
 
 ### Pre-Deployment Steps

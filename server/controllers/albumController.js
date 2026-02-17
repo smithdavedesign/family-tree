@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
+const emailService = require('../services/emailService');
 
 /**
  * Album Controller
@@ -96,6 +97,39 @@ const createAlbum = async (req, res) => {
             .single();
 
         if (error) throw error;
+
+        // Trigger notification for tree members (async)
+        setImmediate(async () => {
+            try {
+                const { data: members } = await supabaseAdmin
+                    .from('tree_members')
+                    .select('user_id')
+                    .eq('tree_id', treeId)
+                    .neq('user_id', req.user.id);
+
+                const { data: tree } = await supabaseAdmin
+                    .from('trees')
+                    .select('name')
+                    .eq('id', treeId)
+                    .single();
+
+                if (members && members.length > 0) {
+                    const payload = {
+                        treeId,
+                        treeName: tree?.name || 'Family Tree',
+                        actorName: req.user.name || req.user.email,
+                        itemTitle: name,
+                        albumId: album.id
+                    };
+
+                    for (const member of members) {
+                        await emailService.queueNotification(member.user_id, 'album', payload);
+                    }
+                }
+            } catch (notifError) {
+                logger.error('Album notification failed', notifError);
+            }
+        });
 
         res.status(201).json(album);
     } catch (error) {

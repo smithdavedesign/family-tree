@@ -32,7 +32,33 @@ app.use(requestLogger);
 
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:4173',
+            'https://familytree-e.com',
+            'https://www.familytree-e.com',
+            process.env.CLIENT_URL,
+            // Allow Vercel preview deployments
+            /^https:\/\/family-tree-.*\.vercel\.app$/
+        ];
+
+        // Check if origin matches any allowed origin (string or regex)
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (allowed instanceof RegExp) return allowed.test(origin);
+            return allowed === origin;
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.log('Blocked by CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 // Webhook route must be before express.json() to handle raw body

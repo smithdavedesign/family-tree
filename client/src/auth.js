@@ -137,10 +137,12 @@ export const restoreSession = async () => {
 };
 
 // Helper for authenticated API calls
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export const api = {
     get: async (endpoint) => {
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`/api${endpoint}`, {
+        const res = await fetch(`${API_URL}/api${endpoint}`, {
             headers: {
                 Authorization: `Bearer ${session?.access_token}`
             }
@@ -150,7 +152,7 @@ export const api = {
     },
     post: async (endpoint, body) => {
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`/api${endpoint}`, {
+        const res = await fetch(`${API_URL}/api${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -163,7 +165,7 @@ export const api = {
     },
     put: async (endpoint, body) => {
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`/api${endpoint}`, {
+        const res = await fetch(`${API_URL}/api${endpoint}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -176,7 +178,7 @@ export const api = {
     },
     delete: async (endpoint) => {
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`/api${endpoint}`, {
+        const res = await fetch(`${API_URL}/api${endpoint}`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${session?.access_token}`

@@ -23,6 +23,7 @@ const locationController = require('../controllers/locationController');
 const commentController = require('../controllers/commentController');
 const activityController = require('../controllers/activityController');
 const searchController = require('../controllers/searchController');
+const notificationController = require('../controllers/notificationController');
 const upload = require('../middleware/upload');
 
 // Tree routes
@@ -173,6 +174,12 @@ router.use('/test', testRoutes);
 const subscriptionRoutes = require('./subscriptionRoutes');
 router.use('/', subscriptionRoutes);
 
+// Global search
+router.get('/search', requireAuth, searchController.search);
 
+// Notification preferences
+router.get('/notifications/preferences', requireAuth, notificationController.getPreferences);
+router.put('/notifications/preferences', requireAuth, notificationController.updatePreferences);
+router.get('/notifications/history', requireAuth, notificationController.getHistory);
 
 module.exports = router;

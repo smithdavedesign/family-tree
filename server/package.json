@@ -21,12 +21,15 @@
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "multer": "^2.0.2",
+    "resend": "^6.6.0",
     "sharp": "^0.34.5",
     "stripe": "^20.1.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@react-email/components": "^1.0.2",
     "jest": "^30.2.0",
+    "react-email": "^5.1.0",
     "supertest": "^7.1.4"
   }
 }

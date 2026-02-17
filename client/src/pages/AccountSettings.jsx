@@ -19,6 +19,8 @@ const AccountSettings = () => {
     const [loading, setLoading] = useState(true);
     const [couponCode, setCouponCode] = useState('');
     const [redeeming, setRedeeming] = useState(false);
+    const [notificationPrefs, setNotificationPrefs] = useState(null);
+    const [updatingPrefs, setUpdatingPrefs] = useState(false);
     const { toast } = useToast();
 
     // Get returnUrl from query params or state
@@ -107,7 +109,34 @@ const AccountSettings = () => {
         };
 
         getUser();
+        fetchNotificationPreferences();
     }, [navigate]);
+
+    const fetchNotificationPreferences = async () => {
+        try {
+            const { data } = await api.get('/notifications/preferences');
+            setNotificationPrefs(data);
+        } catch (error) {
+            console.error('Error fetching notification preferences:', error);
+        }
+    };
+
+    const handleUpdateNotificationPrefs = async (updates) => {
+        setUpdatingPrefs(true);
+        try {
+            const { data } = await api.put('/notifications/preferences', {
+                ...notificationPrefs,
+                ...updates
+            });
+            setNotificationPrefs(data);
+            toast.success('Notification preferences updated');
+        } catch (error) {
+            console.error('Error updating notification preferences:', error);
+            toast.error('Failed to update preferences');
+        } finally {
+            setUpdatingPrefs(false);
+        }
+    };
 
     const handleUpdateProfile = async () => {
         if (!avatarUrl.trim()) return;
@@ -337,6 +366,88 @@ const AccountSettings = () => {
                     </div>
                 </div>
 
+                {/* Email Notifications */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h2 className="text-xl font-semibold text-slate-900 mb-2">📧 Email Notifications</h2>
+                    <p className="text-sm text-slate-600 mb-6">
+                        Choose which activities you want to receive email notifications about
+                    </p>
+
+                    {notificationPrefs ? (
+                        <div className="space-y-4">
+                            {/* Notification toggles */}
+                            <div className="grid gap-4">
+                                <NotificationToggle
+                                    label="Comments"
+                                    description="Get notified when someone comments on a story or photo"
+                                    enabled={notificationPrefs.email_on_comment}
+                                    onChange={(enabled) => handleUpdateNotificationPrefs({ email_on_comment: enabled })}
+                                    disabled={updatingPrefs}
+                                />
+                                <NotificationToggle
+                                    label="New Stories"
+                                    description="Get notified when new stories are added to your trees"
+                                    enabled={notificationPrefs.email_on_story}
+                                    onChange={(enabled) => handleUpdateNotificationPrefs({ email_on_story: enabled })}
+                                    disabled={updatingPrefs}
+                                />
+                                <NotificationToggle
+                                    label="New Albums"
+                                    description="Get notified when new photo albums are created"
+                                    enabled={notificationPrefs.email_on_album}
+                                    onChange={(enabled) => handleUpdateNotificationPrefs({ email_on_album: enabled })}
+                                    disabled={updatingPrefs}
+                                />
+                                <NotificationToggle
+                                    label="New People"
+                                    description="Get notified when new family members are added"
+                                    enabled={notificationPrefs.email_on_person}
+                                    onChange={(enabled) => handleUpdateNotificationPrefs({ email_on_person: enabled })}
+                                    disabled={updatingPrefs}
+                                />
+                                <NotificationToggle
+                                    label="Tree Invitations"
+                                    description="Get notified when you're invited to collaborate on a tree"
+                                    enabled={notificationPrefs.email_on_invite}
+                                    onChange={(enabled) => handleUpdateNotificationPrefs({ email_on_invite: enabled })}
+                                    disabled={updatingPrefs}
+                                />
+                            </div>
+
+                            {/* Digest frequency */}
+                            <div className="pt-4 border-t border-slate-100">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Notification Frequency
+                                </label>
+                                <select
+                                    value={notificationPrefs.digest_frequency || 'instant'}
+                                    onChange={(e) => handleUpdateNotificationPrefs({ digest_frequency: e.target.value })}
+                                    disabled={updatingPrefs}
+                                    className="w-full max-w-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                >
+                                    <option value="instant">Instant (as they happen)</option>
+                                    <option value="daily">Daily Digest</option>
+                                    <option value="weekly">Weekly Digest</option>
+                                    <option value="never">Never (turn off all emails)</option>
+                                </select>
+                                <p className="text-xs text-slate-500 mt-2">
+                                    {notificationPrefs.digest_frequency === 'never'
+                                        ? 'You will not receive any email notifications'
+                                        : notificationPrefs.digest_frequency === 'instant'
+                                            ? 'You\'ll receive emails immediately when activities occur'
+                                            : `You'll receive a summary of activities ${notificationPrefs.digest_frequency === 'daily' ? 'once per day' : 'once per week'}`
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-slate-600">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Loading preferences...</span>
+                        </div>
+                    )}
+                </div>
+
                 {/* Google Integrations */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                     <h2 className="text-xl font-semibold text-slate-900 mb-2">Google Integrations</h2>
@@ -478,6 +589,39 @@ const AccountSettings = () => {
                 </div>
             </div>
         </div >
+    );
+};
+
+// Helper component for notification toggles
+const NotificationToggle = ({ label, description, enabled, onChange, disabled }) => {
+    return (
+        <div className="flex items-start justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-teal-300 transition-colors">
+            <div className="flex-1">
+                <label className="block text-sm font-medium text-slate-900 mb-1">
+                    {label}
+                </label>
+                <p className="text-xs text-slate-600">
+                    {description}
+                </p>
+            </div>
+            <button
+                onClick={() => onChange(!enabled)}
+                disabled={disabled}
+                className={`
+                    relative inline-flex h-6 w-11 items-center rounded-full
+                    transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2
+                    ${enabled ? 'bg-teal-600' : 'bg-slate-300'}
+                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+            >
+                <span
+                    className={`
+                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${enabled ? 'translate-x-6' : 'translate-x-1'}
+                    `}
+                />
+            </button>
+        </div>
     );
 };
 

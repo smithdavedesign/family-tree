@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../middleware/auth');
 const logger = require('../utils/logger');
+const emailService = require('../services/emailService');
 
 exports.createStory = async (req, res) => {
     const { tree_id, title, content, person_ids = [], photo_ids = [] } = req.body;
@@ -49,6 +50,39 @@ exports.createStory = async (req, res) => {
         }
 
         res.status(201).json(story);
+
+        // Trigger notification for tree members (async)
+        setImmediate(async () => {
+            try {
+                const { data: members } = await supabaseAdmin
+                    .from('tree_members')
+                    .select('user_id')
+                    .eq('tree_id', tree_id)
+                    .neq('user_id', req.user.id);
+
+                const { data: tree } = await supabaseAdmin
+                    .from('trees')
+                    .select('name')
+                    .eq('id', tree_id)
+                    .single();
+
+                if (members && members.length > 0) {
+                    const payload = {
+                        treeId: tree_id,
+                        treeName: tree?.name || 'Family Tree',
+                        actorName: req.user.name || req.user.email,
+                        itemTitle: title,
+                        storyId: story.id
+                    };
+
+                    for (const member of members) {
+                        await emailService.queueNotification(member.user_id, 'story', payload);
+                    }
+                }
+            } catch (notifError) {
+                logger.error('Story notification failed', notifError);
+            }
+        });
     } catch (error) {
         logger.error('Error creating story:', error, req);
         res.status(500).json({ error: error.message });

@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "https://family-tree-yogh.onrender.com/api/$1"
+            "destination": "https://api.familytree-e.com/api/$1"
         },
         {
             "source": "/(.*)",
