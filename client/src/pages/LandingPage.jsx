@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { TreePine, Share2, Map, Camera, ShieldCheck, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui';
 import DemoTree from '../components/DemoTree';
@@ -6,10 +7,10 @@ import { getCurrentUser } from '../auth';
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const [user, setUser] = React.useState(null);
-    const [loading, setLoading] = React.useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const checkUser = async () => {
             try {
                 const currentUser = await getCurrentUser();
