@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { TreePine, Share2, Map, Camera, ShieldCheck, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui';
+import DemoTree from '../components/DemoTree';
 
 const LandingPage = () => {
     return (
@@ -47,6 +48,19 @@ const LandingPage = () => {
                 <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl opacity-50" />
                 <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl opacity-50" />
             </header>
+
+            {/* Demo Tree Snapshot Section */}
+            <section className="py-12 px-6 sm:px-12 max-w-7xl mx-auto -mt-8 relative z-20">
+                <div className="bg-white p-2 rounded-[2.5rem] shadow-2xl shadow-teal-900/10 border border-slate-100">
+                    <div className="bg-slate-50 rounded-[2rem] p-4 sm:p-8">
+                        <div className="max-w-3xl mx-auto text-center mb-10">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Visualizing Your History</h2>
+                            <p className="text-slate-500">Every node tells a story. Zoom, pan, and explore your family lineage with precision and clarity.</p>
+                        </div>
+                        <DemoTree />
+                    </div>
+                </div>
+            </section>
 
             {/* Features Grid */}
             <section className="py-24 px-6 sm:px-12 max-w-7xl mx-auto">
