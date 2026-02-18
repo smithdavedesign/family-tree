@@ -38,7 +38,7 @@ const LandingPage = () => {
                             </Button>
                         </Link>
                         <Link to="/pricing">
-                            <Button variant="outline" className="w-full sm:w-auto text-lg py-6 px-10 rounded-full border-slate-200">View Pricing</Button>
+                            <Button variant="outline" className="w-full sm:w-auto text-lg py-6 px-10 rounded-full border-slate-200 !text-slate-600 hover:!bg-slate-50">View Pricing</Button>
                         </Link>
                     </div>
                 </div>
@@ -95,7 +95,7 @@ const LandingPage = () => {
                     <h2 className="text-3xl sm:text-5xl font-bold mb-6">Ready to explore your roots?</h2>
                     <p className="text-slate-400 text-lg mb-10">Join thousands of people documenting their history with Roots & Branches.</p>
                     <Link to="/register">
-                        <Button className="bg-white text-slate-900 hover:bg-slate-100 text-lg py-6 px-12 rounded-full font-bold">Create Free Account</Button>
+                        <Button className="!bg-white !text-slate-900 hover:!bg-slate-100 text-lg py-6 px-12 rounded-full font-bold transition-colors">Create Free Account</Button>
                     </Link>
                 </div>
                 {/* Background pattern */}
