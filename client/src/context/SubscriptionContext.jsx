@@ -8,31 +8,43 @@ export const useSubscription = () => {
 };
 
 export const SubscriptionProvider = ({ children }) => {
-    const [subscription, setSubscription] = useState(null);
-    const [tokenBalance, setTokenBalance] = useState(0);
-    const [planTier, setPlanTier] = useState('free');
-    const [currentPlan, setCurrentPlan] = useState('price_free');
-    const [hasStripeAccount, setHasStripeAccount] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [subState, setSubState] = useState({
+        subscription: null,
+        tokenBalance: 0,
+        planTier: 'free',
+        currentPlan: 'price_free',
+        hasStripeAccount: false,
+        stripePriceIds: null,
+        loading: true
+    });
 
     const refreshSubscription = React.useCallback(async () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.user) {
-                setLoading(false);
+                setSubState(prev => ({
+                    ...prev,
+                    subscription: null,
+                    planTier: 'free',
+                    currentPlan: 'price_free',
+                    loading: false
+                }));
                 return;
             }
 
             const { data } = await api.get('/subscription/status');
-            setSubscription(data.subscription);
-            setTokenBalance(data.tokens);
-            setPlanTier(data.plan);
-            setCurrentPlan(data.currentPlan || 'price_free');
-            setHasStripeAccount(data.hasStripeAccount || false);
+            setSubState({
+                subscription: data.subscription,
+                tokenBalance: data.tokens,
+                planTier: data.plan,
+                currentPlan: data.currentPlan || 'price_free',
+                hasStripeAccount: data.hasStripeAccount || false,
+                stripePriceIds: data.stripePriceIds || null,
+                loading: false
+            });
         } catch (error) {
             console.error('Failed to fetch subscription status:', error);
-        } finally {
-            setLoading(false);
+            setSubState(prev => ({ ...prev, loading: false }));
         }
     }, []);
 
@@ -42,14 +54,19 @@ export const SubscriptionProvider = ({ children }) => {
 
         // Listen for auth changes to refresh or clear data
         const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                setSubState(prev => ({ ...prev, loading: true }));
                 refreshSubscription();
             } else if (event === 'SIGNED_OUT') {
-                setSubscription(null);
-                setTokenBalance(0);
-                setPlanTier('free');
-                setCurrentPlan('price_free');
-                setHasStripeAccount(false);
+                setSubState({
+                    subscription: null,
+                    tokenBalance: 0,
+                    planTier: 'free',
+                    currentPlan: 'price_free',
+                    hasStripeAccount: false,
+                    stripePriceIds: null,
+                    loading: false
+                });
             }
         });
 
@@ -64,12 +81,7 @@ export const SubscriptionProvider = ({ children }) => {
     }, [refreshSubscription]);
 
     const value = {
-        subscription,
-        tokenBalance,
-        planTier,
-        currentPlan,
-        hasStripeAccount,
-        loading,
+        ...subState,
         refreshSubscription
     };
 

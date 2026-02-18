@@ -303,11 +303,18 @@ const AccountSettings = () => {
                                 {subscription?.status === 'active' ? 'Active subscription' : 'Free tier (limited access)'}
                             </p>
                         </div>
-                        {planTier !== 'free' && planTier !== 'price_free' && hasStripeAccount ? (
-                            <Button onClick={handleManageSubscription} variant="outline" className="flex items-center gap-2">
-                                <CreditCard className="w-4 h-4" />
-                                Manage Subscription
-                            </Button>
+                        {planTier === 'pro' || planTier === 'price_pro_monthly' || planTier === 'price_pro_yearly' ? (
+                            hasStripeAccount ? (
+                                <Button onClick={handleManageSubscription} variant="outline" className="flex items-center gap-2">
+                                    <CreditCard className="w-4 h-4" />
+                                    Manage Subscription
+                                </Button>
+                            ) : (
+                                <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 font-medium text-sm flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Pro Member
+                                </div>
+                            )
                         ) : (
                             <Button onClick={() => navigate('/pricing')} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
                                 <CreditCard className="w-4 h-4" />

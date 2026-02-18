@@ -155,22 +155,24 @@ const getSubscriptionStatus = async (req, res) => {
         const tokens = tokenResult.data || { balance: 0 }; // might be null if new user
 
         // Identify internal plan ID
-        let planTier = 'free';
-        let currentPlan = 'price_free';
+        let planTier = (user.plan_tier || 'free').toLowerCase();
+        let currentPlan = planTier === 'pro' ? 'price_pro_monthly' : 'price_free'; // Default pro to monthly if specific record not found
 
         if (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) {
             // Map Stripe Price ID back to internal plan ID
-            const priceId = subscription.stripe_plan_id;
+            const priceId = (subscription.stripe_plan_id || '').trim();
+            const monthlyId = (stripeService.priceMonthly || '').trim();
+            const yearlyId = (stripeService.priceYearly || '').trim();
 
-            if (priceId === stripeService.priceMonthly) {
-                planTier = 'pro';
+            if (priceId === monthlyId) {
                 currentPlan = 'price_pro_monthly';
-            } else if (priceId === stripeService.priceYearly) {
                 planTier = 'pro';
+            } else if (priceId === yearlyId) {
                 currentPlan = 'price_pro_yearly';
-            } else {
-                planTier = 'pro'; // Default for unknown paid plans
+                planTier = 'pro';
+            } else if (priceId) {
                 currentPlan = priceId;
+                planTier = 'pro';
             }
         }
 
@@ -179,7 +181,11 @@ const getSubscriptionStatus = async (req, res) => {
             tokens: tokens.balance,
             plan: planTier,
             currentPlan: currentPlan,
-            hasStripeAccount: !!user.stripe_customer_id
+            hasStripeAccount: !!user.stripe_customer_id,
+            stripePriceIds: {
+                monthly: (stripeService.priceMonthly || '').trim(),
+                yearly: (stripeService.priceYearly || '').trim()
+            }
         });
 
     } catch (error) {

@@ -3,8 +3,8 @@ require('dotenv').config();
 
 const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key';
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const priceMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
-const priceYearly = process.env.STRIPE_PRICE_PRO_YEARLY;
+const priceMonthly = (process.env.STRIPE_PRICE_PRO_MONTHLY || '').trim();
+const priceYearly = (process.env.STRIPE_PRICE_PRO_YEARLY || '').trim();
 
 const stripe = new Stripe(stripeKey);
 
