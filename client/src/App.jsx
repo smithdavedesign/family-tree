@@ -31,6 +31,8 @@ const TreeStoriesPage = lazy(() => import('./pages/TreeStoriesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -81,7 +83,7 @@ const PublicRoute = ({ children }) => {
     const checkAuth = async () => {
       const session = await restoreSession();
       if (session || await getCurrentUser()) {
-        navigate('/');
+        navigate('/trees');
       }
       setLoading(false);
     };
@@ -100,8 +102,10 @@ function App() {
         <SearchProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Public Home Page */}
+              <Route path="/" element={<LandingPage />} />
+
               {/* Protected Routes */}
-              <Route path="/" element={<ProtectedRoute><TreeDashboard /></ProtectedRoute>} />
               <Route path="/trees" element={<ProtectedRoute><TreeDashboard /></ProtectedRoute>} />
               <Route path="/tree/:id" element={<ProtectedRoute><TreePage /></ProtectedRoute>} />
               <Route path="/tree/:id/timeline" element={<ProtectedRoute><TimelinePage /></ProtectedRoute>} />
