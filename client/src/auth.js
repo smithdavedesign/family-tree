@@ -32,7 +32,7 @@ export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${window.location.origin}/`,
+            redirectTo: `${window.location.origin}/trees`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -68,7 +68,7 @@ export const signUpWithPassword = async (email, password, fullName = '') => {
         email,
         password,
         options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/trees`,
             data: {
                 full_name: fullName,
                 onboarding_completed: false,

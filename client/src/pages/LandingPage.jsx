@@ -1,23 +1,51 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { TreePine, Share2, Map, Camera, ShieldCheck, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui';
 import DemoTree from '../components/DemoTree';
+import { getCurrentUser } from '../auth';
 
 const LandingPage = () => {
+    const navigate = useNavigate();
+    const [user, setUser] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const currentUser = await getCurrentUser();
+                setUser(currentUser);
+            } catch (err) {
+                console.error('Error checking auth state:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        checkUser();
+    }, []);
+
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation */}
             <nav className="border-b border-gray-100 py-4 px-6 sm:px-12 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-50">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
                     <TreePine className="w-8 h-8 text-teal-600" />
                     <span className="text-xl font-bold text-slate-800 tracking-tight">Roots & Branches</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors">Log In</Link>
-                    <Link to="/register">
-                        <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6">Get Started</Button>
-                    </Link>
+                    {loading ? (
+                        <div className="w-20 h-8 bg-slate-100 animate-pulse rounded-full" />
+                    ) : user ? (
+                        <Link to="/trees">
+                            <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6">Dashboard</Button>
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors">Log In</Link>
+                            <Link to="/register">
+                                <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6">Get Started</Button>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </nav>
 
@@ -33,11 +61,19 @@ const LandingPage = () => {
                         collect stories, and map your family's journey across the world.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to="/register">
-                            <Button className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white text-lg py-6 px-10 rounded-full shadow-lg shadow-teal-200 flex items-center gap-2 group">
-                                Start Your Tree <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </Link>
+                        {user ? (
+                            <Link to="/trees">
+                                <Button className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white text-lg py-6 px-10 rounded-full shadow-lg shadow-teal-200 flex items-center gap-2 group">
+                                    Enter Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link to="/register">
+                                <Button className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white text-lg py-6 px-10 rounded-full shadow-lg shadow-teal-200 flex items-center gap-2 group">
+                                    Start Your Tree <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+                        )}
                         <Link to="/pricing">
                             <Button variant="outline" className="w-full sm:w-auto text-lg py-6 px-10 rounded-full border-slate-200 !text-slate-600 hover:!bg-slate-50">View Pricing</Button>
                         </Link>
