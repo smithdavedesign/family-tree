@@ -216,13 +216,13 @@ Available tables:
 - [x] Password reset flow
 - [x] Password strength meter
 
-### ✅ Phase K: Production Readiness (100%)
-**Timeline:** 3-6 weeks | **Overall Readiness:** 100%
+### ⚠️ Phase K: Production Readiness (85%)
+**Timeline:** 3-6 weeks | **Blocker for Public Launch**
 
 **Status:** Ready for MVP launch
 
 **Achievements:**
-- ✅ 36 tests created (100% pass rate)
+- ✅ 36 tests created (34/36 passing, 94% pass rate)
 - ✅ Free error logging system (no external costs)
 - ✅ Comprehensive input validation (Joi + Zod)
 - ✅ Data export (JSON/GEDCOM)
@@ -235,7 +235,8 @@ Available tables:
 #### Week 2: Monitoring & Validation (100% Complete) ✅
 - [x] Monitoring & Validation (Error logging)
 - [x] Implement impossible date detection (death before birth)
-- [x]#### Week 3: Polish & Documentation (60% Complete) 🚀
+
+#### Week 3: Polish & Documentation (60% Complete) 🚀
 - [x] Documentation (Help, API, Deployment)
 - [x] Implement code splitting (route-based lazy loading)
 - [x] Add keyboard shortcuts documentation
@@ -283,7 +284,7 @@ Available tables:
 - [x] **F.15 Photo Organization**: Albums, tagging, and smart categorization.
 - [x] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.
 - [x] **G.17 Collaboration**: Activity feed, comments, and granular permissions.
-- [ ] **F.18 Family Utility**: Recipe book, family calendar, and address book.Slideshow version 
+- [ ] **F.18 Family Utility**: Recipe book, family calendar, and address book.
 
 ### B. Visualization & Insight Features
 3. **Relationship Heatmap (Who Appears Together?)**
@@ -492,64 +493,6 @@ git push origin phase-g-collaboration
 
 ---
 
-**Last Updated:** Phase M Complete (Dec 2024)  
-**Current Branch:** `feature/user-registration` (Merged to `main`)  
-**Next Phase:** Launch 🚀
-
-## 13. Deployment Checklist & Environment Variables
-
-> **For a visual flow of how these variables connect, see [docs/ENV_FLOW.md](./docs/ENV_FLOW.md)**
-
-### Required Environment Variables
-
-#### Backend (Render.com)
-```bash
-# Core
-PORT=3000
-NODE_ENV=production
-CLIENT_URL=https://www.familytree-e.com
-NOTIFICATION_FROM_EMAIL=notifications@contact.familytree-e.com
-
-# Database (Supabase)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_API_KEY=your-google-api-key
-
-# Stripe Payments
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_PRO_MONTHLY=price_...
-STRIPE_PRICE_PRO_YEARLY=price_...
-
-# Family Coupon System
-FAMILY_SECRET_CODE=YourSecretCode
-FAMILY_GRANT_AMOUNT=1000
-
-# Email
-RESEND_API_KEY=re_...
-```
-
-#### Frontend (Vercel)
-```bash
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_API_URL=https://api.familytree-e.com
-VITE_USE_MOCK=false
-```
-
-### Pre-Deployment Steps
-1.  **Stripe**:
-    -   Create "Pro Monthly" and "Pro Yearly" products in Stripe Dashboard.
-    -   Get their Price IDs (`price_...`) and add to backend env vars.
-    -   Configure Webhook URL in Stripe: `https://your-backend.onrender.com/api/webhooks/stripe`.
-    -   Select events: `checkout.session.completed`, `invoice.payment_succeeded`, `customer.subscription.deleted`.
-2.  **Supabase**:
-    -   Ensure `token_balances` and `subscriptions` tables are created (migrations are in `server/sql-prompts`).
-    -   Verify RLS policies allow `service_role` full access.
-3.  **Google Cloud**:
-    -   Add your production domains to "Authorized Origins" and "Authorized Redirect URIs".
+**Last Updated:** Feb 2026  
+**Current Phase:** Phase K (Production Readiness) in progress  
+**Status:** All core features (Phases A–R) complete. Finalizing testing, security hardening, and documentation.

@@ -285,12 +285,10 @@ The application uses a relational database (PostgreSQL) with the following key e
 - `GET /api/map/nearby` - Find photos within radius
 - `GET /api/person/:id/map-stats` - Person location statistics
 - `GET /api/map/global-stats` - Global travel analytics
-
 **UX Enhancement:** Clicking map markers shows info card first, with explicit "View Full Image" button for lightbox.
 
 ---
 
-<<<<<<< HEAD
 ### ✅ Phase Q: Location-Story Enhancements (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Normalized Location System**
 
@@ -439,10 +437,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 
 **Routes:** `/register`, `/login`, `/forgot-password`, `/reset-password`, `/auth/confirm`
 
---- ✅
-
-**See:** [implementation_plan.md](file:///Users/davidsmith/.gemini/antigravity/brain/cfc51602-8fad-4677-b01d-7cae0eec3106/implementation_plan.md) for detailed design
-
+---
 
 ### ⚠️ Phase K: Production Readiness (85%) - CRITICAL
 **Timeline:** 3-6 weeks | **Blocker for Public Launch**
@@ -453,7 +448,7 @@ The application uses a relational database (PostgreSQL) with the following key e
 - Week 3 (Polish & Documentation): 80% 🚀
 
 **Key Achievements:**
-- ✅ 36 tests created (94% pass rate)
+- ✅ 36 tests created (34/36 passing, 94% pass rate)
 - ✅ Free error logging system
 - ✅ Comprehensive input validation
 - ✅ Data export (JSON/GEDCOM)
@@ -497,27 +492,8 @@ The application uses a relational database (PostgreSQL) with the following key e
 - [x] String length limits enforced
 - [x] Integrate validation into all API routes
 - [ ] Add duplicate person detection
-- [ ] Implement data export (JSON/GEDCOM)
 - [ ] Add GDPR data export endpoint
-- [ ] Create backup/restore functionalityh)
-- ✅ **Timeline Visualization** - Chronological event view with color-coded dots and density heatmap
-- ✅ **Data Export** - Export trees as JSON or GEDCOM format
-- ✅ **Testing** - 36 tests with 100% pass rate (Vitest + Playwright)
-- ✅ **Error Logging** - Free error tracking system (no external costs)
-- ✅ **Input Validation** - Comprehensive validation (impossible dates, age limits)
-- ✅ **Code Splitting** - Route-based lazy loading for optimal performance
-- ✅ **Image Lazy Loading** - Optimized photo gallery loading
-
-## 📚 Documentation
-
-- **[User Guide](docs/HELP.md)** - Complete help documentation with tutorials and troubleshooting
-- **[API Documentation](docs/API.md)** - Full API reference with examples
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment to Supabase + Vercel + Render
-- **[Testing Guide](#-testing)** - How to run and write tests
-
-## 🏗️ Architecture
-ompliance (data export, right to be forgotten)
-- [ ] Backup/restore functionality
+- [ ] Create backup/restore functionality
 
 #### Performance Optimization (90%)
 - [x] Basic lazy loading
@@ -529,8 +505,6 @@ ompliance (data export, right to be forgotten)
 - [ ] Bundle size optimization (<500KB)
 - [ ] Lighthouse score >90
 - [ ] Database query optimization
-- [ ] CDN integration
-- [ ] Database indexing strategy
 - [ ] CDN for static assets
 
 #### Documentation (80%)
@@ -544,12 +518,6 @@ ompliance (data export, right to be forgotten)
 - [ ] Inline code comments
 - [ ] Video tutorials
 - [ ] FAQ section
-- [ ] User onboarding flow (interactive tutorial)
-- [ ] Help documentation (FAQ, guides)
-- [ ] Tooltips/hints throughout UI
-- [ ] Video tutorials
-- [ ] Terms of Service
-- [ ] Privacy Policy
 
 ### ✅ Phase 7: Security & Performance Hardening (100%) - **COMPLETE**
 **Timeline:** Completed Dec 2024 | **Production Scaling & Security**
@@ -583,7 +551,7 @@ ompliance (data export, right to be forgotten)
 - [ ] **F.16 Family Tree Experience**: "Onboarding" wizard and "Invite" flow improvements.
 - [ ] **G.17 Collaboration**: Activity feed, comments, and granular permissions.
 - [ ] **F.18 Sensitive Data**: Privacy controls for living people and sensitive facts.
-- [ ] **F.19 Family Utility**: Recipe book, family calendar, and address book.etween Genetic, Emotional, and Location-based trees.
+- [ ] **F.19 Family Utility**: Recipe book, family calendar, and address book.
 
 ### C. Photo Organization Enhancements
 - **Auto-Create Albums**: AI detection for vacations, holidays, and events.
@@ -606,6 +574,39 @@ ompliance (data export, right to be forgotten)
 ### H. Family Utility Features
 - **Events & Reminders**: Birthday/Anniversary tracker.
 - **Audio Memories**: Voice recordings attachable to persons.
+
+## 📚 Documentation
+
+- **[User Guide](docs/HELP.md)** - Complete help documentation with tutorials and troubleshooting
+- **[API Documentation](docs/API.md)** - Full API reference with 70 endpoints, examples, and diagrams
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - System architecture, complex code docs, and mermaid diagrams
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment to Supabase + Vercel + Render
+- **[Testing Guide](#-testing)** - How to run and write tests
+
+## 🏗️ Architecture
+
+```
+FamilyTreeApp/
+├── client/                  # React frontend (Vite)
+│   ├── src/
+│   │   ├── components/      # Reusable UI components (70 files)
+│   │   ├── pages/           # Route-level page components (22 files)
+│   │   ├── hooks/           # Custom React hooks (6 files)
+│   │   ├── modules/         # Feature modules (timeline)
+│   │   ├── utils/           # Utility functions
+│   │   ├── test/            # Test infrastructure
+│   │   ├── auth.js          # Supabase auth client
+│   │   └── App.jsx          # Route definitions
+│   └── config/              # Vitest & Playwright configs
+├── server/                  # Express.js backend
+│   ├── controllers/         # Route handlers (16 controllers)
+│   ├── middleware/           # Auth, RBAC, rate limiting, audit
+│   ├── routes/              # API route definitions
+│   ├── validation/          # Joi schemas
+│   ├── sql-prompts/         # Database migrations (29 files)
+│   └── index.js             # Server entry point
+└── docs/                    # Project documentation
+```
 
 ## 🔌 API Endpoints
 
@@ -949,4 +950,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Current Status:** Phase S Complete (Hybrid Geocoding) | Dual OAuth + Self-Hosted Dev Geocoding | Production Readiness: 92%
+**Current Status:** Phase K (Production Readiness) in progress | All core features complete | Last updated: Feb 2026
