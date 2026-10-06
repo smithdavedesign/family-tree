@@ -3,7 +3,8 @@ services:
     image: mediagis/nominatim:4.4
     container_name: nominatim
     ports:
-      - "8080:8080"
+      # localhost only (2026-10 audit): the geocoder needs no network exposure
+      - "127.0.0.1:8080:8080"
     environment:
       # REGION SELECTION: Uncomment one of the lines below to change the dataset.
       # WARNING: Larger regions require significantly more RAM and Disk space.
