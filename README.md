@@ -8,6 +8,42 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - **Backend (Render):** [https://api.familytree-e.com](https://api.familytree-e.com)
 - **Status:** 🟢 Live & Verified
 
+## 📦 Installation & Setup
+
+Since the repository is already checked out in your working directory, you can skip the cloning step. Ensure you are in the root directory of the project.
+
+1. **Setup Environment Variables:**
+   - Copy the example files: `cp client/.env.example client/.env` and `cp server/.env.example server/.env`
+   - Edit `.env` files to add your configuration:
+     * In `client/.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+     * In `server/.env`, set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and optionally Google and Stripe keys
+     * For initial setup without external APIs, set `VITE_USE_MOCK=true` and `USE_MOCK=true`
+
+2. **Install dependencies:**
+   ```bash
+   # Install client dependencies
+   cd client
+   npm install
+   
+   # Install server dependencies
+   cd ../server
+   npm install
+   ```
+
+3. **Start the Client:**
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+4. **Start the Server:**
+   ```bash
+   cd server
+   npm start
+   ```
+
+
+
 ## ✨ Features
 
 ### Core Functionality
