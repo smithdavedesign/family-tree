@@ -18,7 +18,7 @@ const port = process.env.PORT || 3000;
 // Initialize error logging (must be before other middleware)
 initErrorLogging(app);
 
-// Trust proxy for rate limiting behind load balancers (Render/Vercel)
+// Trust proxy for rate limiting behind load balancers (DigitalOcean)
 app.set('trust proxy', 1);
 
 // Security middleware (must be early in the chain)
@@ -44,7 +44,7 @@ app.use(cors({
             'https://familytree-e.com',
             'https://www.familytree-e.com',
             process.env.CLIENT_URL,
-            // Allow Vercel preview deployments
+            // Old Vercel preview deployments (hosting moved to DigitalOcean)
             /^https:\/\/family-tree-.*\.vercel\.app$/
         ];
 

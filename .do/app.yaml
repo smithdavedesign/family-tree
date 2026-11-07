@@ -1,0 +1,86 @@
+# Family Tree on DigitalOcean App Platform, same host as Botchelor (off Vercel's free tier, which kept blocking deploys).
+# Create it with: Apps → Create App → "Import from app spec" (or `doctl apps create --spec .do/app.yaml`), then fill in
+# every value marked CHANGE_ME as an encrypted secret in the dashboard. Never commit real values to this file.
+# Billing: the static site is free; the API service below is about $5 a month. Set a spend alert at $10.
+# One app serves both, so /api stays same-origin (cookies for the Google connection keep working), as it did through
+# Vercel's /api rewrite. The API used to run on Render's free tier (render.yaml); delete that service after cutover.
+name: family-tree
+region: sfo
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+domains:
+  - domain: familytree-e.com
+    type: PRIMARY
+  - domain: www.familytree-e.com
+    type: ALIAS
+static_sites:
+  - name: web
+    github:
+      repo: smithdavedesign/family-tree
+      branch: main
+      deploy_on_push: true
+    source_dir: client
+    build_command: npm ci && npm run build
+    output_dir: dist
+    catchall_document: index.html  # the SPA's client-side routes
+    routes:
+      - path: /
+    envs:
+      # Empty: the client calls /api on its own origin, which the ingress sends to the api service.
+      - key: VITE_API_URL
+        value: ""
+        scope: BUILD_TIME
+      # Public values (the anon key is meant for browsers), but deployment-specific.
+      - key: VITE_SUPABASE_URL
+        value: CHANGE_ME
+        scope: BUILD_TIME
+      - key: VITE_SUPABASE_ANON_KEY
+        value: CHANGE_ME
+        scope: BUILD_TIME
+services:
+  - name: api
+    github:
+      repo: smithdavedesign/family-tree
+      branch: main
+      deploy_on_push: true
+    source_dir: server
+    build_command: npm ci
+    run_command: node index.js
+    http_port: 8080
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_count: 1
+    routes:
+      - path: /api
+        preserve_path_prefix: true
+    health_check:
+      http_path: /
+      initial_delay_seconds: 20
+      period_seconds: 10
+      timeout_seconds: 3
+      failure_threshold: 3
+    envs:
+      - key: PORT
+        value: "8080"
+        scope: RUN_TIME
+      - key: NODE_ENV
+        value: production
+        scope: RUN_TIME
+      - key: USE_MOCK
+        value: "false"
+        scope: RUN_TIME
+      - key: CLIENT_URL
+        value: https://familytree-e.com
+        scope: RUN_TIME
+      - key: SUPABASE_URL
+        value: CHANGE_ME
+        scope: RUN_TIME
+      - key: SUPABASE_ANON_KEY
+        type: SECRET
+        value: CHANGE_ME
+        scope: RUN_TIME
+      - key: SUPABASE_SERVICE_KEY
+        type: SECRET
+        value: CHANGE_ME
+        scope: RUN_TIME
+      # Also copy over every other secret the server reads from Render's settings (Stripe, Resend, Google OAuth).

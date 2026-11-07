@@ -4,8 +4,8 @@ Roots & Branches is a modern, interactive family tree application that allows us
 
 ## 🚀 Deployment Status
 
-- **Frontend (Vercel):** [https://www.familytree-e.com](https://www.familytree-e.com)
-- **Backend (Render):** [https://api.familytree-e.com](https://api.familytree-e.com)
+- **Frontend (DigitalOcean App Platform):** [https://www.familytree-e.com](https://www.familytree-e.com)
+- **Backend (DigitalOcean App Platform, same app, `/api`):** [https://api.familytree-e.com](https://api.familytree-e.com)
 - **Status:** 🟢 Live & Verified
 
 ## ✨ Features
@@ -48,7 +48,7 @@ Roots & Branches is a modern, interactive family tree application that allows us
 - **Database:** PostgreSQL (via Supabase)
 - **Authentication:** Supabase Auth (Google OAuth + Magic Links)
 - **Email:** Resend (Transactional emails)
-- **Deployment:** Vercel (Frontend), Render (Backend)
+- **Deployment:** DigitalOcean App Platform (see `.do/app.yaml`), DNS at Cloudflare
 
 > **Note:** Using stable Tailwind CSS v3.4.17 for reliable utility class generation and consistent styling across all components.
 
