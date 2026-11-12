@@ -26,3 +26,6 @@ yarn-error.log*
 
 # Agent artifacts
 .gemini/
+
+# Cloudflare wrangler local state
+.wrangler/
