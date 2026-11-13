@@ -4,7 +4,12 @@ Roots & Branches is a modern, interactive family tree application that allows us
 
 ## 🚀 Deployment Status
 
-- **Frontend (Vercel):** [https://www.familytree-e.com](https://www.familytree-e.com)
+| Desktop | Phone |
+| --- | --- |
+| ![Landing page on desktop](docs/screenshots/cloudflare-landing-desktop.png) | ![Landing page on phone](docs/screenshots/cloudflare-landing-phone.png) |
+
+- **Frontend (Cloudflare Pages):** [https://family-tree-1fp.pages.dev](https://family-tree-1fp.pages.dev) (deploy: `cd client && npm run build && npx wrangler pages deploy dist --project-name family-tree --branch main`)
+- **Custom domain:** [https://www.familytree-e.com](https://www.familytree-e.com) still serves the Vercel deployment until DNS (GoDaddy) moves to Cloudflare
 - **Backend (Render):** [https://api.familytree-e.com](https://api.familytree-e.com)
 - **Status:** 🟢 Live & Verified
 
@@ -84,7 +89,7 @@ Since the repository is already checked out in your working directory, you can s
 - **Database:** PostgreSQL (via Supabase)
 - **Authentication:** Supabase Auth (Google OAuth + Magic Links)
 - **Email:** Resend (Transactional emails)
-- **Deployment:** Vercel (Frontend), Render (Backend)
+- **Deployment:** Cloudflare Pages (Frontend, with `client/functions/api` proxying `/api`), Render (Backend)
 
 > **Note:** Using stable Tailwind CSS v3.4.17 for reliable utility class generation and consistent styling across all components.
 

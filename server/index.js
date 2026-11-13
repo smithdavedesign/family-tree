@@ -44,7 +44,7 @@ app.use(cors({
             'https://familytree-e.com',
             'https://www.familytree-e.com',
             process.env.CLIENT_URL,
-            // Allow Vercel preview deployments
+            // Old Vercel preview deployments
             /^https:\/\/family-tree-.*\.vercel\.app$/
         ];
 
